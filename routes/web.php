@@ -6,6 +6,7 @@ use App\Http\Controllers\DataGuruController;
 use App\Http\Controllers\DataMuridController;
 use App\Http\Controllers\MapelController;
 use App\Http\Controllers\KelasController;
+use App\Http\Controllers\JadwalMengajarController;
 
 /* ====================================================================
    HALAMAN UTAMA
@@ -106,19 +107,28 @@ Route::prefix('admin')
         Route::delete('/mapel/{id}',    [MapelController::class, 'destroy'])->name('mapel.destroy');
 
         /* -- Kelas -- */
-        Route::get('/kelas',                           [KelasController::class, 'index'])->name('kelas');
-        Route::get('/kelas/list',                      [KelasController::class, 'list'])->name('kelas.list');
-        Route::get('/kelas/semua-guru',                [KelasController::class, 'semuaGuru'])->name('kelas.semua_guru');
-        Route::post('/kelas',                          [KelasController::class, 'store'])->name('kelas.store');
-        Route::get('/kelas/{id}',                      [KelasController::class, 'detail'])->name('kelas.detail');
-        Route::get('/kelas/{id}/edit',                 [KelasController::class, 'edit'])->name('kelas.edit');
-        Route::post('/kelas/{id}',                     [KelasController::class, 'update'])->name('kelas.update');
-        Route::delete('/kelas/{id}',                   [KelasController::class, 'destroy'])->name('kelas.destroy');
-        Route::get('/kelas/{id}/guru-list',            [KelasController::class, 'guruList'])->name('kelas.guru_list');
-        Route::get('/kelas/{id}/murid-list',           [KelasController::class, 'muridList'])->name('kelas.murid_list');
-        Route::post('/kelas/{id}/tambah-guru',         [KelasController::class, 'tambahGuru'])->name('kelas.tambah_guru');
-        Route::post('/kelas/{id}/tambah-murid',        [KelasController::class, 'tambahMurid'])->name('kelas.tambah_murid');
-        Route::delete('/kelas/{id}/hapus-peserta',     [KelasController::class, 'hapusPeserta'])->name('kelas.hapus_peserta');
+        Route::get('/kelas',                               [KelasController::class, 'index'])->name('kelas');
+        Route::get('/kelas/list',                          [KelasController::class, 'list'])->name('kelas.list');
+        Route::get('/kelas/semua-guru',                    [KelasController::class, 'semuaGuru'])->name('kelas.semua_guru');
+        Route::post('/kelas',                              [KelasController::class, 'store'])->name('kelas.store');
+        Route::get('/kelas/{uuid}',                        [KelasController::class, 'detail'])->name('kelas.detail');
+        Route::get('/kelas/{id}/edit',                     [KelasController::class, 'edit'])->name('kelas.edit');
+        Route::post('/kelas/{id}',                         [KelasController::class, 'update'])->name('kelas.update');
+        Route::delete('/kelas/{id}',                       [KelasController::class, 'destroy'])->name('kelas.destroy');
+        Route::get('/kelas/{id}/guru-list',                [KelasController::class, 'guruList'])->name('kelas.guru_list');
+        Route::get('/kelas/{id}/murid-list',               [KelasController::class, 'muridList'])->name('kelas.murid_list');
+        Route::post('/kelas/{id}/tambah-guru',             [KelasController::class, 'tambahGuru'])->name('kelas.tambah_guru');
+        Route::post('/kelas/{id}/tambah-murid',            [KelasController::class, 'tambahMurid'])->name('kelas.tambah_murid');
+        Route::delete('/kelas/{id}/hapus-peserta',         [KelasController::class, 'hapusPeserta'])->name('kelas.hapus_peserta');
+
+        /* -- Jadwal Mengajar -- */
+        Route::get('/jadwal-mengajar',            [JadwalMengajarController::class, 'index'])->name('jadwal_mengajar');
+        Route::get('/jadwal-mengajar/list',        [JadwalMengajarController::class, 'list'])->name('jadwal_mengajar.list');
+        Route::get('/jadwal-mengajar/dropdown',    [JadwalMengajarController::class, 'dropdownData'])->name('jadwal_mengajar.dropdown');
+        Route::post('/jadwal-mengajar',            [JadwalMengajarController::class, 'store'])->name('jadwal_mengajar.store');
+        Route::get('/jadwal-mengajar/{id}/edit',   [JadwalMengajarController::class, 'edit'])->name('jadwal_mengajar.edit');
+        Route::post('/jadwal-mengajar/{id}',       [JadwalMengajarController::class, 'update'])->name('jadwal_mengajar.update');
+        Route::delete('/jadwal-mengajar/{id}',     [JadwalMengajarController::class, 'destroy'])->name('jadwal_mengajar.destroy');
     });
 
 /* ====================================================================
@@ -144,13 +154,12 @@ Route::prefix('guru')
             return view('guru.absen_murid');
         })->name('absen_murid');
 
-        Route::get('/jadwal-mengajar', function () {
-            return view('guru.jadwal_mengajar');
-        })->name('jadwal_mengajar');
+        Route::get('/jadwal-mengajar',      [JadwalMengajarController::class, 'guruIndex'])->name('jadwal_mengajar');
+        Route::get('/jadwal-mengajar/list', [JadwalMengajarController::class, 'guruList'])->name('jadwal_mengajar.list');
 
-        Route::get('/data-kelas', function () {
-            return view('guru.data_kelas');
-        })->name('data_kelas');
+        Route::get('/data-kelas',               [KelasController::class, 'guruKelas'])->name('data_kelas');
+        Route::get('/data-kelas/list',          [KelasController::class, 'guruKelasList'])->name('data_kelas.list');
+        Route::get('/data-kelas/{uuid}',        [KelasController::class, 'guruDetailKelas'])->name('data_kelas.detail');
 
         Route::get('/data-murid', function () {
             return view('guru.data_murid');

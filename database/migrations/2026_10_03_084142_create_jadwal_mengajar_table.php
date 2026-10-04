@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('mapel_id')->constrained('mapel')->cascadeOnDelete();
-            $table->foreignId('kelas_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('kelas_id')->constrained('kelas')->cascadeOnDelete();
             $table->date('tanggal');
             $table->time('waktu_mulai');
             $table->time('waktu_berakhir');

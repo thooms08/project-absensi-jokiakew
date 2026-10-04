@@ -128,13 +128,13 @@ class KelasController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       DETAIL  –  Halaman detail kelas (guru + murid)
+       DETAIL  –  Halaman detail kelas (guru + murid) — dicari via UUID
     ---------------------------------------------------------------- */
-    public function detail($id)
+    public function detail($uuid)
     {
         $kelas = Kelas::with([
             'peserta.user.mapel',
-        ])->findOrFail($id);
+        ])->where('uuid', $uuid)->firstOrFail();
 
         return view('admin.detail_kelas', compact('kelas'));
     }
@@ -291,5 +291,62 @@ class KelasController extends Controller
         $peserta->delete();
 
         return response()->json(['success' => true, 'message' => 'Anggota berhasil dihapus dari kelas.']);
+    }
+
+    /* ================================================================
+       GURU — hanya melihat kelas yang diikutinya
+    ================================================================ */
+
+    /* ----------------------------------------------------------------
+       GURU KELAS INDEX  –  Halaman Data Kelas milik guru yang login
+    ---------------------------------------------------------------- */
+    public function guruKelas()
+    {
+        return view('guru.data_kelas');
+    }
+
+    /* ----------------------------------------------------------------
+       GURU KELAS LIST  –  Partial AJAX: daftar kelas di mana guru ini terdaftar
+    ---------------------------------------------------------------- */
+    public function guruKelasList(Request $request)
+    {
+        $guruId = auth()->id();
+        $search = trim($request->get('search', ''));
+
+        /* Ambil ID kelas yang memiliki peserta = guru ini */
+        $kelasIds = PesertaKelas::where('user_id', $guruId)
+                                ->pluck('kelas_id');
+
+        $query = Kelas::with(['waliKelas', 'guru', 'murid'])
+                      ->whereIn('id', $kelasIds);
+
+        if ($search !== '') {
+            $query->where('nama_kelas', 'like', "%{$search}%");
+        }
+
+        $kelas = $query->orderBy('nama_kelas')->get();
+
+        return view('guru.partials.list_kelas', compact('kelas'));
+    }
+
+    /* ----------------------------------------------------------------
+       GURU DETAIL KELAS  –  View-only detail kelas via UUID
+       Hanya bisa diakses jika guru tersebut terdaftar di kelas itu
+    ---------------------------------------------------------------- */
+    public function guruDetailKelas($uuid)
+    {
+        $guruId = auth()->id();
+
+        $kelas = Kelas::with(['peserta.user.mapel'])
+                      ->where('uuid', $uuid)
+                      ->firstOrFail();
+
+        /* Pastikan guru ini memang terdaftar di kelas tersebut */
+        $terdaftar = $kelas->peserta->contains('user_id', $guruId);
+        if (!$terdaftar) {
+            abort(403, 'Anda tidak terdaftar di kelas ini.');
+        }
+
+        return view('guru.detail_kelas', compact('kelas'));
     }
 }

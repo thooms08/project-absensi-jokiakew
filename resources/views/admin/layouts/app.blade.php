@@ -760,6 +760,13 @@
             <span class="nav-label">Kelas</span>
         </a>
 
+        <a href="{{ route('admin.jadwal_mengajar') }}"
+           class="nav-item-link {{ request()->routeIs('admin.jadwal_mengajar') ? 'active' : '' }}"
+           title="Jadwal Mengajar">
+            <i class="bi bi-calendar2-week-fill nav-icon"></i>
+            <span class="nav-label">Jadwal Mengajar</span>
+        </a>
+
         <div class="sidebar-section-label">Akun</div>
 
         <a href="{{ route('admin.profile') }}"

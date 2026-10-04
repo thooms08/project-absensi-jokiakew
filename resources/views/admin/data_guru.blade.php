@@ -482,38 +482,57 @@
         margin-left: 0.1rem;
     }
 
-    .mapel-badges-wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-        margin-bottom: 0.65rem;
-        min-height: 0;
+    /* Multi-select mapel */
+    .mapel-select-wrap {
+        position: relative;
     }
 
-    .mapel-badges-wrap:empty {
-        margin-bottom: 0;
-    }
-
-    .btn-pick-mapel {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        background: rgba(251,191,36,0.1);
-        border: 1px solid rgba(251,191,36,0.25);
-        border-radius: 8px;
-        color: #fbbf24;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.42rem 0.9rem;
-        cursor: pointer;
+    .select-mapel {
+        width: 100%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(251,191,36,0.22);
+        border-radius: 9px;
+        color: #e2f5ea;
+        font-size: 0.845rem;
         font-family: 'Inter', sans-serif;
-        transition: background 0.15s, border-color 0.15s;
-        white-space: nowrap;
+        padding: 0.3rem 0.4rem;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.18s;
+        /* Tampilkan maks 5 item agar tidak terlalu panjang */
+        min-height: 36px;
     }
 
-    .btn-pick-mapel:hover {
-        background: rgba(251,191,36,0.18);
-        border-color: rgba(251,191,36,0.4);
+    .select-mapel:focus {
+        border-color: rgba(251,191,36,0.5);
+        box-shadow: 0 0 0 3px rgba(251,191,36,0.07);
+    }
+
+    .select-mapel option {
+        background: #0d2e1a;
+        color: #e2f5ea;
+        padding: 0.3rem 0.5rem;
+        font-size: 0.845rem;
+        border-radius: 4px;
+    }
+
+    .select-mapel option:checked {
+        background: rgba(217,119,6,0.35);
+        color: #fbbf24;
+    }
+
+    .mapel-hint-text {
+        font-size: 0.71rem;
+        color: rgba(255,255,255,0.28);
+        margin-top: 0.35rem;
+    }
+
+    .mapel-selected-info {
+        font-size: 0.72rem;
+        color: rgba(251,191,36,0.7);
+        font-weight: 600;
+        margin-top: 0.3rem;
+        min-height: 1rem;
     }
 </style>
 @endpush
@@ -737,12 +756,21 @@
                             <div class="mapel-section-header">
                                 <i class="bi bi-book-fill" style="color:#fbbf24;"></i>
                                 <span>Mata Pelajaran</span>
-                                <span class="mapel-section-hint">(opsional, bisa pilih banyak)</span>
+                                <span class="mapel-section-hint">(opsional — tahan Ctrl/⌘ untuk pilih banyak)</span>
                             </div>
-                            <div id="tambahMapelSelected" class="mapel-badges-wrap"></div>
-                            <button type="button" id="btnTambahMapelGuru" class="btn-pick-mapel">
-                                <i class="bi bi-plus-lg"></i> Tambah Mapel
-                            </button>
+                            <div class="mapel-select-wrap">
+                                <select
+                                    id="selectMapelTambah"
+                                    class="select-mapel"
+                                    multiple
+                                    size="5"
+                                    aria-label="Pilih mata pelajaran"
+                                >
+                                    {{-- diisi JS saat masuk step 2 --}}
+                                </select>
+                            </div>
+                            <p class="mapel-hint-text">Tahan <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">Ctrl</kbd> atau <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">⌘</kbd> untuk memilih lebih dari satu.</p>
+                            <div class="mapel-selected-info" id="tambahMapelInfo"></div>
                         </div>
                     </div>
 
@@ -841,12 +869,21 @@
                             <div class="mapel-section-header">
                                 <i class="bi bi-book-fill" style="color:#fbbf24;"></i>
                                 <span>Mata Pelajaran</span>
-                                <span class="mapel-section-hint">(opsional, bisa pilih banyak)</span>
+                                <span class="mapel-section-hint">(opsional — tahan Ctrl/⌘ untuk pilih banyak)</span>
                             </div>
-                            <div id="editMapelSelected" class="mapel-badges-wrap"></div>
-                            <button type="button" id="btnEditMapelGuru" class="btn-pick-mapel">
-                                <i class="bi bi-plus-lg"></i> Tambah Mapel
-                            </button>
+                            <div class="mapel-select-wrap">
+                                <select
+                                    id="selectMapelEdit"
+                                    class="select-mapel"
+                                    multiple
+                                    size="5"
+                                    aria-label="Pilih mata pelajaran"
+                                >
+                                    {{-- diisi JS saat modal edit dibuka --}}
+                                </select>
+                            </div>
+                            <p class="mapel-hint-text">Tahan <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">Ctrl</kbd> atau <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">⌘</kbd> untuk memilih lebih dari satu.</p>
+                            <div class="mapel-selected-info" id="editMapelInfo"></div>
                         </div>
                     </div>
 
@@ -860,58 +897,6 @@
                 </button>
             </div>
 
-        </div>
-    </div>
-</div>
-
-{{-- ================================================================
-     MODAL PICK MAPEL (shared untuk tambah & edit)
-================================================================ --}}
-<div class="modal fade modal-dark" id="modalPickMapel"
-     tabindex="-1" aria-labelledby="modalPickMapelLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-md">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalPickMapelLabel">
-                    <i class="bi bi-book-fill me-2" style="color:#fbbf24;"></i>
-                    Pilih Mata Pelajaran
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body" style="padding:1.1rem 1.25rem;">
-                {{-- Search mapel --}}
-                <div style="position:relative; margin-bottom:0.85rem;">
-                    <i class="bi bi-search"
-                       style="position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);
-                              color:rgba(251,191,36,0.5);font-size:0.82rem;pointer-events:none;"></i>
-                    <input type="text" id="pickMapelSearch"
-                           placeholder="Cari mata pelajaran..."
-                           autocomplete="off"
-                           style="width:100%;background:rgba(255,255,255,0.05);
-                                  border:1px solid rgba(251,191,36,0.2);border-radius:9px;
-                                  color:#e2f5ea;font-size:0.85rem;padding:0.48rem 0.85rem 0.48rem 2.2rem;
-                                  font-family:'Inter',sans-serif;outline:none;transition:border-color 0.18s;"
-                           onfocus="this.style.borderColor='rgba(251,191,36,0.5)'"
-                           onblur="this.style.borderColor='rgba(251,191,36,0.2)'">
-                </div>
-                {{-- Info jumlah dipilih --}}
-                <div id="mapelSelectedInfo"
-                     style="font-size:0.73rem;color:rgba(251,191,36,0.7);margin-bottom:0.6rem;min-height:1rem;"></div>
-                {{-- Daftar mapel --}}
-                <div id="pickMapelList"
-                     style="max-height:300px;overflow-y:auto;scrollbar-width:thin;
-                            scrollbar-color:rgba(251,191,36,0.2) transparent;">
-                    <div style="text-align:center;padding:1.5rem;color:rgba(255,255,255,0.35);">Memuat...</div>
-                </div>
-            </div>
-            <div class="modal-footer justify-content-end gap-2"
-                 style="border-top:1px solid rgba(251,191,36,0.1);padding:0.85rem 1.25rem;">
-                <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Tutup</button>
-                <button type="button" class="btn-modal-primary" id="btnSimpanMapelPilihan"
-                        style="background:linear-gradient(135deg,#78500a,#d97706);">
-                    <i class="bi bi-check-lg me-1"></i> Simpan Mapel
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -1409,7 +1394,11 @@
                     });
                 }
 
-                if (guruIdBaru && selectedMapelIds.length) {
+                if (guruIdBaru) {
+                    /* Baca mapel dari select multi — termasuk jika kosong (array kosong = hapus semua) */
+                    var selTambah     = document.getElementById('selectMapelTambah');
+                    var mapelTerpilih = selTambah ? getSelectedFromSelect(selTambah) : [];
+
                     fetch('{{ url("admin/data-guru") }}/' + guruIdBaru + '/mapel', {
                         method: 'POST',
                         headers: {
@@ -1417,7 +1406,7 @@
                             'X-Requested-With': 'XMLHttpRequest',
                             'Content-Type':     'application/json',
                         },
-                        body: JSON.stringify({ mapel_ids: selectedMapelIds })
+                        body: JSON.stringify({ mapel_ids: mapelTerpilih })
                     })
                     .then(function () { selesaiBuatGuru(); })
                     .catch(function () { selesaiBuatGuru(); });
@@ -1625,25 +1614,20 @@
                 setInputState(document.getElementById(id), null);
             });
 
-            /* Reset badge mapel edit sebelum load */
-            var editMapelEl = document.getElementById('editMapelSelected');
-            if (editMapelEl) editMapelEl.innerHTML = '<span style="font-size:0.75rem;color:rgba(255,255,255,0.3);">Memuat...</span>';
-            pickMapelContext = 'edit';
-            pickMapelGuruId  = String(data.id);
+            /* Load mapel yang sudah dipilih guru ini, populate select */
+            var selEdit = document.getElementById('selectMapelEdit');
+            if (selEdit) selEdit.innerHTML = '<option disabled>Memuat...</option>';
 
-            /* Load mapel yang sudah dipilih guru ini lalu tampilkan badge */
             fetch('{{ url("admin/data-guru") }}/' + data.id + '/mapel', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(function (r) { return r.json(); })
             .then(function (mapelData) {
-                allMapelCache    = mapelData.semua_mapel || [];
-                selectedMapelIds = (mapelData.mapel_dipilih || []).map(String);
-                allMapelCache.forEach(function (m) { mapelNamesCache[String(m.id)] = m.nama_mapel; });
-                renderMapelBadges('editMapelSelected', selectedMapelIds, mapelNamesCache);
+                var dipilih = (mapelData.mapel_dipilih || []).map(String);
+                window._populateEditMapelSelect(mapelData.semua_mapel || [], dipilih);
             })
             .catch(function () {
-                if (editMapelEl) editMapelEl.innerHTML = '';
+                if (selEdit) selEdit.innerHTML = '';
             });
 
             modalEdit.show();
@@ -1738,12 +1722,30 @@
             btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Simpan';
 
             if (data.success) {
-                modalEdit.hide();
-                Swal.fire({
-                    icon: 'success', title: 'Berhasil!',
-                    text: data.message, timer: 2000, showConfirmButton: false,
-                    background: '#0a2e1c', color: '#ffffff',
-                }).then(function () { loadList(searchInput.value.trim(), currentTab); });
+                /* Setelah data guru tersimpan, simpan juga mapel dari select */
+                var selMapel    = document.getElementById('selectMapelEdit');
+                var mapelTerpilih = selMapel ? getSelectedFromSelect(selMapel) : [];
+
+                function selesaiUpdateGuru() {
+                    modalEdit.hide();
+                    Swal.fire({
+                        icon: 'success', title: 'Berhasil!',
+                        text: data.message, timer: 2000, showConfirmButton: false,
+                        background: '#0a2e1c', color: '#ffffff',
+                    }).then(function () { loadList(searchInput.value.trim(), currentTab); });
+                }
+
+                fetch('{{ url("admin/data-guru") }}/' + id + '/mapel', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN':     CSRF,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type':     'application/json',
+                    },
+                    body: JSON.stringify({ mapel_ids: mapelTerpilih })
+                })
+                .then(function () { selesaiUpdateGuru(); })
+                .catch(function () { selesaiUpdateGuru(); });
             } else {
                 var msgs = [];
                 if (data.errors) Object.values(data.errors).forEach(function (arr) { msgs = msgs.concat(arr); });
@@ -1832,276 +1834,117 @@
     loadList('', 'aktif');
 
     /* ============================================================
-       FITUR MAPEL GURU
+       FITUR MAPEL GURU  –  multi-select dropdown (inline)
     ============================================================ */
-    var pickMapelModalEl  = document.getElementById('modalPickMapel');
-    var pickMapelModal    = new bootstrap.Modal(pickMapelModalEl);
-    var pickMapelContext  = 'tambah';   /* 'tambah' | 'edit' */
-    var pickMapelGuruId   = null;       /* hanya untuk 'edit' */
-    var selectedMapelIds  = [];         /* array id mapel yang dipilih */
+    var selectedMapelIds = [];   /* dipakai saat submit tambah guru */
+    var allMapelCache    = [];   /* cache semua mapel dari server */
 
-    /* -- Helper: render badge mapel terpilih -- */
-    function renderMapelBadges(containerId, ids, names) {
-        var el = document.getElementById(containerId);
-        if (!el) return;
-        if (!ids.length) { el.innerHTML = ''; return; }
-        var html = '';
-        ids.forEach(function (id) {
-            html += '<span style="display:inline-flex;align-items:center;gap:0.3rem;'
-                  + 'background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.22);'
-                  + 'border-radius:50px;padding:0.15rem 0.55rem;font-size:0.72rem;'
-                  + 'font-weight:600;color:#fbbf24;">'
-                  + escHtml(names[id] || '')
-                  + '<button type="button" onclick="hapusMapelPilihan(\'' + id + '\')" '
-                  + 'style="background:none;border:none;color:rgba(248,113,113,0.7);'
-                  + 'cursor:pointer;padding:0;font-size:0.75rem;line-height:1;margin-left:2px;">'
-                  + '<i class="bi bi-x"></i></button></span>';
-        });
-        el.innerHTML = html;
-    }
-
-    window.hapusMapelPilihan = function (id) {
-        var idx = selectedMapelIds.indexOf(String(id));
-        if (idx > -1) selectedMapelIds.splice(idx, 1);
-        syncMapelChecks();
-        var containerId = pickMapelContext === 'tambah' ? 'tambahMapelSelected' : 'editMapelSelected';
-        renderMapelBadges(containerId, selectedMapelIds, mapelNamesCache);
-    };
-
-    var mapelNamesCache = {};
-    var allMapelCache   = [];
-
-    /* -- Buka modal mapel -- */
-    function bukaPickMapel(ctx, guruId) {
-        pickMapelContext = ctx;
-        pickMapelGuruId  = guruId || null;
-
-        /* Reset search setiap kali modal dibuka */
-        var searchEl = document.getElementById('pickMapelSearch');
-        if (searchEl) searchEl.value = '';
-        var infoEl = document.getElementById('mapelSelectedInfo');
-        if (infoEl) infoEl.textContent = '';
-
-        if (ctx === 'edit' && guruId) {
-            /* Muat mapel yang sudah dipilih untuk guru ini */
-            fetch('{{ url("admin/data-guru") }}/' + guruId + '/mapel', {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                allMapelCache      = data.semua_mapel || [];
-                selectedMapelIds   = (data.mapel_dipilih || []).map(String);
-                allMapelCache.forEach(function (m) { mapelNamesCache[String(m.id)] = m.nama_mapel; });
-                renderPickMapelList('');
-                renderMapelBadges('editMapelSelected', selectedMapelIds, mapelNamesCache);
-                pickMapelModal.show();
-            });
-        } else {
-            /* Mode tambah: hanya muat semua mapel, selected sudah dikelola state lokal */
-            if (allMapelCache.length) {
-                renderPickMapelList('');
-                pickMapelModal.show();
-            } else {
-                fetch('{{ route("admin.data_guru.semua_mapel") }}', {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    allMapelCache = data.semua_mapel || [];
-                    allMapelCache.forEach(function (m) { mapelNamesCache[String(m.id)] = m.nama_mapel; });
-                    renderPickMapelList('');
-                    pickMapelModal.show();
-                });
-            }
-        }
-    }
-
-    function renderPickMapelList(filter) {
-        filter = (filter || '').toLowerCase().trim();
-        var listEl = document.getElementById('pickMapelList');
-        var infoEl = document.getElementById('mapelSelectedInfo');
-
-        /* Update info jumlah dipilih */
-        var count = selectedMapelIds.length;
-        if (infoEl) {
-            infoEl.textContent = count > 0 ? count + ' mata pelajaran dipilih' : '';
-        }
-
+    /* -- Populate <select> dengan opsi mapel -- */
+    function populateMapelSelect(selectEl, dipilihIds) {
+        selectEl.innerHTML = '';
         if (!allMapelCache.length) {
-            listEl.innerHTML = '<div style="text-align:center;padding:1.25rem;color:rgba(255,255,255,0.3);font-size:0.82rem;">Belum ada mata pelajaran. Tambahkan di menu Mata Pelajaran.</div>';
+            var opt = document.createElement('option');
+            opt.disabled = true;
+            opt.textContent = 'Belum ada mata pelajaran';
+            selectEl.appendChild(opt);
             return;
         }
-
-        var filtered = filter
-            ? allMapelCache.filter(function (m) {
-                return m.nama_mapel.toLowerCase().indexOf(filter) > -1;
-              })
-            : allMapelCache;
-
-        if (!filtered.length) {
-            listEl.innerHTML = '<div style="text-align:center;padding:1.25rem;color:rgba(255,255,255,0.3);font-size:0.82rem;">Tidak ditemukan.</div>';
-            return;
-        }
-
-        var html = '';
-        filtered.forEach(function (m) {
-            var checked = selectedMapelIds.indexOf(String(m.id)) > -1;
-            var rowBg   = checked ? 'background:rgba(251,191,36,0.07);border-radius:8px;' : '';
-            html += '<div class="mapel-pick-row" data-id="' + m.id + '" '
-                  + 'style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.5rem;'
-                  + 'border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;'
-                  + 'transition:background 0.12s;' + rowBg + '">'
-                  + '<div class="mapel-pick-cb" data-id="' + m.id + '" '
-                  + 'style="width:18px;height:18px;border-radius:5px;flex-shrink:0;'
-                  + 'border:2px solid rgba(251,191,36,' + (checked ? '1' : '0.35') + ');'
-                  + 'background:' + (checked ? '#d97706' : 'rgba(255,255,255,0.05)') + ';'
-                  + 'display:flex;align-items:center;justify-content:center;pointer-events:none;">'
-                  + (checked ? '<i class="bi bi-check-lg" style="font-size:0.65rem;color:#fff;"></i>' : '')
-                  + '</div>'
-                  + '<span style="font-size:0.875rem;font-weight:500;color:#fff;flex:1;">' + escHtml(m.nama_mapel) + '</span>'
-                  + (checked
-                      ? '<span style="font-size:0.7rem;color:rgba(251,191,36,0.6);font-weight:600;">Dipilih</span>'
-                      : '')
-                  + '</div>';
-        });
-        listEl.innerHTML = html;
-
-        listEl.querySelectorAll('.mapel-pick-row').forEach(function (row) {
-            row.addEventListener('click', function () {
-                var id  = String(this.dataset.id);
-                var idx = selectedMapelIds.indexOf(id);
-                if (idx > -1) { selectedMapelIds.splice(idx, 1); }
-                else          { selectedMapelIds.push(id); }
-                var curFilter = (document.getElementById('pickMapelSearch') || {}).value || '';
-                renderPickMapelList(curFilter);
-                var containerId = pickMapelContext === 'tambah' ? 'tambahMapelSelected' : 'editMapelSelected';
-                renderMapelBadges(containerId, selectedMapelIds, mapelNamesCache);
-            });
+        allMapelCache.forEach(function (m) {
+            var opt    = document.createElement('option');
+            opt.value  = String(m.id);
+            opt.textContent = m.nama_mapel;
+            if (dipilihIds && dipilihIds.indexOf(String(m.id)) > -1) {
+                opt.selected = true;
+            }
+            selectEl.appendChild(opt);
         });
     }
 
-    /* Search di modal pick mapel */
-    var pickMapelSearchTimer = null;
-    document.getElementById('pickMapelSearch').addEventListener('input', function () {
-        clearTimeout(pickMapelSearchTimer);
-        var val = this.value;
-        pickMapelSearchTimer = setTimeout(function () { renderPickMapelList(val); }, 220);
-    });
-
-    function syncMapelChecks() {
-        var curFilter = (document.getElementById('pickMapelSearch') || {}).value || '';
-        renderPickMapelList(curFilter);
+    /* -- Baca nilai yang dipilih dari select element -- */
+    function getSelectedFromSelect(selectEl) {
+        return Array.from(selectEl.selectedOptions).map(function (o) { return o.value; });
     }
 
-    /* -- Tombol buka modal mapel (tambah) -- */
-    document.getElementById('btnTambahMapelGuru').addEventListener('click', function () {
-        bukaPickMapel('tambah', null);
-    });
+    /* -- Update info teks "X dipilih" -- */
+    function updateMapelInfo(selectEl, infoId) {
+        var count = selectEl.selectedOptions.length;
+        var el    = document.getElementById(infoId);
+        if (!el) return;
+        el.textContent = count > 0 ? count + ' mata pelajaran dipilih' : '';
+    }
 
-    /* -- Tombol buka modal mapel (edit) -- */
-    document.getElementById('btnEditMapelGuru').addEventListener('click', function () {
-        var guruId = document.getElementById('editGuruId').value;
-        bukaPickMapel('edit', guruId);
-    });
+    /* -- Load semua mapel dari server (cache sekali) -- */
+    function loadAllMapel(cb) {
+        if (allMapelCache.length) { if (cb) cb(); return; }
+        fetch('{{ route("admin.data_guru.semua_mapel") }}', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            allMapelCache = data.semua_mapel || [];
+            if (cb) cb();
+        })
+        .catch(function () { if (cb) cb(); });
+    }
 
-    /* -- Simpan mapel pilihan -- */
-    document.getElementById('btnSimpanMapelPilihan').addEventListener('click', function () {
-        var containerId = pickMapelContext === 'tambah' ? 'tambahMapelSelected' : 'editMapelSelected';
-        renderMapelBadges(containerId, selectedMapelIds, mapelNamesCache);
-
-        if (pickMapelContext === 'edit' && pickMapelGuruId) {
-            /* Langsung simpan ke DB saat konteks edit */
-            var btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-green" style="width:14px;height:14px;border-width:2px;"></span>';
-
-            fetch('{{ url("admin/data-guru") }}/' + pickMapelGuruId + '/mapel', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN':     CSRF,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type':     'application/json',
-                },
-                body: JSON.stringify({ mapel_ids: selectedMapelIds })
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Simpan Mapel';
-                if (data.success) {
-                    pickMapelModal.hide();
-                    Swal.fire({ icon:'success', title:'Disimpan', text: data.message,
-                        timer:1800, showConfirmButton:false, background:'#0a2e1c', color:'#fff'
-                    }).then(function () { loadList(searchInput.value.trim(), currentTab); });
-                } else {
-                    Swal.fire({ icon:'error', title:'Gagal', text: data.message || 'Terjadi kesalahan.',
-                        background:'#0a2e1c', color:'#fff' });
-                }
-            });
-        } else {
-            /* Mode tambah: mapel disimpan bersama saat submit form */
-            pickMapelModal.hide();
-        }
-    });
-
-    /* Saat modal mapel ditutup, kembalikan fokus ke modal parent */
-    pickMapelModalEl.addEventListener('hidden.bs.modal', function () {
-        if (pickMapelContext === 'tambah') {
-            var mT = bootstrap.Modal.getInstance(document.getElementById('modalTambahGuru'));
-            if (mT) mT.show();
-        } else {
-            var mE = bootstrap.Modal.getInstance(document.getElementById('modalEditGuru'));
-            if (mE) mE.show();
-        }
-    });
-
-    /* Cegah modal tambah/edit tertutup saat modal mapel terbuka */
-    document.getElementById('modalTambahGuru').addEventListener('hide.bs.modal', function (e) {
-        if (document.getElementById('modalPickMapel').classList.contains('show')) e.preventDefault();
-    });
-
-    document.getElementById('modalEditGuru').addEventListener('hide.bs.modal', function (e) {
-        if (document.getElementById('modalPickMapel').classList.contains('show')) e.preventDefault();
-    });
-
-    /* Tampilkan section mapel saat user masuk step 2 */
+    /* ---- Tampilkan section mapel saat user masuk step 2 ---- */
     var origGoToStep = goToStep;
     goToStep = function (step) {
         origGoToStep(step);
-        document.getElementById('step2MapelSection').style.display = step === 2 ? '' : 'none';
-        if (step === 2 && !allMapelCache.length) {
-            /* Pra-load daftar mapel */
-            fetch('{{ route("admin.data_guru.semua_mapel") }}', {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                allMapelCache = data.semua_mapel || [];
-                allMapelCache.forEach(function (m) { mapelNamesCache[String(m.id)] = m.nama_mapel; });
-                renderPickMapelList('');
+        var section = document.getElementById('step2MapelSection');
+        section.style.display = step === 2 ? '' : 'none';
+
+        if (step === 2) {
+            loadAllMapel(function () {
+                var sel = document.getElementById('selectMapelTambah');
+                populateMapelSelect(sel, selectedMapelIds);
+                updateMapelInfo(sel, 'tambahMapelInfo');
             });
         }
     };
 
-    /* Reset mapel saat form tambah direset */
+    /* Listener perubahan pilihan pada select tambah */
+    document.getElementById('selectMapelTambah').addEventListener('change', function () {
+        selectedMapelIds = getSelectedFromSelect(this);
+        updateMapelInfo(this, 'tambahMapelInfo');
+    });
+
+    /* ---- Reset mapel saat form tambah direset ---- */
     var origResetTambahForm = resetTambahForm;
     resetTambahForm = function () {
         origResetTambahForm();
         selectedMapelIds = [];
-        mapelNamesCache  = {};
         allMapelCache    = [];
-        var el = document.getElementById('tambahMapelSelected');
-        if (el) el.innerHTML = '';
+        var sel = document.getElementById('selectMapelTambah');
+        if (sel) {
+            sel.innerHTML = '';
+            var opt = document.createElement('option');
+            opt.disabled = true;
+            opt.textContent = '— Memuat...';
+            sel.appendChild(opt);
+        }
+        var info = document.getElementById('tambahMapelInfo');
+        if (info) info.textContent = '';
     };
 
-    /* Kirim mapel setelah guru tambah berhasil disimpan */
-    var origSubmitTambahGuru = submitTambahGuru;
-    submitTambahGuru = function () {
-        origSubmitTambahGuru();
-        /* submitTambahGuru async; kita intercept via monkeypatching done callback
-           Karena kompleks, mapel dikirim sesudah guru berhasil tersimpan di dalam
-           submitTambahGuru yang sudah dimodifikasi di bawah. */
+    /* ---- Modal Edit: load & populate select mapel ---- */
+    /* Dipanggil dari openEditModal() setelah data guru berhasil di-fetch */
+    window._populateEditMapelSelect = function (semua, dipilih) {
+        allMapelCache = semua;
+        var sel = document.getElementById('selectMapelEdit');
+        populateMapelSelect(sel, dipilih);
+        updateMapelInfo(sel, 'editMapelInfo');
     };
+
+    document.getElementById('selectMapelEdit').addEventListener('change', function () {
+        updateMapelInfo(this, 'editMapelInfo');
+    });
+
+    /* ---- Simpan mapel edit saat klik Simpan di modal edit ---- */
+    /* Disisipkan ke dalam btnSimpanEdit: setelah update guru berhasil,
+       langsung POST mapel dari selectMapelEdit */
+    var origBtnSimpanEdit = document.getElementById('btnSimpanEdit');
+    origBtnSimpanEdit._origClickHandled = true;   /* flag untuk skip double-bind */
 
 }());
 </script>

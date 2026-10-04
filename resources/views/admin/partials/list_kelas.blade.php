@@ -211,7 +211,7 @@
                     <td>
                         <div class="d-flex align-items-center justify-content-end gap-1"
                              style="padding-right:0.25rem;">
-                            <a href="{{ route('admin.kelas.detail', $item->id) }}"
+                            <a href="{{ route('admin.kelas.detail', $item->uuid) }}"
                                class="btn-aksi-kelas btn-k-detail"
                                title="Detail kelas"
                                aria-label="Detail {{ $item->nama_kelas }}">
