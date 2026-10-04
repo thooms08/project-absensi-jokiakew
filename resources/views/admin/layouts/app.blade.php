@@ -982,13 +982,15 @@
     /* ---- Fetch jumlah badge gabungan (polling 10 detik) ---- */
     function fetchCount() {
         Promise.all([
-            fetch('{{ route("admin.notif.count") }}',       { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); }),
-            fetch('{{ route("admin.notif_murid.count") }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); })
+            fetch('{{ route("admin.notif.count") }}',             { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); }),
+            fetch('{{ route("admin.notif_murid.count") }}',       { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); }),
+            fetch('{{ route("admin.absen_guru.notif_count") }}',  { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); })
         ])
         .then(function (results) {
-            var cGuru  = parseInt(results[0].count, 10) || 0;
-            var cMurid = parseInt(results[1].count, 10) || 0;
-            var total  = cGuru + cMurid;
+            var cGuru   = parseInt(results[0].count, 10) || 0;
+            var cMurid  = parseInt(results[1].count, 10) || 0;
+            var cAbsen  = parseInt(results[2].count, 10) || 0;
+            var total   = cGuru + cMurid + cAbsen;
 
             /* Suara hanya jika ada pertambahan di salah satu role */
             if (cGuru > lastGuru || cMurid > lastMurid) {
@@ -1016,16 +1018,18 @@
         listEl.innerHTML = '<div class="notif-loading">Memuat...</div>';
 
         Promise.all([
-            fetch('{{ route("admin.notif.list") }}',       { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); }),
-            fetch('{{ route("admin.notif_murid.list") }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); })
+            fetch('{{ route("admin.notif.list") }}',              { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); }),
+            fetch('{{ route("admin.notif_murid.list") }}',        { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); }),
+            fetch('{{ route("admin.absen_guru.notif_list") }}',   { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function(r){ return r.json(); })
         ])
         .then(function (results) {
             /* Tandai setiap item dengan role-nya */
-            var guruItems  = (results[0].list  || []).map(function(i){ return Object.assign({}, i, { _role: 'guru'  }); });
-            var muridItems = (results[1].list  || []).map(function(i){ return Object.assign({}, i, { _role: 'murid' }); });
+            var guruItems  = (results[0].list || []).map(function(i){ return Object.assign({}, i, { _type: 'reg_guru'  }); });
+            var muridItems = (results[1].list || []).map(function(i){ return Object.assign({}, i, { _type: 'reg_murid' }); });
+            var absenItems = (results[2].list || []).map(function(i){ return Object.assign({}, i, { _type: 'absen'     }); });
 
             /* Gabung & urutkan berdasarkan id DESC (terbaru dahulu) */
-            var all = guruItems.concat(muridItems).sort(function(a,b){ return b.id - a.id; });
+            var all = guruItems.concat(muridItems).concat(absenItems).sort(function(a,b){ return b.id - a.id; });
 
             countLabel.textContent = all.length + ' pending';
 
@@ -1038,28 +1042,62 @@
 
             var html = '';
             all.forEach(function (item) {
-                var isGuru    = item._role === 'guru';
-                var roleClass = isGuru ? 'notif-role-guru' : 'notif-role-murid';
-                var roleIcon  = isGuru ? 'bi-person-lines-fill' : 'bi-people-fill';
-                var roleTxt   = isGuru ? 'Guru' : 'Murid';
-                var approveFn = isGuru ? 'notifApprove' : 'notifMuridApprove';
-                var rejectFn  = isGuru ? 'notifReject'  : 'notifMuridReject';
-                var itemId    = 'notif-item-' + item._role + '-' + item.id;
+                var isGuru    = item._type === 'reg_guru';
+                var isMurid   = item._type === 'reg_murid';
+                var isAbsen   = item._type === 'absen';
 
-                html += '<div class="notif-item" id="' + itemId + '">'
-                    + '<div class="notif-avatar">' + escHtml(item.avatar) + '</div>'
-                    + '<div class="notif-body">'
-                    +   '<div class="notif-name">' + escHtml(item.name) + '</div>'
-                    +   '<div class="notif-meta">@' + escHtml(item.username) + ' &bull; ' + escHtml(item.created_at) + '</div>'
-                    +   '<span class="notif-role-label ' + roleClass + '">'
-                    +     '<i class="bi ' + roleIcon + '"></i>' + roleTxt
-                    +   '</span>'
-                    + '</div>'
-                    + '<div class="notif-actions">'
-                    +   '<button class="notif-action-btn btn-approve" onclick="' + approveFn + '(' + item.id + ')" title="Setujui"><i class="bi bi-check-lg"></i></button>'
-                    +   '<button class="notif-action-btn btn-reject"  onclick="' + rejectFn  + '(' + item.id + ')" title="Tolak"><i class="bi bi-x-lg"></i></button>'
-                    + '</div>'
-                    + '</div>';
+                if (isAbsen) {
+                    /* ---- Notif ABSEN GURU ---- */
+                    var statusColor = item.status === 'hadir' ? '#4ade80' : '#fbbf24';
+                    var statusIcon  = item.status === 'hadir' ? 'bi-check-circle-fill' : 'bi-envelope-fill';
+                    var statusTxt   = item.status === 'hadir' ? 'Hadir' : 'Izin';
+
+                    html += '<div class="notif-item" id="notif-item-absen-' + item.id + '">'
+                        + '<div class="notif-avatar" style="background:linear-gradient(135deg,#0a5878,#22d3ee);color:#0a2040;">' + escHtml(item.avatar) + '</div>'
+                        + '<div class="notif-body">'
+                        +   '<div class="notif-name">' + escHtml(item.nama) + '</div>'
+                        +   '<div class="notif-meta" style="color:rgba(255,255,255,0.38);">'
+                        +     escHtml(item.kelas) + ' &bull; ' + escHtml(item.mapel)
+                        +     ' &bull; ' + escHtml(item.jam_mulai)
+                        +   '</div>'
+                        +   '<div class="notif-meta" style="margin-top:0.1rem;">' + escHtml(item.waktu) + '</div>'
+                        +   '<span class="notif-role-label" style="background:rgba(34,211,238,0.1);color:#22d3ee;border:1px solid rgba(34,211,238,0.25);">'
+                        +     '<i class="bi ' + statusIcon + '" style="color:' + statusColor + ';"></i>' + statusTxt
+                        +   '</span>'
+                        + '</div>'
+                        + '<div class="notif-actions">'
+                        +   (item.status === 'hadir' && item.foto_url
+                                ? '<a class="notif-action-btn btn-approve" href="' + escHtml(item.foto_url) + '" target="_blank" title="Lihat foto bukti"><i class="bi bi-image"></i></a>'
+                                : '')
+                        +   (item.status === 'izin' && item.alasan
+                                ? '<button class="notif-action-btn btn-approve" onclick="lihatAlasanIzin(' + item.id + ',\'' + escAttrInline(item.nama) + '\',\'' + escAttrInline(item.alasan) + '\')" title="Lihat alasan izin"><i class="bi bi-chat-text"></i></button>'
+                                : '')
+                        + '</div>'
+                        + '</div>';
+                } else {
+                    /* ---- Notif PENDAFTARAN GURU/MURID ---- */
+                    var roleClass = isGuru ? 'notif-role-guru' : 'notif-role-murid';
+                    var roleIcon  = isGuru ? 'bi-person-lines-fill' : 'bi-people-fill';
+                    var roleTxt   = isGuru ? 'Guru' : 'Murid';
+                    var approveFn = isGuru ? 'notifApprove' : 'notifMuridApprove';
+                    var rejectFn  = isGuru ? 'notifReject'  : 'notifMuridReject';
+                    var itemId    = 'notif-item-' + (isGuru ? 'guru' : 'murid') + '-' + item.id;
+
+                    html += '<div class="notif-item" id="' + itemId + '">'
+                        + '<div class="notif-avatar">' + escHtml(item.avatar) + '</div>'
+                        + '<div class="notif-body">'
+                        +   '<div class="notif-name">' + escHtml(item.name) + '</div>'
+                        +   '<div class="notif-meta">@' + escHtml(item.username) + ' &bull; ' + escHtml(item.created_at) + '</div>'
+                        +   '<span class="notif-role-label ' + roleClass + '">'
+                        +     '<i class="bi ' + roleIcon + '"></i>' + roleTxt
+                        +   '</span>'
+                        + '</div>'
+                        + '<div class="notif-actions">'
+                        +   '<button class="notif-action-btn btn-approve" onclick="' + approveFn + '(' + item.id + ')" title="Setujui"><i class="bi bi-check-lg"></i></button>'
+                        +   '<button class="notif-action-btn btn-reject"  onclick="' + rejectFn  + '(' + item.id + ')" title="Tolak"><i class="bi bi-x-lg"></i></button>'
+                        + '</div>'
+                        + '</div>';
+                }
             });
             listEl.innerHTML = html;
         })
@@ -1079,6 +1117,26 @@
                 + 'Tidak ada pengajuan baru.</div>';
         }
         countLabel.textContent = rem + ' pending';
+    }
+
+    /* ---- Lihat alasan izin guru ---- */
+    window.lihatAlasanIzin = function (id, nama, alasan) {
+        Swal.fire({
+            icon: 'info',
+            title: escHtml(nama) + ' — Izin',
+            html: '<div style="text-align:left;background:rgba(255,255,255,0.05);border-radius:8px;padding:0.75rem 1rem;font-size:0.875rem;color:#e2f5ea;">'
+                + '<i class="bi bi-chat-quote me-2" style="color:rgba(251,191,36,0.7);"></i>'
+                + escHtml(alasan)
+                + '</div>',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#22c55e',
+            background: '#0a2e1c',
+            color: '#fff',
+        });
+    };
+
+    function escAttrInline(str) {
+        return String(str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
     /* ---- Approve / Reject GURU ---- */

@@ -7,6 +7,7 @@ use App\Http\Controllers\DataMuridController;
 use App\Http\Controllers\MapelController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\JadwalMengajarController;
+use App\Http\Controllers\AbsenGuruController;
 
 /* ====================================================================
    HALAMAN UTAMA
@@ -79,9 +80,13 @@ Route::prefix('admin')
         Route::post('/notif-murid/{id}/approve',      [DataMuridController::class, 'notifApprove'])->name('notif_murid.approve');
         Route::post('/notif-murid/{id}/reject',       [DataMuridController::class, 'notifReject'])->name('notif_murid.reject');
 
-        Route::get('/absen-guru', function () {
-            return view('admin.absen_guru');
-        })->name('absen_guru');
+        Route::get('/absen-guru',                  [AbsenGuruController::class, 'adminIndex'])->name('absen_guru');
+        Route::get('/absen-guru/list',             [AbsenGuruController::class, 'adminList'])->name('absen_guru.list');
+        Route::get('/absen-guru/detail/{userId}',  [AbsenGuruController::class, 'adminDetailGuru'])->name('absen_guru.detail');
+        Route::get('/absen-guru/foto/{userId}',    [AbsenGuruController::class, 'adminFotoGuru'])->name('absen_guru.foto');
+        Route::get('/absen-guru/serve/{id}',       [AbsenGuruController::class, 'fotoServe'])->name('absen_guru.foto_serve');
+        Route::get('/absen-guru/notif/count',      [AbsenGuruController::class, 'absenNotifCount'])->name('absen_guru.notif_count');
+        Route::get('/absen-guru/notif/list',       [AbsenGuruController::class, 'absenNotifList'])->name('absen_guru.notif_list');
 
         /* -- Data Murid -- */
         Route::get('/data-murid',                [DataMuridController::class, 'index'])->name('data_murid');
@@ -146,9 +151,10 @@ Route::prefix('guru')
             return view('guru.profile');
         })->name('profile');
 
-        Route::get('/absen-guru', function () {
-            return view('guru.absen_guru');
-        })->name('absen_guru');
+        Route::get('/absen-guru',               [AbsenGuruController::class, 'index'])->name('absen_guru');
+        Route::get('/absen-guru/kartu',          [AbsenGuruController::class, 'kartu'])->name('absen_guru.kartu');
+        Route::post('/absen-guru',               [AbsenGuruController::class, 'store'])->name('absen_guru.store');
+        Route::get('/absen-guru/status',         [AbsenGuruController::class, 'status'])->name('absen_guru.status');
 
         Route::get('/absen-murid', function () {
             return view('guru.absen_murid');
