@@ -8,6 +8,8 @@ use App\Http\Controllers\MapelController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\JadwalMengajarController;
 use App\Http\Controllers\AbsenGuruController;
+use App\Http\Controllers\AbsenMuridController;
+use App\Http\Controllers\KodeAbsenController;
 
 /* ====================================================================
    HALAMAN UTAMA
@@ -87,6 +89,7 @@ Route::prefix('admin')
         Route::get('/absen-guru/serve/{id}',       [AbsenGuruController::class, 'fotoServe'])->name('absen_guru.foto_serve');
         Route::get('/absen-guru/notif/count',      [AbsenGuruController::class, 'absenNotifCount'])->name('absen_guru.notif_count');
         Route::get('/absen-guru/notif/list',       [AbsenGuruController::class, 'absenNotifList'])->name('absen_guru.notif_list');
+        Route::post('/absen-guru/notif/{id}/konfirmasi', [AbsenGuruController::class, 'konfirmasi'])->name('absen_guru.notif_konfirmasi');
 
         /* -- Data Murid -- */
         Route::get('/data-murid',                [DataMuridController::class, 'index'])->name('data_murid');
@@ -99,9 +102,9 @@ Route::prefix('admin')
         Route::post('/data-murid/{id}/restore',  [DataMuridController::class, 'restore'])->name('data_murid.restore');
         Route::delete('/data-murid/{id}/force',  [DataMuridController::class, 'forceDelete'])->name('data_murid.force_delete');
 
-        Route::get('/absen-murid', function () {
-            return view('admin.absen_murid');
-        })->name('absen_murid');
+        Route::get('/absen-murid',                  [AbsenMuridController::class, 'adminIndex'])->name('absen_murid');
+        Route::get('/absen-murid/list',             [AbsenMuridController::class, 'adminList'])->name('absen_murid.list');
+        Route::get('/absen-murid/detail/{userId}',  [AbsenMuridController::class, 'adminDetailMurid'])->name('absen_murid.detail');
 
         /* -- Mata Pelajaran -- */
         Route::get('/mapel',            [MapelController::class, 'index'])->name('mapel');
@@ -127,13 +130,17 @@ Route::prefix('admin')
         Route::delete('/kelas/{id}/hapus-peserta',         [KelasController::class, 'hapusPeserta'])->name('kelas.hapus_peserta');
 
         /* -- Jadwal Mengajar -- */
-        Route::get('/jadwal-mengajar',            [JadwalMengajarController::class, 'index'])->name('jadwal_mengajar');
-        Route::get('/jadwal-mengajar/list',        [JadwalMengajarController::class, 'list'])->name('jadwal_mengajar.list');
-        Route::get('/jadwal-mengajar/dropdown',    [JadwalMengajarController::class, 'dropdownData'])->name('jadwal_mengajar.dropdown');
-        Route::post('/jadwal-mengajar',            [JadwalMengajarController::class, 'store'])->name('jadwal_mengajar.store');
-        Route::get('/jadwal-mengajar/{id}/edit',   [JadwalMengajarController::class, 'edit'])->name('jadwal_mengajar.edit');
-        Route::post('/jadwal-mengajar/{id}',       [JadwalMengajarController::class, 'update'])->name('jadwal_mengajar.update');
-        Route::delete('/jadwal-mengajar/{id}',     [JadwalMengajarController::class, 'destroy'])->name('jadwal_mengajar.destroy');
+        Route::get('/jadwal-mengajar',                [JadwalMengajarController::class, 'index'])->name('jadwal_mengajar');
+        Route::get('/jadwal-mengajar/list',           [JadwalMengajarController::class, 'list'])->name('jadwal_mengajar.list');
+        Route::get('/jadwal-mengajar/dropdown',       [JadwalMengajarController::class, 'dropdownData'])->name('jadwal_mengajar.dropdown');
+        Route::get('/jadwal-mengajar/edit-guru',      [JadwalMengajarController::class, 'editGuru'])->name('jadwal_mengajar.edit_guru');
+        Route::post('/jadwal-mengajar',               [JadwalMengajarController::class, 'store'])->name('jadwal_mengajar.store');
+        Route::post('/jadwal-mengajar/multi',         [JadwalMengajarController::class, 'storeMulti'])->name('jadwal_mengajar.store_multi');
+        Route::delete('/jadwal-mengajar/bulk',        [JadwalMengajarController::class, 'destroyBulk'])->name('jadwal_mengajar.destroy_bulk');
+        Route::get('/jadwal-mengajar/{id}/edit',      [JadwalMengajarController::class, 'edit'])->name('jadwal_mengajar.edit');
+        Route::post('/jadwal-mengajar/{id}',          [JadwalMengajarController::class, 'update'])->name('jadwal_mengajar.update');
+        Route::patch('/jadwal-mengajar/{id}/sesi',    [JadwalMengajarController::class, 'updateSesi'])->name('jadwal_mengajar.update_sesi');
+        Route::delete('/jadwal-mengajar/{id}',        [JadwalMengajarController::class, 'destroy'])->name('jadwal_mengajar.destroy');
     });
 
 /* ====================================================================
@@ -156,9 +163,13 @@ Route::prefix('guru')
         Route::post('/absen-guru',               [AbsenGuruController::class, 'store'])->name('absen_guru.store');
         Route::get('/absen-guru/status',         [AbsenGuruController::class, 'status'])->name('absen_guru.status');
 
-        Route::get('/absen-murid', function () {
-            return view('guru.absen_murid');
-        })->name('absen_murid');
+        Route::get('/absen-murid',                         [AbsenMuridController::class, 'guruPage'])->name('absen_murid');
+        Route::get('/absen-murid/notif/count',             [AbsenMuridController::class, 'guruNotifCount'])->name('absen_murid.notif_count');
+        Route::get('/absen-murid/notif/list',              [AbsenMuridController::class, 'guruNotifList'])->name('absen_murid.notif_list');
+        Route::post('/absen-murid/notif/{id}/konfirmasi',  [AbsenMuridController::class, 'guruKonfirmasi'])->name('absen_murid.notif_konfirmasi');
+        Route::get('/kode-absen/jadwal-hari-ini',          [KodeAbsenController::class, 'jadwalHariIni'])->name('kode_absen.jadwal_hari_ini');
+        Route::post('/kode-absen/buat',                    [KodeAbsenController::class, 'buat'])->name('kode_absen.buat');
+        Route::get('/kode-absen/status',                   [KodeAbsenController::class, 'status'])->name('kode_absen.status');
 
         Route::get('/jadwal-mengajar',      [JadwalMengajarController::class, 'guruIndex'])->name('jadwal_mengajar');
         Route::get('/jadwal-mengajar/list', [JadwalMengajarController::class, 'guruList'])->name('jadwal_mengajar.list');
@@ -167,9 +178,15 @@ Route::prefix('guru')
         Route::get('/data-kelas/list',          [KelasController::class, 'guruKelasList'])->name('data_kelas.list');
         Route::get('/data-kelas/{uuid}',        [KelasController::class, 'guruDetailKelas'])->name('data_kelas.detail');
 
-        Route::get('/data-murid', function () {
-            return view('guru.data_murid');
-        })->name('data_murid');
+        Route::get('/data-murid',                [DataMuridController::class, 'guruIndex'])->name('data_murid');
+        Route::get('/data-murid/list',           [DataMuridController::class, 'list'])->name('data_murid.list');
+        Route::get('/data-murid/check-username', [DataMuridController::class, 'checkUsername'])->name('data_murid.check_username');
+        Route::post('/data-murid',               [DataMuridController::class, 'store'])->name('data_murid.store');
+        Route::get('/data-murid/{id}/edit',      [DataMuridController::class, 'edit'])->name('data_murid.edit');
+        Route::post('/data-murid/{id}',          [DataMuridController::class, 'update'])->name('data_murid.update');
+        Route::delete('/data-murid/{id}',        [DataMuridController::class, 'destroy'])->name('data_murid.destroy');
+        Route::post('/data-murid/{id}/restore',  [DataMuridController::class, 'restore'])->name('data_murid.restore');
+        Route::delete('/data-murid/{id}/force',  [DataMuridController::class, 'forceDelete'])->name('data_murid.force_delete');
     });
 
 /* ====================================================================
@@ -179,13 +196,12 @@ Route::prefix('murid')
     ->middleware(['auth', 'role:murid'])
     ->name('murid.')
     ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('murid.index');
-        })->name('dashboard');
-
-        Route::get('/absen', function () {
-            return view('murid.absen');
-        })->name('absen');
+        Route::get('/dashboard',      [AbsenMuridController::class, 'index'])->name('dashboard');
+        Route::get('/absen',          [AbsenMuridController::class, 'absenPage'])->name('absen');
+        Route::get('/absen/kartu',    [AbsenMuridController::class, 'kartu'])->name('absen.kartu');
+        Route::post('/absen',         [AbsenMuridController::class, 'store'])->name('absen.store');
+        Route::get('/absen/summary',  [AbsenMuridController::class, 'summary'])->name('absen.summary');
+        Route::get('/foto/{tipe}/{filename}', [AbsenMuridController::class, 'fotoServe'])->name('foto_serve');
 
         Route::get('/riwayat-absen', function () {
             return view('murid.riwayat_absen');

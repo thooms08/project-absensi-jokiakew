@@ -16,10 +16,12 @@ class AbsenGuru extends Model
         'foto_bukti',
         'status',
         'alasan',
+        'dikonfirmasi_at',
     ];
 
     protected $casts = [
-        'tanggal_absen' => 'date',
+        'tanggal_absen'   => 'date',
+        'dikonfirmasi_at' => 'datetime',
     ];
 
     protected static function boot(): void

@@ -125,7 +125,170 @@ class JadwalMengajarController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       EDIT  –  Ambil data jadwal untuk form edit
+       EDIT GURU  –  Ambil semua jadwal 1 guru di 1 hari (untuk modal kelola sesi)
+    ---------------------------------------------------------------- */
+    public function editGuru(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'hari'    => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+        ]);
+
+        $jadwals = JadwalMengajar::with(['mapel', 'kelas'])
+            ->where('user_id', $request->user_id)
+            ->where('hari',    $request->hari)
+            ->orderBy('waktu_mulai')
+            ->get()
+            ->map(fn($j) => [
+                'id'             => $j->id,
+                'mapel_id'       => $j->mapel_id,
+                'mapel_nama'     => $j->mapel->nama_mapel ?? '-',
+                'kelas_id'       => $j->kelas_id,
+                'kelas_nama'     => $j->kelas->nama_kelas ?? '-',
+                'waktu_mulai'    => substr($j->waktu_mulai, 0, 5),
+                'waktu_berakhir' => substr($j->waktu_berakhir, 0, 5),
+            ]);
+
+        return response()->json([
+            'user_id' => $request->user_id,
+            'hari'    => $request->hari,
+            'jadwals' => $jadwals,
+        ]);
+    }
+
+    /* ----------------------------------------------------------------
+       DESTROY BULK  –  Hapus semua jadwal berdasarkan array ID
+    ---------------------------------------------------------------- */
+    public function destroyBulk(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'exists:jadwal_mengajar,id',
+        ]);
+
+        $deleted = JadwalMengajar::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $deleted . ' jadwal berhasil dihapus.',
+        ]);
+    }
+
+    /* ----------------------------------------------------------------
+       STORE MULTI  –  Simpan 1 atau banyak sesi sekaligus
+       Body: { user_id, hari, sesi: [{mapel_id, kelas_id, waktu_mulai, waktu_berakhir}, ...] }
+    ---------------------------------------------------------------- */
+    public function storeMulti(Request $request)
+    {
+        $request->validate([
+            'user_id'              => 'required|exists:users,id',
+            'hari'                 => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'sesi'                 => 'required|array|min:1',
+            'sesi.*.mapel_id'      => 'required|exists:mapel,id',
+            'sesi.*.kelas_id'      => 'required|exists:kelas,id',
+            'sesi.*.waktu_mulai'   => 'required|date_format:H:i',
+            'sesi.*.waktu_berakhir'=> 'required|date_format:H:i',
+        ], [
+            'sesi.*.waktu_berakhir.date_format' => 'Format jam berakhir tidak valid.',
+        ]);
+
+        $errors  = [];
+        $created = 0;
+
+        foreach ($request->sesi as $idx => $s) {
+            /* Cek waktu berakhir > mulai */
+            if ($s['waktu_berakhir'] <= $s['waktu_mulai']) {
+                $errors[] = 'Sesi ' . ($idx + 1) . ': Jam berakhir harus setelah jam mulai.';
+                continue;
+            }
+
+            /* Cek duplikat */
+            $dup = JadwalMengajar::where('user_id',  $request->user_id)
+                                 ->where('mapel_id', $s['mapel_id'])
+                                 ->where('kelas_id', $s['kelas_id'])
+                                 ->where('hari',     $request->hari)
+                                 ->exists();
+
+            if ($dup) {
+                $errors[] = 'Sesi ' . ($idx + 1) . ': Kombinasi guru, mapel, kelas, dan hari sudah ada.';
+                continue;
+            }
+
+            JadwalMengajar::create([
+                'user_id'        => $request->user_id,
+                'mapel_id'       => $s['mapel_id'],
+                'kelas_id'       => $s['kelas_id'],
+                'hari'           => $request->hari,
+                'waktu_mulai'    => $s['waktu_mulai'],
+                'waktu_berakhir' => $s['waktu_berakhir'],
+            ]);
+            $created++;
+        }
+
+        if ($created === 0 && !empty($errors)) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(' | ', $errors),
+            ], 422);
+        }
+
+        $msg = $created . ' jadwal berhasil ditambahkan.';
+        if (!empty($errors)) {
+            $msg .= ' ' . count($errors) . ' sesi dilewati: ' . implode('; ', $errors);
+        }
+
+        return response()->json(['success' => true, 'message' => $msg]);
+    }
+
+    /* ----------------------------------------------------------------
+       UPDATE SESI  –  Update 1 sesi (dipakai dari modal kelola sesi)
+       Dipanggil dari JS satu per satu; cek duplikat hanya exclude ID ini.
+    ---------------------------------------------------------------- */
+    public function updateSesi(Request $request, $id)
+    {
+        $jadwal = JadwalMengajar::findOrFail($id);
+
+        $request->validate([
+            'mapel_id'       => 'required|exists:mapel,id',
+            'kelas_id'       => 'required|exists:kelas,id',
+            'waktu_mulai'    => 'required|date_format:H:i',
+            'waktu_berakhir' => 'required|date_format:H:i',
+        ]);
+
+        if ($request->waktu_berakhir <= $request->waktu_mulai) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jam berakhir harus setelah jam mulai.',
+            ], 422);
+        }
+
+        /* Cek duplikat exclude diri sendiri */
+        $dup = JadwalMengajar::where('user_id',  $jadwal->user_id)
+                             ->where('mapel_id', $request->mapel_id)
+                             ->where('kelas_id', $request->kelas_id)
+                             ->where('hari',     $jadwal->hari)
+                             ->where('id', '!=', $id)
+                             ->exists();
+
+        if ($dup) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kombinasi guru, mapel, kelas, dan hari ini sudah ada pada jadwal lain.',
+            ], 422);
+        }
+
+        $jadwal->update([
+            'mapel_id'       => $request->mapel_id,
+            'kelas_id'       => $request->kelas_id,
+            'waktu_mulai'    => $request->waktu_mulai,
+            'waktu_berakhir' => $request->waktu_berakhir,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Sesi berhasil diperbarui.']);
+    }
+
+    /* ----------------------------------------------------------------
+       EDIT  –  Ambil data jadwal untuk form edit (lama, tetap ada)
     ---------------------------------------------------------------- */
     public function edit($id)
     {

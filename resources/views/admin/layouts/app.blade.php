@@ -954,8 +954,10 @@
     /* Simpan jumlah terakhir per role agar suara hanya bunyi saat ada tambahan */
     var STORE_GURU  = 'sikib_notif_guru_count';
     var STORE_MURID = 'sikib_notif_murid_count';
+    var STORE_ABSEN = 'sikib_notif_absen_count';
     var lastGuru    = parseInt(sessionStorage.getItem(STORE_GURU)  || '0', 10);
     var lastMurid   = parseInt(sessionStorage.getItem(STORE_MURID) || '0', 10);
+    var lastAbsen   = parseInt(sessionStorage.getItem(STORE_ABSEN) || '0', 10);
 
     if (!btn) return;
 
@@ -992,8 +994,8 @@
             var cAbsen  = parseInt(results[2].count, 10) || 0;
             var total   = cGuru + cMurid + cAbsen;
 
-            /* Suara hanya jika ada pertambahan di salah satu role */
-            if (cGuru > lastGuru || cMurid > lastMurid) {
+            /* Suara hanya jika ada pertambahan di salah satu sumber */
+            if (cGuru > lastGuru || cMurid > lastMurid || cAbsen > lastAbsen) {
                 playNotif();
                 btn.classList.add('notif-ring');
                 setTimeout(function () { btn.classList.remove('notif-ring'); }, 800);
@@ -1002,6 +1004,7 @@
 
             lastGuru  = cGuru;  sessionStorage.setItem(STORE_GURU,  cGuru);
             lastMurid = cMurid; sessionStorage.setItem(STORE_MURID, cMurid);
+            lastAbsen = cAbsen; sessionStorage.setItem(STORE_ABSEN, cAbsen);
 
             if (total > 0) {
                 badge.textContent = total > 99 ? '99+' : total;
@@ -1060,18 +1063,21 @@
                         +     escHtml(item.kelas) + ' &bull; ' + escHtml(item.mapel)
                         +     ' &bull; ' + escHtml(item.jam_mulai)
                         +   '</div>'
-                        +   '<div class="notif-meta" style="margin-top:0.1rem;">' + escHtml(item.waktu) + '</div>'
+                        +   '<div class="notif-meta" style="margin-top:0.1rem;color:rgba(255,255,255,0.28);">'
+                        +     '<i class="bi bi-clock me-1" style="font-size:0.65rem;"></i>' + escHtml(item.waktu)
+                        +   '</div>'
                         +   '<span class="notif-role-label" style="background:rgba(34,211,238,0.1);color:#22d3ee;border:1px solid rgba(34,211,238,0.25);">'
                         +     '<i class="bi ' + statusIcon + '" style="color:' + statusColor + ';"></i>' + statusTxt
                         +   '</span>'
                         + '</div>'
-                        + '<div class="notif-actions">'
+                        + '<div class="notif-actions" style="flex-direction:column;gap:0.3rem;">'
                         +   (item.status === 'hadir' && item.foto_url
                                 ? '<a class="notif-action-btn btn-approve" href="' + escHtml(item.foto_url) + '" target="_blank" title="Lihat foto bukti"><i class="bi bi-image"></i></a>'
                                 : '')
                         +   (item.status === 'izin' && item.alasan
                                 ? '<button class="notif-action-btn btn-approve" onclick="lihatAlasanIzin(' + item.id + ',\'' + escAttrInline(item.nama) + '\',\'' + escAttrInline(item.alasan) + '\')" title="Lihat alasan izin"><i class="bi bi-chat-text"></i></button>'
                                 : '')
+                        +   '<button class="notif-action-btn" onclick="konfirmasiAbsen(' + item.id + ')" title="Konfirmasi &amp; hapus notifikasi" style="background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.22);"><i class="bi bi-check2-all"></i></button>'
                         + '</div>'
                         + '</div>';
                 } else {
@@ -1132,6 +1138,49 @@
             confirmButtonColor: '#22c55e',
             background: '#0a2e1c',
             color: '#fff',
+        });
+    };
+
+    /* ---- Konfirmasi & hapus notif absen dari dropdown ---- */
+    window.konfirmasiAbsen = function (id) {
+        /* POST ke server terlebih dahulu agar dikonfirmasi_at terisi */
+        fetch('{{ url("admin/absen-guru/notif") }}/' + id + '/konfirmasi', {
+            method:  'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(function () {
+            /* Hapus dari DOM dengan animasi setelah server merespons */
+            var el = document.getElementById('notif-item-absen-' + id);
+            if (el) {
+                el.style.transition = 'opacity 0.3s, transform 0.3s';
+                el.style.opacity    = '0';
+                el.style.transform  = 'translateX(20px)';
+                setTimeout(function () {
+                    el.remove();
+                    var remaining = listEl.querySelectorAll('.notif-item').length;
+                    if (!remaining) {
+                        listEl.innerHTML = '<div class="notif-empty">'
+                            + '<i class="bi bi-bell-slash" style="font-size:1.4rem;display:block;margin-bottom:0.4rem;opacity:0.3;"></i>'
+                            + 'Tidak ada notifikasi baru.</div>';
+                    }
+                    countLabel.textContent = remaining + ' notifikasi';
+                }, 300);
+            }
+            /* Update badge */
+            var cur = parseInt(badge.textContent, 10) || 0;
+            if (cur > 1) {
+                badge.textContent = cur - 1;
+            } else {
+                badge.classList.add('hidden');
+            }
+            /* Reset lastAbsen agar polling berikutnya tidak memicu suara lagi */
+            lastAbsen = Math.max(0, lastAbsen - 1);
+            sessionStorage.setItem(STORE_ABSEN, lastAbsen);
+        })
+        .catch(function () {
+            /* Tetap hapus dari DOM meski request gagal */
+            var el = document.getElementById('notif-item-absen-' + id);
+            if (el) el.remove();
         });
     };
 

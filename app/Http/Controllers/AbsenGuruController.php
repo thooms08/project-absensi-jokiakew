@@ -63,15 +63,17 @@ class AbsenGuruController extends Controller
         $kartuList = $jadwals->map(function ($jadwal) use ($absenHariIni, $sekarang, $guruId, $tglHariIni) {
             $absen = $absenHariIni->get($jadwal->id);
 
-            /* Parse jam jadwal (format H:i:s atau H:i) */
-            $jamMulai    = Carbon::createFromFormat('H:i:s', $jadwal->waktu_mulai);
-            $jamBerakhir = Carbon::createFromFormat('H:i:s', $jadwal->waktu_berakhir);
+            /*
+             * Bandingkan jam sebagai string H:i — cara paling aman dan bebas timezone.
+             * waktu_mulai/waktu_berakhir disimpan sebagai H:i:s, ambil 5 karakter pertama (H:i).
+             * nowHis adalah jam sekarang dalam format H:i.
+             */
+            $nowHi       = $sekarang->format('H:i');
+            $jamMulaiHi  = substr($jadwal->waktu_mulai,    0, 5);
+            $jamAkhirHi  = substr($jadwal->waktu_berakhir, 0, 5);
 
-            /* Bandingkan dengan jam sekarang (hari ini) */
-            $nowTime     = Carbon::createFromFormat('H:i:s', $sekarang->format('H:i:s'));
-
-            $sudahMulai  = $nowTime->gte($jamMulai);
-            $sudahLewat  = $nowTime->gt($jamBerakhir);
+            $sudahMulai   = $nowHi >= $jamMulaiHi;
+            $sudahLewat   = $nowHi >  $jamAkhirHi;
             $dalamJendela = $sudahMulai && !$sudahLewat;
 
             /* Otomatis 'tidak' jika jam sudah lewat & belum absen */
@@ -120,22 +122,22 @@ class AbsenGuruController extends Controller
                                 ->where('user_id', $guruId)
                                 ->firstOrFail();
 
-        /* Validasi jendela waktu */
-        $jamMulai    = Carbon::createFromFormat('H:i:s', $jadwal->waktu_mulai);
-        $jamBerakhir = Carbon::createFromFormat('H:i:s', $jadwal->waktu_berakhir);
-        $nowTime     = Carbon::createFromFormat('H:i:s', $sekarang->format('H:i:s'));
+        /* Validasi jendela waktu — bandingkan string H:i, bebas timezone */
+        $nowHi      = $sekarang->format('H:i');
+        $jamMulaiHi = substr($jadwal->waktu_mulai,    0, 5);
+        $jamAkhirHi = substr($jadwal->waktu_berakhir, 0, 5);
 
-        if ($nowTime->lt($jamMulai)) {
+        if ($nowHi < $jamMulaiHi) {
             return response()->json([
                 'success' => false,
-                'message' => 'Absen belum bisa dilakukan. Jadwal dimulai pukul ' . substr($jadwal->waktu_mulai, 0, 5) . '.',
+                'message' => 'Absen belum bisa dilakukan. Jadwal dimulai pukul ' . $jamMulaiHi . '.',
             ], 422);
         }
 
-        if ($nowTime->gt($jamBerakhir)) {
+        if ($nowHi > $jamAkhirHi) {
             return response()->json([
                 'success' => false,
-                'message' => 'Waktu absen sudah berakhir pada pukul ' . substr($jadwal->waktu_berakhir, 0, 5) . '.',
+                'message' => 'Waktu absen sudah berakhir pada pukul ' . $jamAkhirHi . '.',
             ], 422);
         }
 
@@ -370,6 +372,17 @@ class AbsenGuruController extends Controller
     }
 
     /* ----------------------------------------------------------------
+       KONFIRMASI  –  Admin tandai notif absen sebagai sudah dibaca/dikonfirmasi
+    ---------------------------------------------------------------- */
+    public function konfirmasi($id)
+    {
+        $absen = AbsenGuru::findOrFail($id);
+        $absen->update(['dikonfirmasi_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /* ----------------------------------------------------------------
        ABSEN NOTIF COUNT  –  Jumlah absen baru hari ini (badge lonceng)
     ---------------------------------------------------------------- */
     public function absenNotifCount()
@@ -378,6 +391,7 @@ class AbsenGuruController extends Controller
         $count = AbsenGuru::where('tanggal_absen', $tgl)
                           ->whereNotNull('jadwal_mengajar_id')
                           ->whereIn('status', ['hadir', 'izin'])
+                          ->whereNull('dikonfirmasi_at')
                           ->count();
 
         return response()->json(['count' => $count]);
@@ -394,6 +408,7 @@ class AbsenGuruController extends Controller
             ->where('tanggal_absen', $tgl)
             ->whereNotNull('jadwal_mengajar_id')
             ->whereIn('status', ['hadir', 'izin'])
+            ->whereNull('dikonfirmasi_at')
             ->latest()
             ->take(30)
             ->get()
@@ -408,7 +423,7 @@ class AbsenGuruController extends Controller
                     'jam_mulai'=> $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
                     'status'   => $a->status,
                     'alasan'   => $a->alasan ?? '',
-                    'waktu'    => $a->created_at?->diffForHumans() ?? '-',
+                    'waktu'    => $a->created_at ? $a->created_at->locale('id')->diffForHumans() : '-',
                     'foto_url' => $a->status === 'hadir' && $a->foto_bukti
                                   ? route('admin.absen_guru.foto_serve', ['id' => $a->id])
                                   : null,

@@ -61,11 +61,19 @@ class DataMuridController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       INDEX  –  Halaman utama Data Murid
+       INDEX  –  Halaman utama Data Murid (admin)
     ---------------------------------------------------------------- */
     public function index()
     {
         return view('admin.data_murid');
+    }
+
+    /* ----------------------------------------------------------------
+       GURU INDEX  –  Halaman Data Murid untuk guru (layout guru)
+    ---------------------------------------------------------------- */
+    public function guruIndex()
+    {
+        return view('guru.data_murid');
     }
 
     /* ----------------------------------------------------------------

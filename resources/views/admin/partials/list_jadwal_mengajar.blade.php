@@ -402,7 +402,6 @@
                                         –
                                         {{ substr($jam['waktu_berakhir'], 0, 5) }}
                                     </span>
-                                    {{-- Tampilkan kelas & mapel spesifik tiap sesi jika guru punya lebih dari 1 --}}
                                     @if(count($jamList) > 1)
                                         <span class="jam-slot-kelas">
                                             {{ $jam['kelas']->nama_kelas ?? '-' }}
@@ -417,52 +416,32 @@
                         </div>
                     </td>
 
-                    {{-- Aksi --}}
+                    {{-- Aksi: selalu 1 edit + 1 hapus per baris guru --}}
                     <td>
                         <div class="d-flex align-items-center justify-content-end gap-1">
-                            @foreach($jamList as $jam)
-                                @if(count($jamList) === 1)
-                                    {{-- Satu sesi: tombol langsung di baris --}}
-                                    <button
-                                        type="button"
-                                        class="btn-aksi-jadwal btn-j-edit"
-                                        data-edit-id="{{ $jam['id'] }}"
-                                        title="Edit jadwal"
-                                        aria-label="Edit jadwal {{ $guru->name ?? '' }}">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn-aksi-jadwal btn-j-hapus"
-                                        data-delete-id="{{ $jam['id'] }}"
-                                        data-delete-label="{{ ($guru->name ?? '') }} – {{ ($jam['kelas']->nama_kelas ?? '') }}"
-                                        title="Hapus jadwal"
-                                        aria-label="Hapus jadwal {{ $guru->name ?? '' }}">
-                                        <i class="bi bi-trash3-fill"></i>
-                                    </button>
-                                @else
-                                    {{-- Multi-sesi: satu tombol hapus per sesi saja --}}
-                                    <button
-                                        type="button"
-                                        class="btn-aksi-jadwal btn-j-edit"
-                                        data-edit-id="{{ $jam['id'] }}"
-                                        title="Edit sesi {{ ($jam['kelas']->nama_kelas ?? '') }}"
-                                        style="margin-bottom:0.2rem;"
-                                        aria-label="Edit sesi {{ $jam['kelas']->nama_kelas ?? '' }}">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn-aksi-jadwal btn-j-hapus"
-                                        data-delete-id="{{ $jam['id'] }}"
-                                        data-delete-label="{{ ($guru->name ?? '') }} – {{ ($jam['kelas']->nama_kelas ?? '') }}"
-                                        title="Hapus sesi {{ ($jam['kelas']->nama_kelas ?? '') }}"
-                                        style="margin-bottom:0.2rem;"
-                                        aria-label="Hapus sesi {{ $jam['kelas']->nama_kelas ?? '' }}">
-                                        <i class="bi bi-trash3-fill"></i>
-                                    </button>
-                                @endif
-                            @endforeach
+                            {{-- Edit: kirim semua jam_id guru ini --}}
+                            <button
+                                type="button"
+                                class="btn-aksi-jadwal btn-j-edit"
+                                data-edit-guru-id="{{ $guru->id ?? '' }}"
+                                data-edit-hari="{{ $hariAktif }}"
+                                data-guru-nama="{{ $guru->name ?? '' }}"
+                                title="Edit jadwal {{ $guru->name ?? '' }}"
+                                aria-label="Edit jadwal {{ $guru->name ?? '' }}">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            {{-- Hapus semua sesi guru ini di hari ini --}}
+                            <button
+                                type="button"
+                                class="btn-aksi-jadwal btn-j-hapus"
+                                data-delete-guru-id="{{ $guru->id ?? '' }}"
+                                data-delete-hari="{{ $hariAktif }}"
+                                data-delete-label="{{ $guru->name ?? '' }}"
+                                data-delete-ids="{{ implode(',', $jamList->pluck('id')->toArray()) }}"
+                                title="Hapus semua jadwal {{ $guru->name ?? '' }} hari {{ $hariAktif }}"
+                                aria-label="Hapus jadwal {{ $guru->name ?? '' }}">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>

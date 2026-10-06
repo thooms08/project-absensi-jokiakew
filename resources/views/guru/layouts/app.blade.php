@@ -316,10 +316,17 @@
         </a>
 
         <a href="{{ route('guru.data_kelas') }}"
-           class="nav-item-link {{ request()->routeIs('guru.data_kelas') ? 'active' : '' }}"
+           class="nav-item-link {{ request()->routeIs('guru.data_kelas', 'guru.data_kelas.detail') ? 'active' : '' }}"
            title="Data Kelas">
             <i class="bi bi-mortarboard-fill nav-icon"></i>
             <span class="nav-label">Data Kelas</span>
+        </a>
+
+        <a href="{{ route('guru.data_murid') }}"
+           class="nav-item-link {{ request()->routeIs('guru.data_murid*') ? 'active' : '' }}"
+           title="Data Murid">
+            <i class="bi bi-people-fill nav-icon"></i>
+            <span class="nav-label">Data Murid</span>
         </a>
 
         <div class="sidebar-section-label">Akun</div>
@@ -364,6 +371,29 @@
 
         <div class="topbar-right">
             <span class="topbar-badge">Guru</span>
+
+            {{-- Lonceng notif absen murid --}}
+            <div style="position:relative;" id="guruNotifWrap">
+                <button class="notif-btn" id="guruNotifBtn"
+                        aria-label="Notifikasi absen murid" title="Absen Murid"
+                        style="width:34px;height:34px;border-radius:50%;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.18);color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:background .18s;position:relative;">
+                    <i class="bi bi-bell-fill"></i>
+                    <span id="guruNotifBadge"
+                          style="position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;background:#f87171;border-radius:50px;font-size:.58rem;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;border:2px solid #0a2e1c;line-height:1;"></span>
+                </button>
+
+                <div id="guruNotifDropdown"
+                     style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:310px;background:#0a2e1c;border:1px solid rgba(74,222,128,.16);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:1200;overflow:hidden;">
+                    <div style="padding:.8rem 1rem .65rem;font-size:.8rem;font-weight:700;color:#fff;border-bottom:1px solid rgba(74,222,128,.1);display:flex;align-items:center;justify-content:space-between;">
+                        Absen Murid
+                        <span id="guruNotifCount" style="font-size:.68rem;color:rgba(74,222,128,.6);font-weight:600;">0 baru</span>
+                    </div>
+                    <div id="guruNotifList" style="max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(74,222,128,.2) transparent;">
+                        <div style="text-align:center;padding:1.25rem;font-size:.78rem;color:rgba(255,255,255,.3);">Memuat...</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="topbar-user">
                 <div class="topbar-avatar">
                     {{ strtoupper(substr(Auth::user()->name ?? 'G', 0, 1)) }}
@@ -446,6 +476,169 @@
             }
         });
     };
+
+    /* ================================================================
+       NOTIF LONCENG  –  Absen Murid
+    ================================================================ */
+    var guruNotifBtn      = document.getElementById('guruNotifBtn');
+    var guruNotifDropdown = document.getElementById('guruNotifDropdown');
+    var guruNotifBadge    = document.getElementById('guruNotifBadge');
+    var guruNotifList     = document.getElementById('guruNotifList');
+    var guruNotifCount    = document.getElementById('guruNotifCount');
+    var guruNotifOpen     = false;
+    var lastAbsenMurid    = parseInt(sessionStorage.getItem('sikib_guru_absen_murid') || '0', 10);
+    var CSRF              = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+    var audio = new Audio('{{ asset("notif_admin.mp3") }}');
+    audio.volume = 0.65;
+
+    if (guruNotifBtn) {
+        guruNotifBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            guruNotifOpen = !guruNotifOpen;
+            guruNotifDropdown.style.display = guruNotifOpen ? 'block' : 'none';
+            if (guruNotifOpen) fetchGuruNotifList();
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        var wrap = document.getElementById('guruNotifWrap');
+        if (wrap && !wrap.contains(e.target)) {
+            guruNotifOpen = false;
+            guruNotifDropdown.style.display = 'none';
+        }
+    });
+
+    function fetchGuruNotifCount() {
+        fetch('{{ route("guru.absen_murid.notif_count") }}', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var c = parseInt(d.count, 10) || 0;
+            if (c > lastAbsenMurid) {
+                audio.currentTime = 0; audio.play().catch(function(){});
+                if (guruNotifOpen) fetchGuruNotifList();
+            }
+            lastAbsenMurid = c;
+            sessionStorage.setItem('sikib_guru_absen_murid', c);
+
+            if (c > 0) {
+                guruNotifBadge.textContent = c > 99 ? '99+' : c;
+                guruNotifBadge.style.display = 'flex';
+            } else {
+                guruNotifBadge.style.display = 'none';
+            }
+        })
+        .catch(function () {});
+    }
+
+    function fetchGuruNotifList() {
+        guruNotifList.innerHTML = '<div style="text-align:center;padding:1.25rem;font-size:.78rem;color:rgba(255,255,255,.3);">Memuat...</div>';
+
+        fetch('{{ route("guru.absen_murid.notif_list") }}', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var list = d.list || [];
+            guruNotifCount.textContent = list.length + ' baru';
+
+            if (!list.length) {
+                guruNotifList.innerHTML = '<div style="text-align:center;padding:1.5rem;font-size:.8rem;color:rgba(255,255,255,.28);">'
+                    + '<i class="bi bi-bell-slash" style="font-size:1.4rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>'
+                    + 'Tidak ada absen baru.</div>';
+                return;
+            }
+
+            var html = '';
+            list.forEach(function (item) {
+                var sColor = item.status === 'hadir' ? '#4ade80' : '#fbbf24';
+                var sIcon  = item.status === 'hadir' ? 'bi-check-circle-fill' : 'bi-envelope-fill';
+                var sTxt   = item.status === 'hadir' ? 'Hadir' : 'Izin';
+
+                html += '<div class="notif-item" id="guru-notif-' + item.id + '" style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;">'
+                    + '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e1b4b,#818cf8);color:#c7d2fe;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + escHtml(item.avatar) + '</div>'
+                    + '<div style="flex:1;min-width:0;">'
+                    +   '<div style="font-size:.82rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(item.nama) + '</div>'
+                    +   '<div style="font-size:.7rem;color:rgba(255,255,255,.38);">' + escHtml(item.kelas) + ' &bull; ' + escHtml(item.mapel) + ' &bull; ' + escHtml(item.jam_mulai) + '</div>'
+                    +   '<div style="font-size:.7rem;color:rgba(255,255,255,.28);margin-top:.1rem;"><i class="bi bi-clock me-1" style="font-size:.62rem;"></i>' + escHtml(item.waktu) + '</div>'
+                    +   '<span style="display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;font-weight:700;padding:.12rem .45rem;border-radius:50px;margin-top:.15rem;background:rgba(34,211,238,.1);color:#22d3ee;border:1px solid rgba(34,211,238,.22);">'
+                    +     '<i class="bi ' + sIcon + '" style="color:' + sColor + ';"></i>' + sTxt
+                    +   '</span>'
+                    + '</div>'
+                    + '<div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0;">'
+                    +   (item.status === 'hadir' && item.foto_url
+                            ? '<a style="width:28px;height:28px;border-radius:50%;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.22);color:#4ade80;display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;" href="' + escHtml(item.foto_url) + '" target="_blank" title="Lihat selfie"><i class="bi bi-image"></i></a>'
+                            : '')
+                    +   (item.status === 'izin' && item.alasan
+                            ? '<button style="width:28px;height:28px;border-radius:50%;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.22);color:#fbbf24;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;" onclick="guruLihatAlasan(\'' + escAttr(item.nama) + '\',\'' + escAttr(item.alasan) + '\')" title="Lihat alasan"><i class="bi bi-chat-text"></i></button>'
+                            : '')
+                    +   '<button style="width:28px;height:28px;border-radius:50%;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:#4ade80;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;" onclick="guruKonfirmasi(' + item.id + ')" title="Konfirmasi"><i class="bi bi-check2-all"></i></button>'
+                    + '</div>'
+                    + '</div>';
+            });
+
+            guruNotifList.innerHTML = html;
+        })
+        .catch(function () {
+            guruNotifList.innerHTML = '<div style="text-align:center;padding:1rem;font-size:.78rem;color:#f87171;">Gagal memuat.</div>';
+        });
+    }
+
+    window.guruLihatAlasan = function (nama, alasan) {
+        Swal.fire({
+            icon: 'info',
+            title: nama + ' — Izin',
+            html: '<div style="text-align:left;background:rgba(255,255,255,.05);border-radius:8px;padding:.75rem 1rem;font-size:.875rem;color:#e2f5ea;">'
+                + '<i class="bi bi-chat-quote me-2" style="color:rgba(251,191,36,.7);"></i>' + escHtml(alasan) + '</div>',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#22c55e',
+            background: '#0a2e1c', color: '#fff',
+        });
+    };
+
+    window.guruKonfirmasi = function (id) {
+        fetch('{{ url("guru/absen-murid/notif") }}/' + id + '/konfirmasi', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(function () {
+            var el = document.getElementById('guru-notif-' + id);
+            if (el) {
+                el.style.transition = 'opacity .3s,transform .3s';
+                el.style.opacity    = '0';
+                el.style.transform  = 'translateX(20px)';
+                setTimeout(function () {
+                    el.remove();
+                    var rem = guruNotifList.querySelectorAll('[id^="guru-notif-"]').length;
+                    guruNotifCount.textContent = rem + ' baru';
+                    if (!rem) {
+                        guruNotifList.innerHTML = '<div style="text-align:center;padding:1.5rem;font-size:.8rem;color:rgba(255,255,255,.28);">'
+                            + '<i class="bi bi-bell-slash" style="font-size:1.4rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>Tidak ada absen baru.</div>';
+                    }
+                }, 300);
+            }
+            var cur = parseInt(guruNotifBadge.textContent, 10) || 0;
+            if (cur > 1) { guruNotifBadge.textContent = cur - 1; }
+            else { guruNotifBadge.style.display = 'none'; }
+            lastAbsenMurid = Math.max(0, lastAbsenMurid - 1);
+            sessionStorage.setItem('sikib_guru_absen_murid', lastAbsenMurid);
+        })
+        .catch(function () {});
+    };
+
+    function escHtml(s) {
+        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function escAttr(s) {
+        return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    }
+
+    /* Poll setiap 10 detik */
+    fetchGuruNotifCount();
+    setInterval(fetchGuruNotifCount, 10000);
 
 }());
 </script>

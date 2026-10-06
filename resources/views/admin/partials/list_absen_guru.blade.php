@@ -151,7 +151,7 @@
                             <span class="ag-avatar">{{ strtoupper(mb_substr($guru->name, 0, 1)) }}</span>
                             <div style="min-width:0;">
                                 <div class="ag-name text-truncate" style="max-width:180px;">{{ $guru->name }}</div>
-                                <div class="ag-uname">@{{ $guru->username }}</div>
+                                <div class="ag-uname">&#64;{{ $guru->username }}</div>
                             </div>
                         </div>
                     </td>
