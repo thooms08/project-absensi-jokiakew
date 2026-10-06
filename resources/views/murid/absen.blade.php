@@ -7,24 +7,24 @@
 <style>
     .info-bar {
         display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
-        background: rgba(255,255,255,.03); border: 1px solid rgba(129,140,248,.12);
+        background: rgba(255,255,255,.03); border: 1px solid rgba(74, 222, 128, .12);
         border-radius: 12px; padding: .7rem 1rem; margin-bottom: 1.5rem; font-size: .82rem;
     }
 
-    .info-hari   { font-weight: 700; color: #818cf8; }
-    .info-tgl    { color: rgba(226,232,255,.5); }
-    .info-dot    { color: rgba(226,232,255,.18); }
+    .info-hari   { font-weight: 700; color: #4ade80; }
+    .info-tgl    { color: rgba(226, 245, 234, .5); }
+    .info-dot    { color: rgba(226, 245, 234, .18); }
 
     .btn-refresh-kartu {
         margin-left: auto;
         display: inline-flex; align-items: center; gap: .35rem;
-        background: rgba(129,140,248,.08); border: 1px solid rgba(129,140,248,.18);
-        border-radius: 8px; color: rgba(129,140,248,.75); font-size: .78rem; font-weight: 600;
+        background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .18);
+        border-radius: 8px; color: rgba(74, 222, 128, .75); font-size: .78rem; font-weight: 600;
         padding: .35rem .75rem; cursor: pointer; font-family: 'Inter',sans-serif;
         transition: background .15s;
     }
 
-    .btn-refresh-kartu:hover { background: rgba(129,140,248,.15); color: #818cf8; }
+    .btn-refresh-kartu:hover { background: rgba(74, 222, 128, .15); color: #4ade80; }
 
     #kartuContainer {
         display: grid;
@@ -34,13 +34,13 @@
 
     .kartu-loading {
         grid-column: 1/-1; text-align: center;
-        padding: 3rem 1rem; color: rgba(226,232,255,.35); font-size: .875rem;
+        padding: 3rem 1rem; color: rgba(226, 245, 234, .35); font-size: .875rem;
     }
 
-    .spinner-purple {
+    .spinner-green {
         width: 24px; height: 24px;
-        border: 3px solid rgba(129,140,248,.15);
-        border-top-color: #818cf8;
+        border: 3px solid rgba(74, 222, 128, .15);
+        border-top-color: #4ade80;
         border-radius: 50%; animation: spin .65s linear infinite;
         display: inline-block; vertical-align: middle; margin-right: .5rem;
     }
@@ -48,21 +48,27 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Modal */
-    .modal-indigo .modal-content {
-        background: #13132e; border: 1px solid rgba(129,140,248,.22);
-        border-radius: 16px; color: #e2e8ff;
+    .modal-green .modal-content {
+        background: #0d1f14; border: 1px solid rgba(74, 222, 128, .22);
+        border-radius: 16px; color: #e2f5ea;
     }
 
-    .modal-indigo .modal-header { border-bottom: 1px solid rgba(129,140,248,.12); padding: 1.1rem 1.4rem 1rem; }
-    .modal-indigo .modal-title  { font-size: 1rem; font-weight: 700; color: #fff; }
-    .modal-indigo .modal-footer { border-top: 1px solid rgba(129,140,248,.12); padding: .9rem 1.4rem; }
-    .modal-indigo .btn-close    { filter: invert(1) brightness(.7); }
-    .modal-indigo .modal-body   { padding: 1.25rem 1.4rem; }
+    .modal-green .modal-header { border-bottom: 1px solid rgba(74, 222, 128, .12); padding: 1.1rem 1.4rem 1rem; }
+    .modal-green .modal-title  { font-size: 1rem; font-weight: 700; color: #fff; }
+    .modal-green .modal-footer { border-top: 1px solid rgba(74, 222, 128, .12); padding: .9rem 1.4rem; }
+    .modal-green .btn-close    { filter: invert(1) brightness(.7); }
+    .modal-green .modal-body   { padding: 1.25rem 1.4rem; }
 
     /* Kamera */
     .kamera-wrap {
-        position: relative; width: 100%; aspect-ratio: 3/4;
-        background: #000; border-radius: 12px; overflow: hidden; margin-bottom: .85rem;
+        position: relative; 
+        width: 100%; 
+        max-width: 340px; /* Membatasi lebar maksimal kamera */
+        margin: 0 auto .85rem auto; /* Pusatkan posisi kamera */
+        aspect-ratio: 3/4;
+        background: #000; 
+        border-radius: 12px; 
+        overflow: hidden;
     }
 
     #videoSelfie, #videoIzin {
@@ -71,25 +77,29 @@
     }
 
     #previewSelfie, #previewIzin {
-        width: 100%; border-radius: 12px; display: none; margin-bottom: .85rem;
+        width: 100%; 
+        max-width: 340px; /* Samakan dengan kamera-wrap */
+        margin: 0 auto .85rem auto; /* Pusatkan posisi preview */
+        border-radius: 12px; 
+        display: none; 
     }
 
     .kamera-btn-row { display: flex; gap: .65rem; justify-content: center; flex-wrap: wrap; }
 
     .btn-ambil {
         display: inline-flex; align-items: center; gap: .4rem;
-        background: rgba(129,140,248,.12); border: 1px solid rgba(129,140,248,.3);
-        border-radius: 10px; color: #818cf8; font-size: .875rem; font-weight: 600;
+        background: rgba(74, 222, 128, .12); border: 1px solid rgba(74, 222, 128, .3);
+        border-radius: 10px; color: #4ade80; font-size: .875rem; font-weight: 600;
         padding: .5rem 1.1rem; cursor: pointer; font-family: 'Inter',sans-serif;
         transition: background .15s;
     }
 
-    .btn-ambil:hover { background: rgba(129,140,248,.22); }
+    .btn-ambil:hover { background: rgba(74, 222, 128, .22); }
 
     .btn-ulang {
         display: inline-flex; align-items: center; gap: .4rem;
         background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-        border-radius: 10px; color: rgba(226,232,255,.65); font-size: .875rem;
+        border-radius: 10px; color: rgba(226, 245, 234, .65); font-size: .875rem;
         font-weight: 500; padding: .5rem 1rem; cursor: pointer; font-family: 'Inter',sans-serif;
         transition: background .15s;
     }
@@ -97,38 +107,38 @@
     .btn-ulang:hover { background: rgba(255,255,255,.12); }
 
     /* Form */
-    .form-label-ind { font-size: .8rem; font-weight: 600; color: rgba(226,232,255,.65); margin-bottom: .4rem; display: block; }
+    .form-label-ind { font-size: .8rem; font-weight: 600; color: rgba(226, 245, 234, .65); margin-bottom: .4rem; display: block; }
 
     .form-control-ind {
-        background: rgba(255,255,255,.06); border: 1px solid rgba(129,140,248,.18);
-        border-radius: 10px; color: #e2e8ff; font-size: .875rem; padding: .55rem .85rem;
+        background: rgba(255,255,255,.06); border: 1px solid rgba(74, 222, 128, .18);
+        border-radius: 10px; color: #e2f5ea; font-size: .875rem; padding: .55rem .85rem;
         width: 100%; outline: none; font-family: 'Inter',sans-serif;
         transition: border-color .18s;
     }
 
-    .form-control-ind::placeholder { color: rgba(226,232,255,.28); }
-    .form-control-ind:focus { border-color: rgba(129,140,248,.5); background: rgba(255,255,255,.09); }
+    .form-control-ind::placeholder { color: rgba(226, 245, 234, .28); }
+    .form-control-ind:focus { border-color: rgba(74, 222, 128, .5); background: rgba(255,255,255,.09); }
 
     .field-fb { font-size: .75rem; color: #f87171; margin-top: .28rem; min-height: 1rem; }
 
     /* Kode display */
-    .kode-hint { font-size: .75rem; color: rgba(226,232,255,.35); text-align: center; margin-bottom: .6rem; }
+    .kode-hint { font-size: .75rem; color: rgba(226, 245, 234, .35); text-align: center; margin-bottom: .6rem; }
 
     /* Tombol modal */
-    .btn-mp { background: linear-gradient(135deg,#4f46e5,#818cf8); border: none; border-radius: 10px; color: #fff; font-size: .875rem; font-weight: 600; padding: .55rem 1.35rem; cursor: pointer; transition: opacity .18s; font-family: 'Inter',sans-serif; }
+    .btn-mp { background: linear-gradient(135deg, #16a34a, #4ade80); border: none; border-radius: 10px; color: #fff; font-size: .875rem; font-weight: 600; padding: .55rem 1.35rem; cursor: pointer; transition: opacity .18s; font-family: 'Inter',sans-serif; }
     .btn-mp:hover { opacity: .87; }
     .btn-mp:disabled { opacity: .45; cursor: not-allowed; }
-    .btn-ms { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: rgba(226,232,255,.72); font-size: .875rem; font-weight: 500; padding: .55rem 1.2rem; cursor: pointer; font-family: 'Inter',sans-serif; }
+    .btn-ms { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: rgba(226, 245, 234, .72); font-size: .875rem; font-weight: 500; padding: .55rem 1.2rem; cursor: pointer; font-family: 'Inter',sans-serif; }
     .btn-ms:hover { background: rgba(255,255,255,.12); }
 
     .modal-jadwal-info {
-        background: rgba(255,255,255,.04); border: 1px solid rgba(129,140,248,.12);
+        background: rgba(255,255,255,.04); border: 1px solid rgba(74, 222, 128, .12);
         border-radius: 10px; padding: .7rem .9rem; margin-bottom: 1rem; font-size: .82rem;
     }
 
     .modal-jadwal-info .kls-nm  { font-weight: 700; color: #fff; font-size: .9rem; }
-    .modal-jadwal-info .mpl-nm  { color: #818cf8; font-size: .78rem; }
-    .modal-jadwal-info .jam-nm  { color: rgba(129,140,248,.65); font-size: .75rem; }
+    .modal-jadwal-info .mpl-nm  { color: #4ade80; font-size: .78rem; }
+    .modal-jadwal-info .jam-nm  { color: rgba(74, 222, 128, .65); font-size: .75rem; }
 
     @media (max-width: 575.98px) { #kartuContainer { grid-template-columns: 1fr; } .modal-dialog { margin: .5rem; } }
 </style>
@@ -143,7 +153,7 @@
 @endphp
 
 <div class="info-bar">
-    <i class="bi bi-calendar2-week-fill" style="color:#818cf8;font-size:1rem;"></i>
+    <i class="bi bi-calendar2-week-fill" style="color:#4ade80;font-size:1rem;"></i>
     <span class="info-hari">{{ $hariIni }}</span>
     <span class="info-dot">•</span>
     <span class="info-tgl">{{ $tglIni }}</span>
@@ -153,19 +163,18 @@
 </div>
 
 <div id="kartuContainer">
-    <div class="kartu-loading"><span class="spinner-purple"></span> Memuat jadwal hari ini...</div>
+    <div class="kartu-loading"><span class="spinner-green"></span> Memuat jadwal hari ini...</div>
 </div>
 
 {{-- ================================================================
      MODAL HADIR (selfie + kode)
 ================================================================ --}}
-<div class="modal fade modal-indigo" id="modalHadir" tabindex="-1" aria-hidden="true"
-     data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+<div class="modal fade modal-green" id="modalHadir" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="bi bi-camera-fill me-2" style="color:#818cf8;"></i>
+                    <i class="bi bi-camera-fill me-2" style="color:#4ade80;"></i>
                     Absen Hadir
                 </h5>
                 <button type="button" class="btn-close" id="btnTutupHadir"></button>
@@ -221,8 +230,8 @@
 {{-- ================================================================
      MODAL IZIN (keterangan + foto bukti opsional)
 ================================================================ --}}
-<div class="modal fade modal-indigo" id="modalIzin" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+<div class="modal fade modal-green" id="modalIzin" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
@@ -247,7 +256,7 @@
                 </div>
 
                 <div>
-                    <label class="form-label-ind">Foto Bukti <span style="color:rgba(226,232,255,.35);">(opsional)</span></label>
+                    <label class="form-label-ind">Foto Bukti <span style="color:rgba(226, 245, 234, .35);">(opsional)</span></label>
                     <div class="kamera-wrap" id="izinKameraWrap"><video id="videoIzin" autoplay playsinline muted></video></div>
                     <img id="previewIzin" src="" alt="Foto izin">
                     <canvas id="canvasIzin" style="display:none;"></canvas>
@@ -292,7 +301,7 @@
     ============================================================ */
     function loadKartu() {
         document.getElementById('kartuContainer').innerHTML =
-            '<div class="kartu-loading"><span class="spinner-purple"></span> Memuat jadwal hari ini...</div>';
+            '<div class="kartu-loading"><span class="spinner-green"></span> Memuat jadwal hari ini...</div>';
 
         fetch('{{ route("murid.absen.kartu") }}', { headers: {'X-Requested-With':'XMLHttpRequest'} })
         .then(function(r){ return r.text(); })
@@ -384,7 +393,7 @@
     }
 
     document.getElementById('btnAmbilSelfie').addEventListener('click', function(){
-        if(!streamSelfie){ Swal.fire({icon:'warning',title:'Kamera belum aktif',background:'#13132e',color:'#e2e8ff'}); return; }
+        if(!streamSelfie){ Swal.fire({icon:'warning',title:'Kamera belum aktif',background:'#0d1f14',color:'#e2f5ea'}); return; }
         var v=document.getElementById('videoSelfie');
         var c=document.getElementById('canvasSelfie');
         c.width=v.videoWidth||480; c.height=v.videoHeight||640;
@@ -406,7 +415,7 @@
     });
 
     document.getElementById('btnLanjutKode').addEventListener('click', function(){
-        if(!selfieBase64){ Swal.fire({icon:'warning',title:'Ambil foto terlebih dahulu',background:'#13132e',color:'#e2e8ff'}); return; }
+        if(!selfieBase64){ Swal.fire({icon:'warning',title:'Ambil foto terlebih dahulu',background:'#0d1f14',color:'#e2f5ea'}); return; }
         gotoStepKode();
     });
 
@@ -416,7 +425,7 @@
         document.getElementById('fbKode').textContent='';
 
         var btn=this; btn.disabled=true;
-        btn.innerHTML='<span class="spinner-purple" style="width:14px;height:14px;border-width:2px;margin-right:5px;"></span> Mengirim...';
+        btn.innerHTML='<span class="spinner-green" style="width:14px;height:14px;border-width:2px;margin-right:5px;"></span> Mengirim...';
 
         fetch('{{ route("murid.absen.store") }}',{
             method:'POST',
@@ -426,10 +435,10 @@
         .then(function(r){return r.json();})
         .then(function(d){
             btn.disabled=false; btn.innerHTML='<i class="bi bi-check-lg me-1"></i> Kirim Absen';
-            if(d.success){ stopSelfie(); modalHadir.hide(); Swal.fire({icon:'success',title:'Berhasil!',text:d.message,timer:2200,showConfirmButton:false,background:'#13132e',color:'#e2e8ff'}).then(loadKartu); }
+            if(d.success){ stopSelfie(); modalHadir.hide(); Swal.fire({icon:'success',title:'Berhasil!',text:d.message,timer:2200,showConfirmButton:false,background:'#0d1f14',color:'#e2f5ea'}).then(loadKartu); }
             else { document.getElementById('fbKode').textContent=d.message||'Terjadi kesalahan.'; }
         })
-        .catch(function(){ btn.disabled=false; btn.innerHTML='<i class="bi bi-check-lg me-1"></i> Kirim Absen'; Swal.fire({icon:'error',title:'Koneksi gagal',background:'#13132e',color:'#e2e8ff'}); });
+        .catch(function(){ btn.disabled=false; btn.innerHTML='<i class="bi bi-check-lg me-1"></i> Kirim Absen'; Swal.fire({icon:'error',title:'Koneksi gagal',background:'#0d1f14',color:'#e2f5ea'}); });
     });
 
     document.getElementById('btnTutupHadir').addEventListener('click', function(){ stopSelfie(); modalHadir.hide(); });
@@ -472,7 +481,7 @@
     }
 
     document.getElementById('btnAmbilIzin').addEventListener('click', function(){
-        if(!streamIzin){ Swal.fire({icon:'warning',title:'Kamera tidak tersedia',background:'#13132e',color:'#e2e8ff'}); return; }
+        if(!streamIzin){ Swal.fire({icon:'warning',title:'Kamera tidak tersedia',background:'#0d1f14',color:'#e2f5ea'}); return; }
         var v=document.getElementById('videoIzin');
         var c=document.getElementById('canvasIzin');
         c.width=v.videoWidth||480; c.height=v.videoHeight||640;
@@ -494,7 +503,7 @@
         document.getElementById('fbAlasan').textContent='';
 
         var btn=this; btn.disabled=true;
-        btn.innerHTML='<span class="spinner-purple" style="width:14px;height:14px;border-width:2px;margin-right:5px;"></span> Mengirim...';
+        btn.innerHTML='<span class="spinner-green" style="width:14px;height:14px;border-width:2px;margin-right:5px;"></span> Mengirim...';
 
         fetch('{{ route("murid.absen.store") }}',{
             method:'POST',
@@ -504,10 +513,10 @@
         .then(function(r){return r.json();})
         .then(function(d){
             btn.disabled=false; btn.innerHTML='<i class="bi bi-send-fill me-1"></i> Kirim Izin';
-            if(d.success){ stopIzinKamera(); modalIzin.hide(); Swal.fire({icon:'success',title:'Izin Terkirim!',text:d.message,timer:2200,showConfirmButton:false,background:'#13132e',color:'#e2e8ff'}).then(loadKartu); }
+            if(d.success){ stopIzinKamera(); modalIzin.hide(); Swal.fire({icon:'success',title:'Izin Terkirim!',text:d.message,timer:2200,showConfirmButton:false,background:'#0d1f14',color:'#e2f5ea'}).then(loadKartu); }
             else { document.getElementById('fbAlasan').textContent=d.message||'Terjadi kesalahan.'; }
         })
-        .catch(function(){ btn.disabled=false; btn.innerHTML='<i class="bi bi-send-fill me-1"></i> Kirim Izin'; Swal.fire({icon:'error',title:'Koneksi gagal',background:'#13132e',color:'#e2e8ff'}); });
+        .catch(function(){ btn.disabled=false; btn.innerHTML='<i class="bi bi-send-fill me-1"></i> Kirim Izin'; Swal.fire({icon:'error',title:'Koneksi gagal',background:'#0d1f14',color:'#e2f5ea'}); });
     });
 
     /* ============================================================

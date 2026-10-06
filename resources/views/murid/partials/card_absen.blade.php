@@ -1,7 +1,7 @@
 <style>
     .kartu-absen {
         background: rgba(255,255,255,.04);
-        border: 1px solid rgba(129,140,248,.13);
+        border: 1px solid rgba(74, 222, 128, .13);
         border-radius: 16px 0 16px 0;
         padding: 1.2rem 1.25rem 1rem;
         display: flex; flex-direction: column; gap: .85rem;
@@ -13,19 +13,19 @@
         content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 4px 0 0 4px;
     }
 
-    .kartu-aktif::before    { background: #818cf8; }
+    .kartu-aktif::before    { background: #4ade80; }
     .kartu-hadir::before    { background: #4ade80; }
     .kartu-izin::before     { background: #fbbf24; }
     .kartu-tidak::before    { background: #f87171; }
     .kartu-menunggu::before { background: rgba(255,255,255,.12); }
     .kartu-lewat::before    { background: rgba(255,255,255,.12); }
 
-    .kartu-absen:hover { border-color: rgba(129,140,248,.3); box-shadow: 0 4px 20px rgba(0,0,0,.2); }
+    .kartu-absen:hover { border-color: rgba(74, 222, 128, .3); box-shadow: 0 4px 20px rgba(0,0,0,.2); }
 
     .kartu-jam {
         display: inline-flex; align-items: center; gap: .35rem;
-        font-size: .72rem; font-weight: 700; color: rgba(129,140,248,.75);
-        background: rgba(129,140,248,.08); border: 1px solid rgba(129,140,248,.15);
+        font-size: .72rem; font-weight: 700; color: rgba(74, 222, 128, .75);
+        background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .15);
         border-radius: 6px; padding: .18rem .55rem; width: fit-content;
     }
 
@@ -33,14 +33,14 @@
 
     .kartu-mapel {
         display: inline-flex; align-items: center; gap: .3rem;
-        background: rgba(129,140,248,.1); border: 1px solid rgba(129,140,248,.18);
+        background: rgba(74, 222, 128, .1); border: 1px solid rgba(74, 222, 128, .18);
         border-radius: 50px; padding: .15rem .6rem;
-        font-size: .73rem; font-weight: 600; color: #818cf8; width: fit-content;
+        font-size: .73rem; font-weight: 600; color: #4ade80; width: fit-content;
     }
 
     .kartu-guru {
         display: inline-flex; align-items: center; gap: .3rem;
-        font-size: .73rem; color: rgba(226,232,255,.4);
+        font-size: .73rem; color: rgba(226, 245, 234, .4);
         margin-top: .1rem;
     }
 
@@ -53,19 +53,19 @@
     .s-hadir   { background: rgba(34,197,94,.15);  color: #4ade80; border: 1px solid rgba(34,197,94,.3); }
     .s-izin    { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid rgba(251,191,36,.28); }
     .s-tidak   { background: rgba(248,113,113,.12); color: #f87171; border: 1px solid rgba(248,113,113,.25); }
-    .s-aktif   { background: rgba(129,140,248,.12); color: #818cf8; border: 1px solid rgba(129,140,248,.25); animation: pulseIndigo 2s ease-in-out infinite; }
-    .s-tunggu  { background: rgba(255,255,255,.05); color: rgba(226,232,255,.4); border: 1px solid rgba(255,255,255,.1); }
+    .s-aktif   { background: rgba(74, 222, 128, .12); color: #4ade80; border: 1px solid rgba(74, 222, 128, .25); animation: pulseGreen 2s ease-in-out infinite; }
+    .s-tunggu  { background: rgba(255,255,255,.05); color: rgba(226, 245, 234, .4); border: 1px solid rgba(255,255,255,.1); }
 
-    @keyframes pulseIndigo {
-        0%,100% { box-shadow: 0 0 0 0 rgba(129,140,248,0); }
-        50%      { box-shadow: 0 0 0 4px rgba(129,140,248,.15); }
+    @keyframes pulseGreen {
+        0%,100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        50%      { box-shadow: 0 0 0 4px rgba(74, 222, 128, .15); }
     }
 
     .kartu-aksi { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .25rem; }
 
     .btn-hadir-m {
         flex:1; min-width:100px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
-        background: linear-gradient(135deg,#4f46e5,#818cf8);
+        background: linear-gradient(135deg, #16a34a, #4ade80);
         border: none; border-radius: 10px; color: #fff; font-size: .875rem; font-weight: 600;
         padding: .6rem 1rem; cursor: pointer; font-family: 'Inter',sans-serif;
         transition: opacity .18s, transform .15s;
@@ -86,22 +86,22 @@
     .btn-disabled-m {
         flex:1; display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
         background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-        border-radius: 10px; color: rgba(226,232,255,.25); font-size: .82rem; font-weight: 500;
+        border-radius: 10px; color: rgba(226, 245, 234, .25); font-size: .82rem; font-weight: 500;
         padding: .6rem 1rem; cursor: not-allowed; font-family: 'Inter',sans-serif;
     }
 
-    .kartu-alasan { font-size: .76rem; color: rgba(226,232,255,.45); background: rgba(255,255,255,.03); border-radius: 8px; padding: .45rem .65rem; font-style: italic; }
+    .kartu-alasan { font-size: .76rem; color: rgba(226, 245, 234, .45); background: rgba(255,255,255,.03); border-radius: 8px; padding: .45rem .65rem; font-style: italic; }
 
-    .kartu-countdown { font-size: .72rem; color: rgba(226,232,255,.3); }
-    .kartu-countdown span { color: rgba(129,140,248,.7); font-weight: 600; }
+    .kartu-countdown { font-size: .72rem; color: rgba(226, 245, 234, .3); }
+    .kartu-countdown span { color: rgba(74, 222, 128, .7); font-weight: 600; }
 
     .kartu-empty {
         grid-column: 1/-1; text-align: center; padding: 4rem 1.5rem;
     }
 
-    .kartu-empty i { font-size: 3rem; color: rgba(129,140,248,.18); display: block; margin-bottom: 1rem; }
-    .kartu-empty p { font-size: .95rem; font-weight: 600; color: rgba(226,232,255,.38); margin: 0 0 .4rem; }
-    .kartu-empty small { font-size: .8rem; color: rgba(226,232,255,.22); }
+    .kartu-empty i { font-size: 3rem; color: rgba(74, 222, 128, .18); display: block; margin-bottom: 1rem; }
+    .kartu-empty p { font-size: .95rem; font-weight: 600; color: rgba(226, 245, 234, .38); margin: 0 0 .4rem; }
+    .kartu-empty small { font-size: .8rem; color: rgba(226, 245, 234, .22); }
 </style>
 
 @if($kartuList->isEmpty())

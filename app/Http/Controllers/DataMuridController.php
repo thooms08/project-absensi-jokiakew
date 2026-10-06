@@ -200,7 +200,7 @@ class DataMuridController extends Controller
 
         if ($request->filled('password')) {
             $request->validate([
-                'password' => ['confirmed', Password::min(8)->numbers()],
+                'password' => [Password::min(8)->numbers()],
             ]);
             $murid->password = Hash::make($request->password);
         }

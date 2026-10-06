@@ -42,12 +42,18 @@
 
     /* Kode display */
     .kode-display {
-        text-align:center;
-        font-size:2.8rem;font-weight:900;letter-spacing:.35em;
-        color:#4ade80;
-        background:rgba(74,222,128,.06);border:2px solid rgba(74,222,128,.2);
-        border-radius:14px;padding:1.25rem;margin:1rem 0;
-        font-family:'Inter',sans-serif;
+        text-align: center;
+        font-size: 2.2rem; /* Diperkecil dari 2.8rem agar aman di layar HP */
+        font-weight: 900;
+        letter-spacing: .25em; /* Jarak huruf dirapatkan sedikit dari .35em */
+        color: #4ade80;
+        background: rgba(74,222,128,.06); 
+        border: 2px solid rgba(74,222,128,.2);
+        border-radius: 14px; 
+        padding: 1rem 1.25rem; /* Menyesuaikan ruang kosong di dalam kotak */
+        margin: 1rem 0;
+        font-family: 'Inter', sans-serif;
+        word-break: break-all; /* Memastikan teks tidak akan pernah menembus batas kotak */
     }
 
     .kode-timer { text-align:center;font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:.5rem; }
@@ -89,9 +95,8 @@
     <div class="list-loading"><span class="spinner-green"></span> Memuat data absensi...</div>
 </div>
 
-{{-- Modal Buat Kode Absen --}}
 <div class="modal fade modal-dark" id="modalKode" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
