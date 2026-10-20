@@ -236,6 +236,13 @@
     }
     .btn-m-restore:hover { background: rgba(74,222,128,0.2); }
 
+    .btn-m-qr {
+        background: rgba(56,189,248,0.1);
+        color: #38bdf8;
+        border: 1px solid rgba(56,189,248,0.2);
+    }
+    .btn-m-qr:hover { background: rgba(56,189,248,0.2); }
+
     .btn-m-force {
         background: rgba(248,113,113,0.08);
         color: #f87171;
@@ -287,6 +294,55 @@
         .m-col-hide-xs { display: none; }
         .murid-table   { min-width: 420px; }
     }
+
+    /* ============================================================
+       MODAL QR CODE
+    ============================================================ */
+    .modal-qr .modal-content {
+        background: #0a2e1c;
+        border: 1px solid rgba(56,189,248,0.22);
+        border-radius: 18px;
+        color: #e2f5ea;
+    }
+    .modal-qr .modal-header {
+        border-bottom: 1px solid rgba(56,189,248,0.12);
+        padding: 1.1rem 1.4rem 1rem;
+    }
+    .modal-qr .modal-title  { font-size: 1rem; font-weight: 700; color: #fff; }
+    .modal-qr .modal-footer { border-top: 1px solid rgba(56,189,248,0.12); padding: .9rem 1.4rem; }
+    .modal-qr .btn-close    { filter: invert(1) brightness(.7); }
+    .modal-qr .modal-body   { padding: 1.5rem 1.4rem; text-align: center; }
+
+    .qr-canvas-wrap {
+        display: inline-block;
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+    }
+    .qr-murid-name {
+        font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .2rem;
+    }
+    .qr-murid-user {
+        font-size: .78rem; color: rgba(56,189,248,.75); margin-bottom: 1rem;
+    }
+    .btn-download-qr {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: linear-gradient(135deg, #0369a1, #38bdf8);
+        border: none; border-radius: 10px; color: #fff;
+        font-size: .875rem; font-weight: 600; padding: .55rem 1.35rem;
+        cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none;
+        transition: opacity .18s, transform .18s;
+    }
+    .btn-download-qr:hover { opacity: .88; transform: translateY(-1px); color: #fff; }
+    .btn-modal-sec-qr {
+        background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px; color: rgba(255,255,255,.72);
+        font-size: .875rem; font-weight: 500; padding: .55rem 1.2rem;
+        cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .btn-modal-sec-qr:hover { background: rgba(255,255,255,.12); }
 </style>
 
 {{-- ================================================================
@@ -417,6 +473,17 @@
                             @if($tab === 'aktif')
                                 <button
                                     type="button"
+                                    class="btn-aksi-m btn-m-qr"
+                                    data-qr-id="{{ $item->id }}"
+                                    data-qr-nama="{{ $item->name }}"
+                                    data-qr-username="{{ $item->username }}"
+                                    title="Lihat QR Absen"
+                                    aria-label="QR absen {{ $item->name }}"
+                                >
+                                    <i class="bi bi-qr-code"></i>
+                                </button>
+                                <button
+                                    type="button"
                                     class="btn-aksi-m btn-m-edit"
                                     data-edit-id="{{ $item->id }}"
                                     title="Edit data murid"
@@ -467,3 +534,98 @@
     @endif
 
 </div>
+
+{{-- ================================================================
+     MODAL QR CODE MURID
+================================================================ --}}
+<div class="modal fade modal-qr" id="modalQrMurid" tabindex="-1" aria-hidden="true" aria-labelledby="modalQrMuridTitle">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalQrMuridTitle">
+                    <i class="bi bi-qr-code me-2" style="color:#38bdf8;"></i>
+                    QR Code Absen
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p class="qr-murid-name" id="qrMuridName">—</p>
+                <p class="qr-murid-user" id="qrMuridUser">@—</p>
+                <div class="qr-canvas-wrap" id="qrCanvasWrap">
+                    {{-- QR akan di-render di sini oleh JS --}}
+                </div>
+                <p style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.75rem;margin-bottom:0;">
+                    QR ini unik milik murid tersebut. Scan saat absensi berlangsung.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-end gap-2">
+                <button type="button" class="btn-modal-sec-qr" data-bs-dismiss="modal">Tutup</button>
+                <a id="btnDownloadQr" href="#" download="qr-absen.png" class="btn-download-qr">
+                    <i class="bi bi-download"></i> Download QR
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- QRCode.js CDN --}}
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var modalQrEl   = document.getElementById('modalQrMurid');
+    var btnDownload = document.getElementById('btnDownloadQr');
+    var qrWrap      = document.getElementById('qrCanvasWrap');
+    var modalQr     = new bootstrap.Modal(modalQrEl);
+
+    function generateQR(userId, nama, username) {
+        document.getElementById('qrMuridName').textContent = nama;
+        document.getElementById('qrMuridUser').textContent = '@' + username;
+
+        /* Bersihkan QR sebelumnya */
+        qrWrap.innerHTML = '';
+
+        /* Reset download link */
+        btnDownload.href     = '#';
+        btnDownload.download = 'qr-absen-' + username + '.png';
+
+        /* Generate QR baru */
+        var qr = new QRCode(qrWrap, {
+            text        : String(userId),
+            width       : 200,
+            height      : 200,
+            colorDark   : '#000000',
+            colorLight  : '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M,
+        });
+
+        /* Tunggu render, ambil data URL untuk download */
+        setTimeout(function () {
+            var img = qrWrap.querySelector('img');
+            var cnv = qrWrap.querySelector('canvas');
+
+            if (cnv) {
+                btnDownload.href = cnv.toDataURL('image/png');
+            } else if (img) {
+                img.onload = function () {
+                    var c = document.createElement('canvas');
+                    c.width  = img.naturalWidth  || 200;
+                    c.height = img.naturalHeight || 200;
+                    c.getContext('2d').drawImage(img, 0, 0);
+                    btnDownload.href = c.toDataURL('image/png');
+                };
+                if (img.complete && img.naturalWidth) img.onload();
+            }
+        }, 200);
+    }
+
+    /* Delegasi klik tombol QR di tabel */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-qr-id]');
+        if (!btn) return;
+        generateQR(btn.dataset.qrId, btn.dataset.qrNama, btn.dataset.qrUsername);
+        modalQr.show();
+    });
+}());
+</script>

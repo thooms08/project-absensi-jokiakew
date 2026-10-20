@@ -105,6 +105,51 @@
     }
 
     .shortcut-card i { font-size: 1.5rem; }
+
+    /* ----------------------------------------------------------------
+       MODAL QR SAYA
+    ---------------------------------------------------------------- */
+    .modal-qr-saya .modal-content {
+        background: #0a2e1c;
+        border: 1px solid rgba(56,189,248,.22);
+        border-radius: 18px;
+        color: #e2f5ea;
+    }
+    .modal-qr-saya .modal-header { border-bottom: 1px solid rgba(56,189,248,.12); padding: 1.1rem 1.4rem 1rem; }
+    .modal-qr-saya .modal-title  { font-size: 1rem; font-weight: 700; color: #fff; }
+    .modal-qr-saya .modal-footer { border-top: 1px solid rgba(56,189,248,.12); padding: .9rem 1.4rem; }
+    .modal-qr-saya .btn-close    { filter: invert(1) brightness(.7); }
+    .modal-qr-saya .modal-body   { padding: 1.5rem 1.4rem; text-align: center; }
+
+    .qr-saya-wrap {
+        display: inline-block;
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 24px rgba(0,0,0,.35);
+    }
+    .qr-saya-label {
+        font-size: .78rem;
+        color: rgba(56,189,248,.75);
+        margin-bottom: 1rem;
+    }
+    .btn-dl-qr-saya {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: linear-gradient(135deg, #0369a1, #38bdf8);
+        border: none; border-radius: 10px; color: #fff;
+        font-size: .875rem; font-weight: 600; padding: .55rem 1.35rem;
+        cursor: pointer; font-family: 'Inter', sans-serif;
+        text-decoration: none; transition: opacity .18s, transform .18s;
+    }
+    .btn-dl-qr-saya:hover { opacity: .88; transform: translateY(-1px); color: #fff; }
+    .btn-sec-qr-saya {
+        background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px; color: rgba(255,255,255,.72);
+        font-size: .875rem; font-weight: 500; padding: .55rem 1.2rem;
+        cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .btn-sec-qr-saya:hover { background: rgba(255,255,255,.12); }
 </style>
 @endpush
 
@@ -146,15 +191,57 @@
         <i class="bi bi-clock-history" style="color:#fbbf24;"></i>
         Riwayat
     </a>
+    <button type="button" class="shortcut-card" id="btnQrSaya" style="cursor:pointer;">
+        <i class="bi bi-qr-code" style="color:#38bdf8;"></i>
+        QR Saya
+    </button>
+</div>
+
+{{-- Modal QR Saya --}}
+<div class="modal fade modal-qr-saya" id="modalQrSaya" tabindex="-1" aria-hidden="true" aria-labelledby="modalQrSayaTitle">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalQrSayaTitle">
+                    <i class="bi bi-qr-code me-2" style="color:#38bdf8;"></i>
+                    QR Code Absen Saya
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:.25rem;">
+                    {{ Auth::user()->name }}
+                </p>
+                <p class="qr-saya-label">{{ '@' . Auth::user()->username }}</p>
+                <div class="qr-saya-wrap" id="qrSayaWrap">
+                    {{-- QR di-render JS --}}
+                </div>
+                <p style="font-size:.72rem;color:rgba(255,255,255,.3);margin:0;">
+                    Tunjukkan QR ini kepada guru saat absensi berlangsung.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-end gap-2">
+                <button type="button" class="btn-sec-qr-saya" data-bs-dismiss="modal">Tutup</button>
+                <a id="btnDownloadQrSaya" href="#" download="qr-absen-{{ Auth::user()->username }}.png" class="btn-dl-qr-saya">
+                    <i class="bi bi-download"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 @endsection
 
 @push('scripts')
+{{-- QRCode.js CDN --}}
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 (function () {
     'use strict';
 
+    /* ================================================================
+       SUMMARY
+    ================================================================ */
     fetch('{{ route("murid.absen.summary") }}', {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
@@ -179,6 +266,53 @@
              + '<div class="sum-label">' + label + '</div>'
              + '</div>';
     }
+
+    /* ================================================================
+       MODAL QR SAYA
+    ================================================================ */
+    var MY_ID       = {{ Auth::id() }};
+    var MY_USERNAME = '{{ Auth::user()->username }}';
+
+    var modalQrSayaEl = document.getElementById('modalQrSaya');
+    var modalQrSaya   = new bootstrap.Modal(modalQrSayaEl);
+    var qrSayaWrap    = document.getElementById('qrSayaWrap');
+    var btnDlSaya     = document.getElementById('btnDownloadQrSaya');
+    var qrSayaBuilt   = false;
+
+    document.getElementById('btnQrSaya').addEventListener('click', function () {
+        if (!qrSayaBuilt) {
+            qrSayaWrap.innerHTML = '';
+            var qr = new QRCode(qrSayaWrap, {
+                text        : String(MY_ID),
+                width       : 200,
+                height      : 200,
+                colorDark   : '#000000',
+                colorLight  : '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M,
+            });
+
+            setTimeout(function () {
+                var cnv = qrSayaWrap.querySelector('canvas');
+                var img = qrSayaWrap.querySelector('img');
+                if (cnv) {
+                    btnDlSaya.href = cnv.toDataURL('image/png');
+                } else if (img) {
+                    img.onload = function () {
+                        var c = document.createElement('canvas');
+                        c.width  = img.naturalWidth  || 200;
+                        c.height = img.naturalHeight || 200;
+                        c.getContext('2d').drawImage(img, 0, 0);
+                        btnDlSaya.href = c.toDataURL('image/png');
+                    };
+                    if (img.complete && img.naturalWidth) img.onload();
+                }
+                btnDlSaya.download = 'qr-absen-' + MY_USERNAME + '.png';
+            }, 200);
+
+            qrSayaBuilt = true;
+        }
+        modalQrSaya.show();
+    });
 }());
 </script>
 @endpush

@@ -164,6 +164,9 @@ Route::prefix('guru')
         Route::get('/absen-guru/status',         [AbsenGuruController::class, 'status'])->name('absen_guru.status');
 
         Route::get('/absen-murid',                         [AbsenMuridController::class, 'guruPage'])->name('absen_murid');
+        Route::get('/absen-murid/hari-ini',                [AbsenMuridController::class, 'guruHariIniList'])->name('absen_murid.hari_ini');
+        Route::get('/absen-murid/scan',                    [AbsenMuridController::class, 'guruScanPage'])->name('absen_murid.scan');
+        Route::post('/absen-murid/scan-qr',                [AbsenMuridController::class, 'guruScanQr'])->name('absen_murid.scan_qr');
         Route::get('/absen-murid/notif/count',             [AbsenMuridController::class, 'guruNotifCount'])->name('absen_murid.notif_count');
         Route::get('/absen-murid/notif/list',              [AbsenMuridController::class, 'guruNotifList'])->name('absen_murid.notif_list');
         Route::post('/absen-murid/notif/{id}/konfirmasi',  [AbsenMuridController::class, 'guruKonfirmasi'])->name('absen_murid.notif_konfirmasi');

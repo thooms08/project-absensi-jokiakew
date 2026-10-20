@@ -482,56 +482,93 @@
         margin-left: 0.1rem;
     }
 
-    /* Multi-select mapel */
-    .mapel-select-wrap {
-        position: relative;
-    }
-
-    .select-mapel {
+    /* ── Search filter mapel ── */
+    .mapel-search {
         width: 100%;
         background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(251,191,36,0.22);
-        border-radius: 9px;
+        border: 1px solid rgba(251,191,36,0.2);
+        border-radius: 8px;
         color: #e2f5ea;
-        font-size: 0.845rem;
+        font-size: 0.82rem;
         font-family: 'Inter', sans-serif;
-        padding: 0.3rem 0.4rem;
+        padding: 0.42rem 0.75rem;
         outline: none;
-        cursor: pointer;
+        margin-bottom: 0.55rem;
         transition: border-color 0.18s;
-        /* Tampilkan maks 5 item agar tidak terlalu panjang */
-        min-height: 36px;
     }
+    .mapel-search::placeholder { color: rgba(255,255,255,0.25); }
+    .mapel-search:focus { border-color: rgba(251,191,36,0.5); box-shadow: 0 0 0 3px rgba(251,191,36,0.07); }
 
-    .select-mapel:focus {
-        border-color: rgba(251,191,36,0.5);
-        box-shadow: 0 0 0 3px rgba(251,191,36,0.07);
+    /* ── Kotak daftar checkbox ── */
+    .mapel-checkbox-list {
+        max-height: 190px;
+        overflow-y: auto;
+        border: 1px solid rgba(251,191,36,0.18);
+        border-radius: 9px;
+        background: rgba(255,255,255,0.03);
+        padding: 0.3rem 0;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(251,191,36,0.25) transparent;
     }
+    .mapel-checkbox-list::-webkit-scrollbar       { width: 5px; }
+    .mapel-checkbox-list::-webkit-scrollbar-track { background: transparent; }
+    .mapel-checkbox-list::-webkit-scrollbar-thumb { background: rgba(251,191,36,0.25); border-radius: 3px; }
 
-    .select-mapel option {
-        background: #0d2e1a;
-        color: #e2f5ea;
-        padding: 0.3rem 0.5rem;
-        font-size: 0.845rem;
+    /* ── Satu baris checkbox ── */
+    .mapel-cb-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.42rem 0.85rem;
+        cursor: pointer;
+        border-radius: 0;
+        transition: background 0.14s;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    .mapel-cb-item:hover { background: rgba(251,191,36,0.07); }
+    .mapel-cb-item input[type="checkbox"] { display: none; }
+
+    /* Custom checkbox box */
+    .mapel-cb-box {
+        width: 16px; height: 16px; flex-shrink: 0;
+        border: 2px solid rgba(251,191,36,0.35);
         border-radius: 4px;
+        background: transparent;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.14s, border-color 0.14s;
     }
-
-    .select-mapel option:checked {
-        background: rgba(217,119,6,0.35);
-        color: #fbbf24;
+    .mapel-cb-item input:checked ~ .mapel-cb-box {
+        background: #fbbf24;
+        border-color: #fbbf24;
     }
+    .mapel-cb-box::after {
+        content: '';
+        display: none;
+        width: 4px; height: 7px;
+        border: 2px solid #0a2e1c;
+        border-top: none; border-left: none;
+        transform: rotate(45deg) translateY(-1px);
+    }
+    .mapel-cb-item input:checked ~ .mapel-cb-box::after { display: block; }
 
-    .mapel-hint-text {
-        font-size: 0.71rem;
-        color: rgba(255,255,255,0.28);
-        margin-top: 0.35rem;
+    .mapel-cb-label {
+        font-size: 0.845rem; color: rgba(226,245,234,0.85);
+        line-height: 1.3; flex: 1;
+    }
+    .mapel-cb-item input:checked ~ .mapel-cb-box + .mapel-cb-label,
+    .mapel-cb-item input:checked ~ * .mapel-cb-label { color: #fbbf24; font-weight: 600; }
+
+    .mapel-cb-empty {
+        text-align: center; padding: 1rem;
+        font-size: 0.78rem; color: rgba(255,255,255,0.25);
     }
 
     .mapel-selected-info {
         font-size: 0.72rem;
-        color: rgba(251,191,36,0.7);
+        color: rgba(251,191,36,0.75);
         font-weight: 600;
-        margin-top: 0.3rem;
+        margin-top: 0.4rem;
         min-height: 1rem;
     }
 </style>
@@ -756,20 +793,19 @@
                             <div class="mapel-section-header">
                                 <i class="bi bi-book-fill" style="color:#fbbf24;"></i>
                                 <span>Mata Pelajaran</span>
-                                <span class="mapel-section-hint">(opsional — tahan Ctrl/⌘ untuk pilih banyak)</span>
+                                <span class="mapel-section-hint">(opsional)</span>
                             </div>
-                            <div class="mapel-select-wrap">
-                                <select
-                                    id="selectMapelTambah"
-                                    class="select-mapel"
-                                    multiple
-                                    size="5"
-                                    aria-label="Pilih mata pelajaran"
-                                >
-                                    {{-- diisi JS saat masuk step 2 --}}
-                                </select>
+                            <input
+                                type="text"
+                                id="searchMapelTambah"
+                                class="mapel-search"
+                                placeholder="Cari mata pelajaran..."
+                                autocomplete="off"
+                                aria-label="Cari mata pelajaran"
+                            >
+                            <div class="mapel-checkbox-list" id="cbListTambah" role="group" aria-label="Pilih mata pelajaran">
+                                <p class="mapel-cb-empty">Memuat...</p>
                             </div>
-                            <p class="mapel-hint-text">Tahan <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">Ctrl</kbd> atau <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">⌘</kbd> untuk memilih lebih dari satu.</p>
                             <div class="mapel-selected-info" id="tambahMapelInfo"></div>
                         </div>
                     </div>
@@ -869,20 +905,19 @@
                             <div class="mapel-section-header">
                                 <i class="bi bi-book-fill" style="color:#fbbf24;"></i>
                                 <span>Mata Pelajaran</span>
-                                <span class="mapel-section-hint">(opsional — tahan Ctrl/⌘ untuk pilih banyak)</span>
+                                <span class="mapel-section-hint">(opsional)</span>
                             </div>
-                            <div class="mapel-select-wrap">
-                                <select
-                                    id="selectMapelEdit"
-                                    class="select-mapel"
-                                    multiple
-                                    size="5"
-                                    aria-label="Pilih mata pelajaran"
-                                >
-                                    {{-- diisi JS saat modal edit dibuka --}}
-                                </select>
+                            <input
+                                type="text"
+                                id="searchMapelEdit"
+                                class="mapel-search"
+                                placeholder="Cari mata pelajaran..."
+                                autocomplete="off"
+                                aria-label="Cari mata pelajaran"
+                            >
+                            <div class="mapel-checkbox-list" id="cbListEdit" role="group" aria-label="Pilih mata pelajaran">
+                                <p class="mapel-cb-empty">Memuat...</p>
                             </div>
-                            <p class="mapel-hint-text">Tahan <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">Ctrl</kbd> atau <kbd style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:0 4px;font-size:0.68rem;">⌘</kbd> untuk memilih lebih dari satu.</p>
                             <div class="mapel-selected-info" id="editMapelInfo"></div>
                         </div>
                     </div>
@@ -1395,9 +1430,8 @@
                 }
 
                 if (guruIdBaru) {
-                    /* Baca mapel dari select multi — termasuk jika kosong (array kosong = hapus semua) */
-                    var selTambah     = document.getElementById('selectMapelTambah');
-                    var mapelTerpilih = selTambah ? getSelectedFromSelect(selTambah) : [];
+                    /* Baca mapel dari checkbox list */
+                    var mapelTerpilih = window._getMapelTambah ? window._getMapelTambah() : [];
 
                     fetch('{{ url("admin/data-guru") }}/' + guruIdBaru + '/mapel', {
                         method: 'POST',
@@ -1614,9 +1648,11 @@
                 setInputState(document.getElementById(id), null);
             });
 
-            /* Load mapel yang sudah dipilih guru ini, populate select */
-            var selEdit = document.getElementById('selectMapelEdit');
-            if (selEdit) selEdit.innerHTML = '<option disabled>Memuat...</option>';
+            /* Load mapel yang sudah dipilih guru ini, populate checkbox */
+            var cbEdit = document.getElementById('cbListEdit');
+            if (cbEdit) cbEdit.innerHTML = '<p class="mapel-cb-empty">Memuat...</p>';
+            var searchEdit = document.getElementById('searchMapelEdit');
+            if (searchEdit) searchEdit.value = '';
 
             fetch('{{ url("admin/data-guru") }}/' + data.id + '/mapel', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1722,9 +1758,8 @@
             btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Simpan';
 
             if (data.success) {
-                /* Setelah data guru tersimpan, simpan juga mapel dari select */
-                var selMapel    = document.getElementById('selectMapelEdit');
-                var mapelTerpilih = selMapel ? getSelectedFromSelect(selMapel) : [];
+                /* Setelah data guru tersimpan, simpan juga mapel dari checkbox list */
+                var mapelTerpilih = window._getMapelEdit ? window._getMapelEdit() : [];
 
                 function selesaiUpdateGuru() {
                     modalEdit.hide();
@@ -1834,46 +1869,90 @@
     loadList('', 'aktif');
 
     /* ============================================================
-       FITUR MAPEL GURU  –  multi-select dropdown (inline)
+       FITUR MAPEL GURU  –  checkbox list (dengan search filter)
     ============================================================ */
     var selectedMapelIds = [];   /* dipakai saat submit tambah guru */
     var allMapelCache    = [];   /* cache semua mapel dari server */
 
-    /* -- Populate <select> dengan opsi mapel -- */
-    function populateMapelSelect(selectEl, dipilihIds) {
-        selectEl.innerHTML = '';
+    /* ----------------------------------------------------------------
+       Render checkbox list ke dalam container
+       containerId : 'cbListTambah' | 'cbListEdit'
+       dipilihIds  : array string ID yang harus ter-centang
+    ---------------------------------------------------------------- */
+    function renderCheckboxList(containerId, dipilihIds, filterTeks) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        var dipilih = (dipilihIds || []).map(String);
+        var filter  = (filterTeks || '').toLowerCase().trim();
+
+        var tampil = allMapelCache.filter(function (m) {
+            return !filter || m.nama_mapel.toLowerCase().indexOf(filter) > -1;
+        });
+
         if (!allMapelCache.length) {
-            var opt = document.createElement('option');
-            opt.disabled = true;
-            opt.textContent = 'Belum ada mata pelajaran';
-            selectEl.appendChild(opt);
+            container.innerHTML = '<p class="mapel-cb-empty">Belum ada mata pelajaran terdaftar.</p>';
             return;
         }
-        allMapelCache.forEach(function (m) {
-            var opt    = document.createElement('option');
-            opt.value  = String(m.id);
-            opt.textContent = m.nama_mapel;
-            if (dipilihIds && dipilihIds.indexOf(String(m.id)) > -1) {
-                opt.selected = true;
-            }
-            selectEl.appendChild(opt);
+        if (!tampil.length) {
+            container.innerHTML = '<p class="mapel-cb-empty">Tidak ditemukan.</p>';
+            return;
+        }
+
+        container.innerHTML = tampil.map(function (m) {
+            var checked = dipilih.indexOf(String(m.id)) > -1;
+            var cbId    = 'cb_' + containerId + '_' + m.id;
+            return '<label class="mapel-cb-item" for="' + cbId + '">'
+                + '<input type="checkbox" id="' + cbId + '" value="' + m.id + '"'
+                + (checked ? ' checked' : '') + '>'
+                + '<span class="mapel-cb-box"></span>'
+                + '<span class="mapel-cb-label">' + escHtml(m.nama_mapel) + '</span>'
+                + '</label>';
+        }).join('');
+
+        /* Pasang event listener ke tiap checkbox */
+        container.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                onCheckboxChange(containerId);
+            });
         });
     }
 
-    /* -- Baca nilai yang dipilih dari select element -- */
-    function getSelectedFromSelect(selectEl) {
-        return Array.from(selectEl.selectedOptions).map(function (o) { return o.value; });
+    /* ----------------------------------------------------------------
+       Baca semua checkbox yang ter-centang di container
+    ---------------------------------------------------------------- */
+    function getCheckedIds(containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(function (cb) { return cb.value; });
     }
 
-    /* -- Update info teks "X dipilih" -- */
-    function updateMapelInfo(selectEl, infoId) {
-        var count = selectEl.selectedOptions.length;
+    /* ----------------------------------------------------------------
+       Update teks "X dipilih"
+    ---------------------------------------------------------------- */
+    function updateInfoTeks(containerId, infoId) {
+        var count = getCheckedIds(containerId).length;
         var el    = document.getElementById(infoId);
         if (!el) return;
         el.textContent = count > 0 ? count + ' mata pelajaran dipilih' : '';
     }
 
-    /* -- Load semua mapel dari server (cache sekali) -- */
+    /* ----------------------------------------------------------------
+       Callback saat checkbox berubah
+    ---------------------------------------------------------------- */
+    function onCheckboxChange(containerId) {
+        if (containerId === 'cbListTambah') {
+            selectedMapelIds = getCheckedIds('cbListTambah');
+            updateInfoTeks('cbListTambah', 'tambahMapelInfo');
+        } else {
+            updateInfoTeks('cbListEdit', 'editMapelInfo');
+        }
+    }
+
+    /* ----------------------------------------------------------------
+       Load semua mapel dari server (cache sekali)
+    ---------------------------------------------------------------- */
     function loadAllMapel(cb) {
         if (allMapelCache.length) { if (cb) cb(); return; }
         fetch('{{ route("admin.data_guru.semua_mapel") }}', {
@@ -1887,7 +1966,9 @@
         .catch(function () { if (cb) cb(); });
     }
 
-    /* ---- Tampilkan section mapel saat user masuk step 2 ---- */
+    /* ----------------------------------------------------------------
+       Step 2 modal tambah: tampilkan checkbox mapel
+    ---------------------------------------------------------------- */
     var origGoToStep = goToStep;
     goToStep = function (step) {
         origGoToStep(step);
@@ -1896,53 +1977,72 @@
 
         if (step === 2) {
             loadAllMapel(function () {
-                var sel = document.getElementById('selectMapelTambah');
-                populateMapelSelect(sel, selectedMapelIds);
-                updateMapelInfo(sel, 'tambahMapelInfo');
+                renderCheckboxList('cbListTambah', selectedMapelIds, '');
+                updateInfoTeks('cbListTambah', 'tambahMapelInfo');
             });
         }
     };
 
-    /* Listener perubahan pilihan pada select tambah */
-    document.getElementById('selectMapelTambah').addEventListener('change', function () {
-        selectedMapelIds = getSelectedFromSelect(this);
-        updateMapelInfo(this, 'tambahMapelInfo');
+    /* Search filter modal tambah */
+    document.getElementById('searchMapelTambah').addEventListener('input', function () {
+        renderCheckboxList('cbListTambah', getCheckedIds('cbListTambah'), this.value);
+        updateInfoTeks('cbListTambah', 'tambahMapelInfo');
     });
 
-    /* ---- Reset mapel saat form tambah direset ---- */
+    /* ----------------------------------------------------------------
+       Reset mapel saat form tambah direset
+    ---------------------------------------------------------------- */
     var origResetTambahForm = resetTambahForm;
     resetTambahForm = function () {
         origResetTambahForm();
         selectedMapelIds = [];
         allMapelCache    = [];
-        var sel = document.getElementById('selectMapelTambah');
-        if (sel) {
-            sel.innerHTML = '';
-            var opt = document.createElement('option');
-            opt.disabled = true;
-            opt.textContent = '— Memuat...';
-            sel.appendChild(opt);
-        }
+        var container = document.getElementById('cbListTambah');
+        if (container) container.innerHTML = '<p class="mapel-cb-empty">Memuat...</p>';
+        var search = document.getElementById('searchMapelTambah');
+        if (search) search.value = '';
         var info = document.getElementById('tambahMapelInfo');
         if (info) info.textContent = '';
     };
 
-    /* ---- Modal Edit: load & populate select mapel ---- */
-    /* Dipanggil dari openEditModal() setelah data guru berhasil di-fetch */
+    /* ----------------------------------------------------------------
+       Modal Edit: populate checkbox dari data server
+       Dipanggil dari openEditModal()
+    ---------------------------------------------------------------- */
     window._populateEditMapelSelect = function (semua, dipilih) {
         allMapelCache = semua;
-        var sel = document.getElementById('selectMapelEdit');
-        populateMapelSelect(sel, dipilih);
-        updateMapelInfo(sel, 'editMapelInfo');
+        var search = document.getElementById('searchMapelEdit');
+        if (search) search.value = '';
+        renderCheckboxList('cbListEdit', dipilih, '');
+        updateInfoTeks('cbListEdit', 'editMapelInfo');
     };
 
-    document.getElementById('selectMapelEdit').addEventListener('change', function () {
-        updateMapelInfo(this, 'editMapelInfo');
+    /* Search filter modal edit */
+    document.getElementById('searchMapelEdit').addEventListener('input', function () {
+        renderCheckboxList('cbListEdit', getCheckedIds('cbListEdit'), this.value);
+        updateInfoTeks('cbListEdit', 'editMapelInfo');
     });
 
+    /* ----------------------------------------------------------------
+       Override getSelectedFromSelect (dipanggil oleh submit handler)
+       Sekarang baca dari checkbox, bukan dari <select>
+    ---------------------------------------------------------------- */
+    function getSelectedFromSelect(ignored) {
+        /* ignored: parameter select element lama — tidak dipakai lagi */
+        /* Tebak konteks dari caller: submit edit atau tambah?
+           Gunakan argument yang diteruskan berupa null/undefined untuk tambah,
+           atau element untuk edit — kita tidak punya cara membedakan selain
+           nama container yang berbeda. Solusi: expose via closure dari masing-masing caller. */
+        return [];   /* fallback — override spesifik di bawah */
+    }
+
+    /* Override spesifik untuk modal tambah (setelah guru baru dibuat) */
+    window._getMapelTambah = function () { return getCheckedIds('cbListTambah'); };
+
+    /* Override spesifik untuk modal edit */
+    window._getMapelEdit = function () { return getCheckedIds('cbListEdit'); };
+
     /* ---- Simpan mapel edit saat klik Simpan di modal edit ---- */
-    /* Disisipkan ke dalam btnSimpanEdit: setelah update guru berhasil,
-       langsung POST mapel dari selectMapelEdit */
     var origBtnSimpanEdit = document.getElementById('btnSimpanEdit');
     origBtnSimpanEdit._origClickHandled = true;   /* flag untuk skip double-bind */
 

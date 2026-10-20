@@ -291,6 +291,138 @@ class AbsenMuridController extends Controller
         return view('guru.absen_murid');
     }
 
+    /* ----------------------------------------------------------------
+       GURU HARI INI LIST  –  AJAX: daftar absen murid hari ini
+       Menampilkan semua absen (hadir/izin/tidak) dari jadwal guru
+       yang login hari ini, dengan/tanpa dikonfirmasi.
+    ---------------------------------------------------------------- */
+    public function guruHariIniList(Request $request)
+    {
+        $guruId    = auth()->id();
+        $tgl       = Carbon::today()->toDateString();
+        $jadwalIds = JadwalMengajar::with(['kelas','mapel'])
+                        ->where('user_id', $guruId)
+                        ->get()
+                        ->keyBy('id');
+
+        if ($jadwalIds->isEmpty()) {
+            return response()->json(['rows' => [], 'tanggal' => $tgl]);
+        }
+
+        $absens = AbsenMurid::with(['murid', 'jadwal.kelas', 'jadwal.mapel'])
+            ->whereIn('jadwal_mengajar_id', $jadwalIds->keys())
+            ->where('tanggal_absen', $tgl)
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id'             => $a->id,
+                    'nama'           => $a->murid?->name ?? '-',
+                    'username'       => $a->murid?->username ?? '-',
+                    'avatar'         => strtoupper(mb_substr($a->murid?->name ?? 'M', 0, 1)),
+                    'kelas'          => $a->jadwal?->kelas?->nama_kelas ?? '-',
+                    'mapel'          => $a->jadwal?->mapel?->nama_mapel ?? '-',
+                    'jam_mulai'      => $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
+                    'jam_berakhir'   => $a->jadwal ? substr($a->jadwal->waktu_berakhir, 0, 5) : '-',
+                    'status'         => $a->status,
+                    'kode_absen'     => $a->kode_absen ?? '-',
+                    'via_qr'         => ($a->kode_absen === 'QR-SCAN'),
+                    'alasan'         => $a->alasan ?? '',
+                    'dikonfirmasi'   => !is_null($a->dikonfirmasi_at),
+                    'waktu'          => $a->created_at ? $a->created_at->format('H:i') : '-',
+                ];
+            });
+
+        return response()->json(['rows' => $absens, 'tanggal' => $tgl]);
+    }
+
+    /* ----------------------------------------------------------------
+       GURU SCAN PAGE  –  Halaman scan QR murid
+    ---------------------------------------------------------------- */
+    public function guruScanPage()
+    {
+        return view('guru.scan');
+    }
+
+    /* ----------------------------------------------------------------
+       GURU SCAN QR  –  Proses QR scan dari kamera guru
+       Payload: { user_id: int, jadwal_id: int }
+    ---------------------------------------------------------------- */
+    public function guruScanQr(Request $request)
+    {
+        $request->validate([
+            'user_id'  => 'required|integer|exists:users,id',
+            'jadwal_id'=> 'required|integer|exists:jadwal_mengajar,id',
+        ]);
+
+        $murid  = \App\Models\User::where('id', $request->user_id)
+                                   ->where('role', 'murid')
+                                   ->first();
+
+        if (!$murid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Murid tidak ditemukan. Pastikan QR yang di-scan adalah QR absen murid.',
+            ], 404);
+        }
+
+        $jadwal     = JadwalMengajar::findOrFail($request->jadwal_id);
+        $tglHariIni = Carbon::today()->toDateString();
+        $sekarang   = Carbon::now();
+        $nowHi      = $sekarang->format('H:i');
+        $jamMulaiHi = substr($jadwal->waktu_mulai, 0, 5);
+        $jamAkhirHi = substr($jadwal->waktu_berakhir, 0, 5);
+
+        /* Validasi: murid harus peserta kelas tersebut */
+        $isAnggota = \App\Models\PesertaKelas::where('user_id', $murid->id)
+                                              ->where('kelas_id', $jadwal->kelas_id)
+                                              ->exists();
+        if (!$isAnggota) {
+            return response()->json([
+                'success' => false,
+                'nama'    => $murid->name,
+                'message' => $murid->name . ' bukan peserta kelas ' . ($jadwal->kelas?->nama_kelas ?? '') . '.',
+            ], 422);
+        }
+
+        /* Cek duplikat */
+        $sudahAbsen = AbsenMurid::where('user_id', $murid->id)
+                                 ->where('jadwal_mengajar_id', $jadwal->id)
+                                 ->where('tanggal_absen', $tglHariIni)
+                                 ->exists();
+
+        if ($sudahAbsen) {
+            return response()->json([
+                'success'     => false,
+                'sudah_absen' => true,
+                'nama'        => $murid->name,
+                'kelas'       => $jadwal->kelas?->nama_kelas ?? '-',
+                'mapel'       => $jadwal->mapel?->nama_mapel ?? '-',
+                'message'     => $murid->name . ' sudah tercatat absen untuk jadwal ini.',
+            ], 422);
+        }
+
+        /* Simpan absen hadir via QR — langsung dikonfirmasi karena guru yang scan */
+        AbsenMurid::create([
+            'user_id'            => $murid->id,
+            'jadwal_mengajar_id' => $jadwal->id,
+            'tanggal_absen'      => $tglHariIni,
+            'kode_absen'         => 'QR-SCAN',
+            'status'             => 'hadir',
+            'alasan'             => null,
+            'foto_selfie'        => null,
+            'dikonfirmasi_at'    => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'nama'    => $murid->name,
+            'kelas'   => $jadwal->kelas?->nama_kelas ?? '-',
+            'mapel'   => $jadwal->mapel?->nama_mapel ?? '-',
+            'message' => $murid->name . ' berhasil dicatat hadir.',
+        ]);
+    }
+
     /* ================================================================
        ADMIN — rekap absensi semua murid (read-only)
     ================================================================ */
