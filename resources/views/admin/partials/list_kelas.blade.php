@@ -66,9 +66,9 @@
     }
 
     .count-chip-murid {
-        background: rgba(34,211,238,0.1);
-        color: #22d3ee;
-        border: 1px solid rgba(34,211,238,0.18);
+        background: rgba(74,222,128,0.1);
+        color: #4ade80;
+        border: 1px solid rgba(74,222,128,0.2);
     }
 
     .count-chip-zero {
@@ -91,12 +91,12 @@
     .btn-aksi-kelas:hover { transform: translateY(-1px); }
 
     .btn-k-detail {
-        background: rgba(34,211,238,0.1);
-        color: #22d3ee;
-        border: 1px solid rgba(34,211,238,0.2);
+        background: rgba(251,191,36,0.1);
+        color: #fbbf24;
+        border: 1px solid rgba(251,191,36,0.22);
     }
 
-    .btn-k-detail:hover { background: rgba(34,211,238,0.2); }
+    .btn-k-detail:hover { background: rgba(245,158,11,0.2); }
 
     .btn-k-edit {
         background: rgba(74,222,128,0.12);
@@ -146,6 +146,26 @@
     @media (max-width: 767.98px) {
         .k-col-hide-sm { display: none; }
     }
+
+    /* Baris tersembunyi (limit 20) */
+    .kelas-row-hidden { display: none; }
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
 </style>
 
 <div class="kelas-table-wrap">
@@ -174,7 +194,7 @@
                     $totalGuru  = $item->guru->count();
                     $totalMurid = $item->murid->count();
                 @endphp
-                <tr>
+                <tr class="{{ $i >= 20 ? 'kelas-row-hidden' : '' }}">
                     <td style="color:rgba(255,255,255,0.3); font-size:0.78rem;">{{ $i + 1 }}</td>
 
                     <td>
@@ -241,3 +261,23 @@
     @endif
 
 </div>
+
+@if($kelas->count() > 20)
+<div class="btn-lihat-semua-wrap" id="kelasLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnKelasLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $kelas->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnKelasLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.kelas-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('kelasLihatWrap').style.display = 'none';
+    });
+}());
+</script>

@@ -207,54 +207,6 @@
             border-radius: 10px;
         }
 
-        /* ---- Logout di bawah ---- */
-        .sidebar-footer {
-            padding: 0.75rem 0.5rem;
-            border-top: 1px solid rgba(74, 222, 128, 0.1);
-            flex-shrink: 0;
-        }
-
-        .sidebar-footer form {
-            margin: 0;
-        }
-
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            padding: 0.65rem 1.1rem;
-            border-radius: 10px;
-            color: rgba(255, 100, 100, 0.75);
-            background: none;
-            border: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
-            transition: background 0.18s, color 0.18s;
-            white-space: nowrap;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-logout:hover {
-            background: rgba(248, 113, 113, 0.12);
-            color: #f87171;
-        }
-
-        .sidebar.collapsed .btn-logout {
-            justify-content: center;
-            padding: 0.65rem;
-            width: 42px;
-            margin: 0 auto;
-        }
-
-        .sidebar.collapsed .btn-logout .nav-label {
-            opacity: 0;
-            width: 0;
-        }
-
         /* ============================================================
            TOGGLE BUTTON
         ============================================================ */
@@ -579,13 +531,26 @@
             .notif-dropdown { width: 280px; right: -60px; }
         }
 
+        /* ---- Avatar dropdown di topbar ---- */
+        .topbar-user-wrap {
+            position: relative;
+        }
+
         .topbar-user {
             display: flex;
             align-items: center;
             gap: 0.6rem;
             font-size: 0.85rem;
             color: rgba(255,255,255,0.72);
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+            border-radius: 10px;
+            transition: background 0.18s;
+            user-select: none;
+            -webkit-user-select: none;
         }
+
+        .topbar-user:hover { background: rgba(74,222,128,0.08); }
 
         .topbar-avatar {
             width: 32px;
@@ -600,6 +565,67 @@
             color: #064e2e;
             flex-shrink: 0;
         }
+
+        .topbar-user-caret {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.35);
+            transition: transform 0.2s;
+        }
+
+        .topbar-user-wrap.open .topbar-user-caret { transform: rotate(180deg); }
+
+        .topbar-user-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 188px;
+            background: #0a2e1c;
+            border: 1px solid rgba(74,222,128,0.18);
+            border-radius: 12px;
+            box-shadow: 0 10px 36px rgba(0,0,0,0.45);
+            z-index: 1200;
+            overflow: hidden;
+            animation: dropIn 0.16s ease;
+        }
+
+        .topbar-user-wrap.open .topbar-user-dropdown { display: block; }
+
+        .topbar-dd-header {
+            padding: 0.75rem 1rem 0.6rem;
+            border-bottom: 1px solid rgba(74,222,128,0.1);
+        }
+
+        .topbar-dd-name {
+            font-size: 0.85rem; font-weight: 700; color: #fff;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .topbar-dd-role {
+            font-size: 0.65rem; font-weight: 600; color: #4ade80;
+            text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.1rem;
+        }
+
+        .topbar-dd-item {
+            display: flex; align-items: center; gap: 0.65rem;
+            padding: 0.65rem 1rem;
+            font-size: 0.845rem; font-weight: 500;
+            color: rgba(255,255,255,0.72);
+            text-decoration: none; cursor: pointer;
+            background: none; border: none; width: 100%;
+            text-align: left; font-family: 'Inter', sans-serif;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .topbar-dd-item:hover { background: rgba(74,222,128,0.07); color: #fff; }
+        .topbar-dd-item i { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; }
+
+        .topbar-dd-item-logout {
+            color: rgba(248,113,113,0.75);
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .topbar-dd-item-logout:hover { background: rgba(248,113,113,0.08); color: #f87171; }
 
         .topbar-badge {
             font-size: 0.68rem;
@@ -767,27 +793,7 @@
             <span class="nav-label">Jadwal Mengajar</span>
         </a>
 
-        <div class="sidebar-section-label">Akun</div>
-
-        <a href="{{ route('admin.profile') }}"
-           class="nav-item-link {{ request()->routeIs('admin.profile') ? 'active' : '' }}"
-           title="Profil">
-            <i class="bi bi-person-circle nav-icon"></i>
-            <span class="nav-label">Profil</span>
-        </a>
-
     </nav>
-
-    <!-- Logout -->
-    <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}" id="sidebarLogoutForm">
-            @csrf
-            <button type="button" class="btn-logout" onclick="confirmLogout()" title="Log Out">
-                <i class="bi bi-box-arrow-left nav-icon"></i>
-                <span class="nav-label">Log Out</span>
-            </button>
-        </form>
-    </div>
 
 </aside>
 
@@ -812,8 +818,6 @@
         </div>
 
         <div class="topbar-right">
-            <span class="topbar-badge">Admin</span>
-
             <!-- Lonceng notifikasi (guru + murid) -->
             <div class="notif-btn-wrap" id="notifBtnWrap">
                 <button class="notif-btn" id="notifBtn"
@@ -835,11 +839,39 @@
                 </div>
             </div>
 
-            <div class="topbar-user">
-                <div class="topbar-avatar">
-                    {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+            <div class="topbar-user-wrap" id="topbarUserWrap">
+                <div class="topbar-user" id="topbarUserBtn" role="button"
+                     aria-haspopup="true" aria-expanded="false" tabindex="0"
+                     title="Profil & Keluar">
+                    <div class="topbar-avatar">
+                        {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                    </div>
+                    <span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
+                    <i class="bi bi-chevron-down topbar-user-caret"></i>
                 </div>
-                <span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
+
+                <!-- Dropdown menu -->
+                <div class="topbar-user-dropdown" id="topbarUserDropdown"
+                     role="menu" aria-label="Menu akun">
+                    <div class="topbar-dd-header">
+                        <div class="topbar-dd-name">{{ Auth::user()->name ?? 'Admin' }}</div>
+                        <div class="topbar-dd-role"><i class="bi bi-shield-fill-check me-1"></i>Administrator</div>
+                    </div>
+                    <a href="{{ route('admin.profile') }}" class="topbar-dd-item" role="menuitem">
+                        <i class="bi bi-person-circle" style="color:#4ade80;"></i>
+                        Profil Saya
+                    </a>
+                    <button type="button" class="topbar-dd-item topbar-dd-item-logout"
+                            onclick="confirmLogout()" role="menuitem">
+                        <i class="bi bi-box-arrow-left"></i>
+                        Keluar
+                    </button>
+                </div>
+
+                <!-- Form logout (hidden) -->
+                <form method="POST" action="{{ route('logout') }}" id="topbarLogoutForm" style="display:none;">
+                    @csrf
+                </form>
             </div>
         </div>
     </header>
@@ -925,10 +957,39 @@
             color: '#ffffff',
         }).then(function (result) {
             if (result.isConfirmed) {
-                document.getElementById('sidebarLogoutForm').submit();
+                document.getElementById('topbarLogoutForm').submit();
             }
         });
     };
+
+    /* ----------------------------------------------------------------
+       AVATAR DROPDOWN TOPBAR
+    ---------------------------------------------------------------- */
+    var userWrap     = document.getElementById('topbarUserWrap');
+    var userBtn      = document.getElementById('topbarUserBtn');
+    var userDropdown = document.getElementById('topbarUserDropdown');
+
+    if (userBtn) {
+        userBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var isOpen = userWrap.classList.toggle('open');
+            userBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        userBtn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                userBtn.click();
+            }
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        if (userWrap && !userWrap.contains(e.target)) {
+            userWrap.classList.remove('open');
+            if (userBtn) userBtn.setAttribute('aria-expanded', 'false');
+        }
+    });
 
 }());
 </script>

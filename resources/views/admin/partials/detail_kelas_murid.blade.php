@@ -22,10 +22,10 @@
                         @if($p->user && $p->user->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($p->user->image))
                             <img src="{{ asset('storage/'.$p->user->image) }}"
                                  alt="Foto {{ $p->user->name }}" class="anggota-avatar"
-                                 style="border-color:rgba(34,211,238,0.25);">
+                                 style="border-color:rgba(251,191,36,0.28);">
                         @else
                             <span class="anggota-avatar-init"
-                                  style="background:linear-gradient(135deg,#0e4a7a,#22d3ee);color:#0a2040;">
+                                  style="background:linear-gradient(135deg,#78350f,#fbbf24);color:#422006;">
                                 {{ strtoupper(mb_substr($p->user->name ?? 'M', 0, 1)) }}
                             </span>
                         @endif
@@ -33,7 +33,7 @@
                             <div class="anggota-name text-truncate" style="max-width:180px;">
                                 {{ $p->user->name ?? '-' }}
                             </div>
-                            <div class="anggota-username" style="color:rgba(34,211,238,0.65);">
+                            <div class="anggota-username" style="color:rgba(251,191,36,0.7);">
                                 {{ '@'.($p->user->username ?? '-') }}
                             </div>
                         </div>

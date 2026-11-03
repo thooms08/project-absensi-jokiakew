@@ -363,7 +363,7 @@
                     </div>
 
                     <div class="mb-1">
-                        <label class="form-label-dark">Wali Kelas (opsional)</label>
+                        <label class="form-label-dark">Wali Kelas</label>
                         <div class="wali-display" id="tWaliDisplay"
                              onclick="bukaPickWali('tambah')" role="button" tabindex="0"
                              aria-label="Pilih wali kelas">
@@ -418,7 +418,7 @@
                     </div>
 
                     <div class="mb-1">
-                        <label class="form-label-dark">Wali Kelas (opsional)</label>
+                        <label class="form-label-dark">Wali Kelas</label>
                         <div class="wali-display" id="eWaliDisplay"
                              onclick="bukaPickWali('edit')" role="button" tabindex="0"
                              aria-label="Pilih wali kelas">

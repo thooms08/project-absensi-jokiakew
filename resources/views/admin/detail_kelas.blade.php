@@ -235,7 +235,7 @@
 
     .label-wali  { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
     .label-guru  { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.22); }
-    .label-murid { background: rgba(34,211,238,0.1); color: #22d3ee; border: 1px solid rgba(34,211,238,0.2); }
+    .label-murid { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.22); }
 
     .btn-hapus-anggota {
         width: 30px; height: 30px;
@@ -428,12 +428,12 @@
     .btn-select-all-guru:hover { background: rgba(74,222,128,0.15); }
 
     .btn-select-all-murid {
-        background: rgba(34,211,238,0.08);
-        border-color: rgba(34,211,238,0.2);
-        color: rgba(34,211,238,0.85);
+        background: rgba(251,191,36,0.08);
+        border-color: rgba(251,191,36,0.22);
+        color: rgba(251,191,36,0.9);
     }
 
-    .btn-select-all-murid:hover { background: rgba(34,211,238,0.15); }
+    .btn-select-all-murid:hover { background: rgba(251,191,36,0.16); }
 
     /* Custom checkbox visual — sembunyikan default, ganti dengan kotak custom */
     .pick-cb-wrap {
@@ -467,16 +467,16 @@
     }
 
     .pick-cb-wrap-murid {
-        border-color: rgba(34,211,238,0.35);
+        border-color: rgba(251,191,36,0.35);
     }
 
     .pick-cb-wrap-murid.checked {
-        background: #22d3ee;
-        border-color: #22d3ee;
+        background: #fbbf24;
+        border-color: #fbbf24;
     }
 
     .pick-cb-wrap-murid.checked::after {
-        border-color: #0a2040;
+        border-color: #422006;
     }
 </style>
 @endpush
@@ -558,10 +558,10 @@
 <div class="anggota-panel" id="panelMurid">
     <div class="anggota-panel-header">
         <div class="anggota-panel-title">
-            <i class="bi bi-people-fill" style="color:#22d3ee;"></i>
+            <i class="bi bi-people-fill" style="color:#fbbf24;"></i>
             Murid Kelas
             <span class="anggota-count-badge" id="countMurid"
-                  style="background:rgba(34,211,238,0.1);color:#22d3ee;border-color:rgba(34,211,238,0.2);">
+                  style="background:rgba(251,191,36,0.1);color:#fbbf24;border-color:rgba(251,191,36,0.22);">
                 {{ $jumlahMurid }}
             </span>
         </div>
@@ -627,7 +627,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalPickMuridLabel">
-                    <i class="bi bi-people-fill me-2" style="color:#22d3ee;"></i>
+                    <i class="bi bi-people-fill me-2" style="color:#fbbf24;"></i>
                     Tambah Murid ke Kelas
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
@@ -636,7 +636,7 @@
                 <input type="text" id="pickMuridSearch" class="pick-search"
                        placeholder="Cari nama murid..." autocomplete="off">
                 <div id="muridSelectedInfo"
-                     style="font-size:0.75rem;color:rgba(34,211,238,0.7);margin-bottom:0.6rem;min-height:1.1rem;"></div>
+                     style="font-size:0.75rem;color:rgba(251,191,36,0.75);margin-bottom:0.6rem;min-height:1.1rem;"></div>
                 <div class="pick-list" id="pickMuridList">
                     <div class="pick-empty"><span class="spinner-green"></span></div>
                 </div>
@@ -651,7 +651,7 @@
                 <div class="d-flex gap-2">
                     <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" id="btnKonfirmasiMurid" class="btn-modal-primary" disabled
-                            style="background:linear-gradient(135deg,#0a5878,#22d3ee);">
+                            style="background:linear-gradient(135deg,#b45309,#fbbf24);color:#422006;">
                         <i class="bi bi-check-lg"></i>
                         <span id="btnKonfirmasiMuridLabel">Tambahkan (0)</span>
                     </button>
@@ -948,7 +948,7 @@
             var id = cb.dataset.id;
             if (selectedMurid[id]) {
                 cb.classList.add('checked');
-                cb.closest('.pick-item').style.background = 'rgba(34,211,238,0.07)';
+                cb.closest('.pick-item').style.background = 'rgba(251,191,36,0.07)';
             } else {
                 cb.classList.remove('checked');
                 cb.closest('.pick-item').style.background = '';
@@ -973,16 +973,16 @@
             var html = '';
             list.forEach(function (m) {
                 var isChecked = !!selectedMurid[m.id];
-                var rowBg     = isChecked ? 'rgba(34,211,238,0.07)' : '';
+                var rowBg     = isChecked ? 'rgba(251,191,36,0.07)' : '';
                 html += '<div class="pick-item" style="cursor:pointer;border-radius:8px;background:' + rowBg + ';gap:0.75rem;"'
                     +   ' onclick="toggleMuridCheck(\'' + m.id + '\',\'' + escHtml(m.name) + '\')">'
                     + '<div class="pick-cb-wrap pick-cb-wrap-murid ' + (isChecked ? 'checked' : '') + '" data-id="' + m.id + '"></div>'
-                    + '<div class="pick-avatar" style="background:linear-gradient(135deg,#0e4a7a,#22d3ee);color:#0a2040;">'
+                    + '<div class="pick-avatar" style="background:linear-gradient(135deg,#78350f,#fbbf24);color:#422006;">'
                     +   escHtml(m.name.charAt(0).toUpperCase())
                     + '</div>'
                     + '<div style="flex:1;min-width:0;">'
                     +   '<div class="pick-name text-truncate">' + escHtml(m.name) + '</div>'
-                    +   '<div class="pick-uname" style="color:rgba(34,211,238,0.65);">@' + escHtml(m.username) + '</div>'
+                    +   '<div class="pick-uname" style="color:rgba(251,191,36,0.7);">@' + escHtml(m.username) + '</div>'
                     + '</div>'
                     + '</div>';
             });

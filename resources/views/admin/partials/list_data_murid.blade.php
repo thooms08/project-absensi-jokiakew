@@ -237,11 +237,11 @@
     .btn-m-restore:hover { background: rgba(74,222,128,0.2); }
 
     .btn-m-qr {
-        background: rgba(56,189,248,0.1);
-        color: #38bdf8;
-        border: 1px solid rgba(56,189,248,0.2);
+        background: rgba(251,191,36,0.1);
+        color: #fbbf24;
+        border: 1px solid rgba(251,191,36,0.22);
     }
-    .btn-m-qr:hover { background: rgba(56,189,248,0.2); }
+    .btn-m-qr:hover { background: rgba(251,191,36,0.2); }
 
     .btn-m-force {
         background: rgba(248,113,113,0.08);
@@ -295,21 +295,43 @@
         .murid-table   { min-width: 420px; }
     }
 
+    /* Baris tersembunyi (limit 20) */
+    .murid-row-hidden { display: none; }
+
+    /* Tombol lihat semua */
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
+
     /* ============================================================
        MODAL QR CODE
     ============================================================ */
     .modal-qr .modal-content {
         background: #0a2e1c;
-        border: 1px solid rgba(56,189,248,0.22);
+        border: 1px solid rgba(251,191,36,.22);
         border-radius: 18px;
         color: #e2f5ea;
     }
     .modal-qr .modal-header {
-        border-bottom: 1px solid rgba(56,189,248,0.12);
+        border-bottom: 1px solid rgba(251,191,36,.12);
         padding: 1.1rem 1.4rem 1rem;
     }
     .modal-qr .modal-title  { font-size: 1rem; font-weight: 700; color: #fff; }
-    .modal-qr .modal-footer { border-top: 1px solid rgba(56,189,248,0.12); padding: .9rem 1.4rem; }
+    .modal-qr .modal-footer { border-top: 1px solid rgba(251,191,36,.12); padding: .9rem 1.4rem; }
     .modal-qr .btn-close    { filter: invert(1) brightness(.7); }
     .modal-qr .modal-body   { padding: 1.5rem 1.4rem; text-align: center; }
 
@@ -325,17 +347,17 @@
         font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .2rem;
     }
     .qr-murid-user {
-        font-size: .78rem; color: rgba(56,189,248,.75); margin-bottom: 1rem;
+        font-size: .78rem; color: rgba(251,191,36,.75); margin-bottom: 1rem;
     }
     .btn-download-qr {
         display: inline-flex; align-items: center; gap: .5rem;
-        background: linear-gradient(135deg, #0369a1, #38bdf8);
-        border: none; border-radius: 10px; color: #fff;
-        font-size: .875rem; font-weight: 600; padding: .55rem 1.35rem;
+        background: linear-gradient(135deg, #b45309, #fbbf24);
+        border: none; border-radius: 10px; color: #422006;
+        font-size: .875rem; font-weight: 700; padding: .55rem 1.35rem;
         cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none;
         transition: opacity .18s, transform .18s;
     }
-    .btn-download-qr:hover { opacity: .88; transform: translateY(-1px); color: #fff; }
+    .btn-download-qr:hover { opacity: .88; transform: translateY(-1px); color: #422006; }
     .btn-modal-sec-qr {
         background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
         border-radius: 10px; color: rgba(255,255,255,.72);
@@ -407,7 +429,7 @@
             </thead>
             <tbody>
                 @foreach($murid as $index => $item)
-                <tr>
+                <tr class="{{ $index >= 20 ? 'murid-row-hidden' : '' }}">
                     {{-- Nomor --}}
                     <td style="color:rgba(255,255,255,0.3); font-size:0.78rem;">
                         {{ $index + 1 }}
@@ -543,7 +565,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalQrMuridTitle">
-                    <i class="bi bi-qr-code me-2" style="color:#38bdf8;"></i>
+                    <i class="bi bi-qr-code me-2" style="color:#fbbf24;"></i>
                     QR Code Absen
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
@@ -626,6 +648,26 @@
         if (!btn) return;
         generateQR(btn.dataset.qrId, btn.dataset.qrNama, btn.dataset.qrUsername);
         modalQr.show();
+    });
+}());
+</script>
+
+@if($murid->count() > 20)
+<div class="btn-lihat-semua-wrap" id="muridLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnMuridLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $murid->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnMuridLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.murid-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('muridLihatWrap').style.display = 'none';
     });
 }());
 </script>

@@ -90,6 +90,26 @@
 
     @media (max-width:767.98px) { .ag-col-hide-sm { display:none; } }
     @media (max-width:575.98px) { .ag-col-hide-xs { display:none; } .ag-table { min-width:420px; } }
+
+    /* Baris tersembunyi (limit 20) */
+    .ag-row-hidden { display: none; }
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
 </style>
 
 @php
@@ -141,7 +161,7 @@
                     $izin   = $row['total_izin'];
                     $tidak  = $row['total_tidak'];
                 @endphp
-                <tr>
+                <tr class="{{ $i >= 20 ? 'ag-row-hidden' : '' }}">
                     {{-- No --}}
                     <td style="color:rgba(255,255,255,0.3);font-size:0.78rem;">{{ $i + 1 }}</td>
 
@@ -158,7 +178,7 @@
 
                     {{-- Hadir --}}
                     <td style="text-align:center;">
-                        <span class="cc {{ $hadir > 0 ? 'cc-hadir' : 'cc-zero' }}">
+                        <span class="cc {{ $hadir > 0 ? 'cc-hadir' : 'cc-zero' }}" data-val="{{ $hadir }}">
                             <i class="bi bi-check-circle-fill" style="font-size:0.6rem;"></i>
                             {{ $hadir }}
                         </span>
@@ -166,7 +186,7 @@
 
                     {{-- Izin --}}
                     <td style="text-align:center;">
-                        <span class="cc {{ $izin > 0 ? 'cc-izin' : 'cc-zero' }}">
+                        <span class="cc {{ $izin > 0 ? 'cc-izin' : 'cc-zero' }}" data-val="{{ $izin }}">
                             <i class="bi bi-envelope-fill" style="font-size:0.6rem;"></i>
                             {{ $izin }}
                         </span>
@@ -174,7 +194,7 @@
 
                     {{-- Tidak --}}
                     <td style="text-align:center;">
-                        <span class="cc {{ $tidak > 0 ? 'cc-tidak' : 'cc-zero' }}">
+                        <span class="cc {{ $tidak > 0 ? 'cc-tidak' : 'cc-zero' }}" data-val="{{ $tidak }}">
                             <i class="bi bi-x-circle-fill" style="font-size:0.6rem;"></i>
                             {{ $tidak }}
                         </span>
@@ -215,3 +235,23 @@
     @endif
 
 </div>
+
+@if($rekap->count() > 20)
+<div class="btn-lihat-semua-wrap" id="absenGuruLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnAbsenGuruLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $rekap->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnAbsenGuruLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.ag-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('absenGuruLihatWrap').style.display = 'none';
+    });
+}());
+</script>

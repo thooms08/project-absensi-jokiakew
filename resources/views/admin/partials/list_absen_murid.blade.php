@@ -10,9 +10,9 @@
     .am-table tbody tr:last-child td { border-bottom:none; }
     .am-table tbody tr:hover td { background:rgba(74,222,128,.03); }
 
-    .am-avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0a5878,#22d3ee);display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#0a2040;flex-shrink:0;border:2px solid rgba(34,211,238,.2); }
+    .am-avatar { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0a7c4a,#4ade80);display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#064e2e;flex-shrink:0;border:2px solid rgba(74,222,128,.25); }
     .am-name { font-weight:600;color:#fff;font-size:.875rem; }
-    .am-uname { font-size:.72rem;color:rgba(34,211,238,.6); }
+    .am-uname { font-size:.72rem;color:rgba(74,222,128,.65); }
 
     .cc { display:inline-flex;align-items:center;gap:.25rem;border-radius:50px;padding:.2rem .65rem;font-size:.75rem;font-weight:700;white-space:nowrap; }
     .cc-hadir { background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.22); }
@@ -37,6 +37,26 @@
 
     @media (max-width:767.98px) { .am-col-hide-sm { display:none; } }
     @media (max-width:575.98px) { .am-col-hide-xs { display:none; } .am-table { min-width:420px; } }
+
+    /* Baris tersembunyi (limit 20) */
+    .am-row-hidden { display: none; }
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
 </style>
 
 @php
@@ -81,7 +101,7 @@
                     $izin   = $row['total_izin'];
                     $tidak  = $row['total_tidak'];
                 @endphp
-                <tr>
+                <tr class="{{ $i >= 20 ? 'am-row-hidden' : '' }}">
                     <td style="color:rgba(255,255,255,.3);font-size:.78rem;">{{ $i + 1 }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
@@ -93,17 +113,17 @@
                         </div>
                     </td>
                     <td style="text-align:center;">
-                        <span class="cc {{ $hadir > 0 ? 'cc-hadir' : 'cc-zero' }}">
+                        <span class="cc {{ $hadir > 0 ? 'cc-hadir' : 'cc-zero' }}" data-val="{{ $hadir }}">
                             <i class="bi bi-check-circle-fill" style="font-size:.6rem;"></i>{{ $hadir }}
                         </span>
                     </td>
                     <td style="text-align:center;">
-                        <span class="cc {{ $izin > 0 ? 'cc-izin' : 'cc-zero' }}">
+                        <span class="cc {{ $izin > 0 ? 'cc-izin' : 'cc-zero' }}" data-val="{{ $izin }}">
                             <i class="bi bi-envelope-fill" style="font-size:.6rem;"></i>{{ $izin }}
                         </span>
                     </td>
                     <td style="text-align:center;">
-                        <span class="cc {{ $tidak > 0 ? 'cc-tidak' : 'cc-zero' }}">
+                        <span class="cc {{ $tidak > 0 ? 'cc-tidak' : 'cc-zero' }}" data-val="{{ $tidak }}">
                             <i class="bi bi-x-circle-fill" style="font-size:.6rem;"></i>{{ $tidak }}
                         </span>
                     </td>
@@ -123,3 +143,23 @@
         </table>
     @endif
 </div>
+
+@if($rekap->count() > 20)
+<div class="btn-lihat-semua-wrap" id="absenMuridLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnAbsenMuridLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $rekap->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnAbsenMuridLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.am-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('absenMuridLihatWrap').style.display = 'none';
+    });
+}());
+</script>

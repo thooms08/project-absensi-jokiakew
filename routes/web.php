@@ -10,6 +10,7 @@ use App\Http\Controllers\JadwalMengajarController;
 use App\Http\Controllers\AbsenGuruController;
 use App\Http\Controllers\AbsenMuridController;
 use App\Http\Controllers\KodeAbsenController;
+use App\Http\Controllers\ProfileController;
 
 /* ====================================================================
    HALAMAN UTAMA
@@ -52,9 +53,11 @@ Route::prefix('admin')
             return view('admin.index');
         })->name('dashboard');
 
-        Route::get('/profile', function () {
-            return view('admin.profile');
-        })->name('profile');
+        Route::get('/profile', [ProfileController::class, 'showAdmin'])->name('profile');
+        Route::post('/profile',                    [ProfileController::class, 'updateAdmin'])->name('profile.update');
+        Route::post('/profile/sekolah',            [ProfileController::class, 'updateSekolah'])->name('profile.sekolah');
+        Route::get('/profile/foto/{filename}',     [ProfileController::class, 'fotoAdmin'])->name('profile.foto');
+        Route::get('/profile/logo/{filename}',     [ProfileController::class, 'fotoSekolah'])->name('profile.logo');
 
         /* -- Data Guru -- */
         Route::get('/data-guru',                [DataGuruController::class, 'index'])->name('data_guru');

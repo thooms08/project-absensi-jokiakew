@@ -325,6 +325,28 @@
         .col-hide-xs { display: none; }
         .guru-table  { min-width: 420px; }
     }
+
+    /* Baris tersembunyi (limit 20) */
+    .guru-row-hidden { display: none; }
+
+    /* Tombol lihat semua */
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
 </style>
 
 {{-- ================================================================
@@ -389,7 +411,7 @@
             </thead>
             <tbody>
                 @foreach($guru as $index => $item)
-                <tr>
+                <tr class="{{ $index >= 20 ? 'guru-row-hidden' : '' }}">
                     {{-- Nomor --}}
                     <td style="color:rgba(255,255,255,0.3); font-size:0.78rem;">
                         {{ $index + 1 }}
@@ -521,3 +543,23 @@
     @endif
 
 </div>
+
+@if($guru->count() > 20)
+<div class="btn-lihat-semua-wrap" id="guruLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnGuruLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $guru->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnGuruLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.guru-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('guruLihatWrap').style.display = 'none';
+    });
+}());
+</script>

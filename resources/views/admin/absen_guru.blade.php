@@ -104,6 +104,25 @@
         .modal-dialog { margin:0.5rem; }
         .foto-grid { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
     }
+
+    /* Summary sejajar dengan action bar */
+    .absen-summary-bar {
+        display: none;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-left: auto;
+    }
+    .absen-summary-bar.visible { display: flex; }
+    .sum-label-txt { font-size: .72rem; font-weight: 600; color: rgba(255,255,255,.4); }
+    .sum-chip {
+        display: inline-flex; align-items: center; gap: .3rem;
+        border-radius: 50px; padding: .22rem .7rem;
+        font-size: .75rem; font-weight: 700; white-space: nowrap;
+    }
+    .sum-chip-hadir { background:rgba(34,197,94,.12);  color:#4ade80; border:1px solid rgba(34,197,94,.22); }
+    .sum-chip-izin  { background:rgba(251,191,36,.1);  color:#fbbf24; border:1px solid rgba(251,191,36,.2); }
+    .sum-chip-tidak { background:rgba(248,113,113,.1); color:#f87171; border:1px solid rgba(248,113,113,.2); }
 </style>
 @endpush
 
@@ -125,6 +144,14 @@
 
     <input type="month" id="inputBulan" class="input-bulan"
            value="{{ date('Y-m') }}" title="Filter bulan">
+
+    {{-- Summary sejajar kanan --}}
+    <div class="absen-summary-bar" id="summaryBarGuru" aria-live="polite">
+        <span class="sum-label-txt"><i class="bi bi-bar-chart-fill me-1"></i></span>
+        <span class="sum-chip sum-chip-hadir" id="sumGuruHadir"><i class="bi bi-check-circle-fill" style="font-size:.55rem;"></i> – Hadir</span>
+        <span class="sum-chip sum-chip-izin"  id="sumGuruIzin"><i class="bi bi-envelope-fill" style="font-size:.55rem;"></i> – Izin</span>
+        <span class="sum-chip sum-chip-tidak" id="sumGuruTidak"><i class="bi bi-x-circle-fill" style="font-size:.55rem;"></i> – Tidak Hadir</span>
+    </div>
 </div>
 
 <div class="list-container" id="listContainer">
@@ -255,6 +282,33 @@
                 bukaModalFoto(this.dataset.fotoId, this.dataset.nama);
             });
         });
+        hitungSummaryGuru();
+    }
+
+    function hitungSummaryGuru() {
+        var c    = document.getElementById('listContainer');
+        var bar  = document.getElementById('summaryBarGuru');
+        var rows = c.querySelectorAll('tbody tr');
+        if (!rows.length) { bar.classList.remove('visible'); return; }
+
+        var hadir = 0, izin = 0, tidak = 0;
+        rows.forEach(function (tr) {
+            tr.querySelectorAll('.cc[data-val]').forEach(function (chip) {
+                var n = parseInt(chip.dataset.val, 10) || 0;
+                if (chip.classList.contains('cc-hadir'))      hadir += n;
+                else if (chip.classList.contains('cc-izin'))  izin  += n;
+                else if (chip.classList.contains('cc-tidak')) tidak += n;
+            });
+        });
+
+        document.getElementById('sumGuruHadir').innerHTML =
+            '<i class="bi bi-check-circle-fill" style="font-size:.55rem;"></i> ' + hadir + ' Hadir';
+        document.getElementById('sumGuruIzin').innerHTML =
+            '<i class="bi bi-envelope-fill" style="font-size:.55rem;"></i> ' + izin + ' Izin';
+        document.getElementById('sumGuruTidak').innerHTML =
+            '<i class="bi bi-x-circle-fill" style="font-size:.55rem;"></i> ' + tidak + ' Tidak Hadir';
+
+        bar.classList.add('visible');
     }
 
     /* ============================================================

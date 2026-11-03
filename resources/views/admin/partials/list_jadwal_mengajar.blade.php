@@ -100,9 +100,9 @@
 
     .badge-kelas {
         display: inline-flex; align-items: center;
-        background: rgba(34,211,238,0.1);
-        color: #22d3ee;
-        border: 1px solid rgba(34,211,238,0.18);
+        background: rgba(251,191,36,0.1);
+        color: #fbbf24;
+        border: 1px solid rgba(251,191,36,0.22);
         border-radius: 50px;
         padding: 0.13rem 0.55rem;
         font-size: 0.68rem;
@@ -274,6 +274,26 @@
         .j-col-hide-xs { display: none; }
         .jadwal-table  { min-width: 480px; }
     }
+
+    /* Baris tersembunyi (limit 20) */
+    .jadwal-row-hidden { display: none; }
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
 </style>
 
 @php
@@ -339,7 +359,7 @@
                     $kelasList = $row['kelas'];
                     $jamList   = $row['jam_range'];
                 @endphp
-                <tr>
+                <tr class="{{ $no >= 20 ? 'jadwal-row-hidden' : '' }}"
                     {{-- No --}}
                     <td style="color:rgba(255,255,255,0.3); font-size:0.77rem;">{{ $no + 1 }}</td>
 
@@ -451,3 +471,23 @@
     @endif
 
 </div>
+
+@if($grouped->count() > 20)
+<div class="btn-lihat-semua-wrap" id="jadwalLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnJadwalLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $grouped->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnJadwalLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.jadwal-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('jadwalLihatWrap').style.display = 'none';
+    });
+}());
+</script>

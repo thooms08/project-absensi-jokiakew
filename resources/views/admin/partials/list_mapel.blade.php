@@ -105,6 +105,26 @@
         color: rgba(255,255,255,0.28);
         margin: 0;
     }
+
+    /* Baris tersembunyi (limit 20) */
+    .mapel-row-hidden { display: none; }
+    .btn-lihat-semua-wrap {
+        text-align: center;
+        padding: .9rem 1.25rem;
+        border-top: 1px solid rgba(74,222,128,.08);
+    }
+    .btn-lihat-semua {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(74,222,128,.07);
+        border: 1px solid rgba(74,222,128,.2);
+        border-radius: 10px;
+        color: rgba(74,222,128,.85);
+        font-size: .8rem; font-weight: 600;
+        padding: .48rem 1.1rem; cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: background .18s;
+    }
+    .btn-lihat-semua:hover { background: rgba(74,222,128,.14); }
 </style>
 
 <div class="mapel-table-wrap">
@@ -129,7 +149,7 @@
             </thead>
             <tbody>
                 @foreach($mapel as $index => $item)
-                <tr>
+                <tr class="{{ $index >= 20 ? 'mapel-row-hidden' : '' }}">
                     <td class="mapel-num">{{ $index + 1 }}</td>
 
                     <td>
@@ -168,3 +188,23 @@
     @endif
 
 </div>
+
+@if($mapel->count() > 20)
+<div class="btn-lihat-semua-wrap" id="mapelLihatWrap">
+    <button type="button" class="btn-lihat-semua" id="btnMapelLihatSemua">
+        <i class="bi bi-chevron-down"></i>
+        Lihat Semua Data ({{ $mapel->count() }})
+    </button>
+</div>
+@endif
+
+<script>
+(function(){
+    var btn = document.getElementById('btnMapelLihatSemua');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.mapel-row-hidden').forEach(function (r) { r.style.display = ''; });
+        document.getElementById('mapelLihatWrap').style.display = 'none';
+    });
+}());
+</script>
