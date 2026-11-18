@@ -72,6 +72,13 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 /* ====================================================================
+   SHARED ASSETS  --  accessible by authenticated users (admin/guru/murid)
+==================================================================== */
+Route::middleware('auth')->group(function () {
+    Route::get('/profile/logo/{filename}', [ProfileController::class, 'fotoSekolah'])->name('admin.profile.logo');
+});
+
+/* ====================================================================
    ADMIN  --  prefix: /admin   middleware: auth + role:admin
 ==================================================================== */
 Route::prefix('admin')
@@ -93,7 +100,6 @@ Route::prefix('admin')
         Route::post('/profile',                    [ProfileController::class, 'updateAdmin'])->name('profile.update');
         Route::post('/profile/sekolah',            [ProfileController::class, 'updateSekolah'])->name('profile.sekolah');
         Route::get('/profile/foto/{filename}',     [ProfileController::class, 'fotoAdmin'])->name('profile.foto');
-        Route::get('/profile/logo/{filename}',     [ProfileController::class, 'fotoSekolah'])->name('profile.logo');
 
         /* -- Data Guru -- */
         Route::get('/data-guru',                [DataGuruController::class, 'index'])->name('data_guru');
