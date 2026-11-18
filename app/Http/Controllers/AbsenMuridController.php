@@ -452,6 +452,8 @@ class AbsenMuridController extends Controller
     {
         $search = trim($request->get('search', ''));
         $bulan  = $request->get('bulan', date('Y-m'));
+        $jenis  = session('admin_jenis_sekolah', 'smk');
+        $role   = 'murid_' . $jenis;
 
         try {
             $awal  = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth()->toDateString();
@@ -461,7 +463,7 @@ class AbsenMuridController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $query = \App\Models\User::where('role', 'murid');
+        $query = \App\Models\User::where('role', $role);
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -490,6 +492,9 @@ class AbsenMuridController extends Controller
     public function adminDetailMurid(Request $request, $userId)
     {
         $bulan = $request->get('bulan', date('Y-m'));
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $role  = 'murid_' . $jenis;
+
         try {
             $awal  = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth()->toDateString();
             $akhir = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth()->toDateString();
@@ -498,7 +503,7 @@ class AbsenMuridController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $murid = \App\Models\User::where('role', 'murid')->findOrFail($userId);
+        $murid = \App\Models\User::where('role', $role)->findOrFail($userId);
 
         $absens = AbsenMurid::with(['jadwal.mapel', 'jadwal.kelas'])
             ->where('user_id', $userId)

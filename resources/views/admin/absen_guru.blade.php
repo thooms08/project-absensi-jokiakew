@@ -449,6 +449,16 @@
     ============================================================ */
     loadList('', '{{ date("Y-m") }}');
 
+    /* ============================================================
+       LISTEN: SEKOLAH CHANGED (real-time filter update)
+    ============================================================ */
+    document.addEventListener('sekolahChanged', function (e) {
+        console.log('Sekolah berubah ke:', e.detail.jenis);
+        document.getElementById('searchInput').value = '';
+        document.getElementById('inputBulan').value = '{{ date("Y-m") }}';
+        loadList('', '{{ date("Y-m") }}');
+    });
+
 }());
 </script>
 @endpush

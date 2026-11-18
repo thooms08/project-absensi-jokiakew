@@ -220,11 +220,14 @@ class AbsenGuruController extends Controller
     /* ----------------------------------------------------------------
        ADMIN LIST  –  Partial AJAX: rekap per guru
        Menampilkan total hadir/izin/tidak masing-masing guru aktif.
+       Difilter berdasarkan jenis sekolah admin aktif (dari session)
     ---------------------------------------------------------------- */
     public function adminList(Request $request)
     {
         $search  = trim($request->get('search', ''));
         $bulan   = $request->get('bulan', date('Y-m'));   /* default bulan ini */
+        $jenis   = session('admin_jenis_sekolah', 'smk');
+        $role    = 'guru_' . $jenis;
 
         /* Parse bulan ke range tanggal */
         try {
@@ -235,7 +238,7 @@ class AbsenGuruController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $query = \App\Models\User::whereIn('role', ['guru_smk', 'guru_smp']);
+        $query = \App\Models\User::where('role', $role);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -266,10 +269,13 @@ class AbsenGuruController extends Controller
 
     /* ----------------------------------------------------------------
        ADMIN DETAIL GURU  –  JSON: semua record absen 1 guru (untuk modal)
+       Difilter berdasarkan jenis sekolah admin aktif (dari session)
     ---------------------------------------------------------------- */
     public function adminDetailGuru(Request $request, $userId)
     {
         $bulan = $request->get('bulan', date('Y-m'));
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $role  = 'guru_' . $jenis;
 
         try {
             $awal  = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth()->toDateString();
@@ -279,7 +285,7 @@ class AbsenGuruController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $guru = \App\Models\User::whereIn('role', ['guru_smk', 'guru_smp'])->findOrFail($userId);
+        $guru = \App\Models\User::where('role', $role)->findOrFail($userId);
 
         $absens = AbsenGuru::with(['jadwal.mapel', 'jadwal.kelas'])
             ->where('user_id', $userId)
@@ -311,10 +317,13 @@ class AbsenGuruController extends Controller
 
     /* ----------------------------------------------------------------
        ADMIN FOTO GURU  –  JSON: daftar foto bukti 1 guru (untuk grid dokumen)
+       Difilter berdasarkan jenis sekolah admin aktif (dari session)
     ---------------------------------------------------------------- */
     public function adminFotoGuru(Request $request, $userId)
     {
         $bulan = $request->get('bulan', date('Y-m'));
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $role  = 'guru_' . $jenis;
 
         try {
             $awal  = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth()->toDateString();
@@ -324,7 +333,7 @@ class AbsenGuruController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $guru = \App\Models\User::whereIn('role', ['guru_smk', 'guru_smp'])->findOrFail($userId);
+        $guru = \App\Models\User::where('role', $role)->findOrFail($userId);
 
         $fotos = AbsenGuru::with(['jadwal.kelas', 'jadwal.mapel'])
             ->where('user_id', $userId)
