@@ -152,7 +152,7 @@ class DataGuruController extends Controller
 
         if ($request->hasFile('image')) {
             $file      = $request->file('image');
-            $filename  = uniqid('guru_') . '.' . $file->getClientOriginalExtension();
+            $filename  = uniqid('guru_') . '.' . $file->extension();
             $file->storeAs('assets/profile-guru', $filename, 'public');
             $imagePath = 'assets/profile-guru/' . $filename;
         }
@@ -206,7 +206,7 @@ class DataGuruController extends Controller
                 Storage::disk('public')->delete($guru->image);
             }
             $file      = $request->file('image');
-            $filename  = uniqid('guru_') . '.' . $file->getClientOriginalExtension();
+            $filename  = uniqid('guru_') . '.' . $file->extension();
             $file->storeAs('assets/profile-guru', $filename, 'public');
             $guru->image = 'assets/profile-guru/' . $filename;
         }

@@ -47,8 +47,8 @@ class AuthController extends Controller
 
         if (! $user) {
             return response()->json([
-                'status'  => 'identity_error',
-                'message' => 'Username / email tidak ditemukan.',
+                'status'  => 'error',
+                'message' => 'Kredensial yang Anda masukkan tidak valid.',
             ], 422);
         }
 
@@ -62,8 +62,8 @@ class AuthController extends Controller
 
         if (! Auth::attempt($credentials, $remember)) {
             return response()->json([
-                'status'  => 'password_error',
-                'message' => 'Password yang Anda masukkan salah.',
+                'status'  => 'error',
+                'message' => 'Kredensial yang Anda masukkan tidak valid.',
             ], 422);
         }
 
@@ -111,12 +111,15 @@ class AuthController extends Controller
     /* ------------------------------------------------------------------ */
 
     /**
-     * Buat soal captcha: penjumlahan dua angka 1-5.
+     * Buat soal captcha: penjumlahan dua angka 10-99.
+     * Range diperluas dari rand(1,5)+rand(1,5) untuk meningkatkan keamanan dari brute-force.
+     * 9 kombinasi → 8,100 kombinasi (90×90).
+     * TODO: Migrasi ke reCAPTCHA v3 atau hCaptcha untuk solusi jangka panjang.
      */
     private function generateCaptcha(): array
     {
-        $a        = rand(1, 5);
-        $b        = rand(1, 5);
+        $a        = rand(10, 99);
+        $b        = rand(10, 99);
         $question = $a . ' + ' . $b . ' = ?';
         return [$question, $a + $b];
     }

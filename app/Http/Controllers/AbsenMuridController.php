@@ -200,6 +200,16 @@ class AbsenMuridController extends Controller
         $allowed = ['absen_murid','izin_murid'];
         if (!in_array($tipe, $allowed)) abort(404);
 
+        $muridId = auth()->id();
+        
+        /* Validasi bahwa file tersebut milik murid yang sedang login */
+        $absen = AbsenMurid::where('user_id', $muridId)
+                           ->where(function($q) use ($filename) {
+                               $q->where('foto_selfie', $filename)
+                                 ->orWhere('foto_izin', $filename);
+                           })
+                           ->firstOrFail();
+
         $path = storage_path('app/private/'.$tipe.'/'.$filename);
         if (!file_exists($path)) abort(404);
 
@@ -278,7 +288,10 @@ class AbsenMuridController extends Controller
     ---------------------------------------------------------------- */
     public function guruKonfirmasi($id)
     {
-        $absen = AbsenMurid::findOrFail($id);
+        $guruId = auth()->id();
+        $absen = AbsenMurid::whereHas('jadwal', function($q) use ($guruId) {
+            $q->where('user_id', $guruId);
+        })->findOrFail($id);
         $absen->update(['dikonfirmasi_at' => now()]);
         return response()->json(['success' => true]);
     }
@@ -350,13 +363,14 @@ class AbsenMuridController extends Controller
     ---------------------------------------------------------------- */
     public function guruScanQr(Request $request)
     {
+        $guruId = auth()->id();
         $request->validate([
             'user_id'  => 'required|integer|exists:users,id',
             'jadwal_id'=> 'required|integer|exists:jadwal_mengajar,id',
         ]);
 
         $murid  = \App\Models\User::where('id', $request->user_id)
-                                   ->where('role', 'murid')
+                                   ->whereIn('role', ['murid_smk', 'murid_smp'])
                                    ->first();
 
         if (!$murid) {
@@ -366,7 +380,9 @@ class AbsenMuridController extends Controller
             ], 404);
         }
 
-        $jadwal     = JadwalMengajar::findOrFail($request->jadwal_id);
+        $jadwal     = JadwalMengajar::where('id', $request->jadwal_id)
+                                     ->where('user_id', $guruId)
+                                     ->firstOrFail();
         $tglHariIni = Carbon::today()->toDateString();
         $sekarang   = Carbon::now();
         $nowHi      = $sekarang->format('H:i');
@@ -527,6 +543,10 @@ class AbsenMuridController extends Controller
 
         $data = base64_decode(substr($base64, strpos($base64, ',') + 1));
         if (!$data) return null;
+
+        /* Validasi magic bytes — pastikan konten adalah gambar valid */
+        $imageInfo = @getimagesizefromstring($data);
+        if ($imageInfo === false) return null;
 
         $dir = storage_path('app/private/'.$folder);
         if (!is_dir($dir)) mkdir($dir, 0755, true);

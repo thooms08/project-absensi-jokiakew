@@ -25,14 +25,20 @@ Route::get('/', function () {
 ==================================================================== */
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('login.post');
     Route::get('/captcha/refresh', [AuthController::class, 'refreshCaptcha'])->name('captcha.refresh');
 });
 
 /* Registrasi mandiri guru  –  publik */
 Route::get('/register/guru',         [DataGuruController::class, 'showRegister'])->name('register.guru');
-Route::post('/register/guru',        [DataGuruController::class, 'register'])->name('register.guru.post');
-Route::get('/register/guru/check-username', [DataGuruController::class, 'checkUsername'])->name('register.guru.check_username');
+Route::post('/register/guru',        [DataGuruController::class, 'register'])
+    ->middleware('throttle:3,10')
+    ->name('register.guru.post');
+Route::get('/register/guru/check-username', [DataGuruController::class, 'checkUsername'])
+    ->middleware('throttle:30,1')
+    ->name('register.guru.check_username');
 
 /* Registrasi mandiri guru per jenis sekolah  –  publik */
 Route::get('/register/guru/{jenis}',  [DataGuruController::class, 'showRegister'])
@@ -40,12 +46,17 @@ Route::get('/register/guru/{jenis}',  [DataGuruController::class, 'showRegister'
     ->name('register.guru.jenis');
 Route::post('/register/guru/{jenis}', [DataGuruController::class, 'register'])
     ->where('jenis', 'smk|smp')
+    ->middleware('throttle:3,10')
     ->name('register.guru.jenis.post');
 
 /* Registrasi mandiri murid  –  publik */
 Route::get('/register/murid',         [DataMuridController::class, 'showRegister'])->name('register.murid');
-Route::post('/register/murid',        [DataMuridController::class, 'register'])->name('register.murid.post');
-Route::get('/register/murid/check-username', [DataMuridController::class, 'checkUsername'])->name('register.murid.check_username');
+Route::post('/register/murid',        [DataMuridController::class, 'register'])
+    ->middleware('throttle:3,10')
+    ->name('register.murid.post');
+Route::get('/register/murid/check-username', [DataMuridController::class, 'checkUsername'])
+    ->middleware('throttle:30,1')
+    ->name('register.murid.check_username');
 
 /* Registrasi mandiri murid per jenis sekolah  –  publik */
 Route::get('/register/murid/{jenis}',  [DataMuridController::class, 'showRegister'])
@@ -53,6 +64,7 @@ Route::get('/register/murid/{jenis}',  [DataMuridController::class, 'showRegiste
     ->name('register.murid.jenis');
 Route::post('/register/murid/{jenis}', [DataMuridController::class, 'register'])
     ->where('jenis', 'smk|smp')
+    ->middleware('throttle:3,10')
     ->name('register.murid.jenis.post');
 
 Route::post('/logout', [AuthController::class, 'logout'])
@@ -211,12 +223,7 @@ Route::prefix('guru')
         Route::get('/data-murid',                [DataMuridController::class, 'guruIndex'])->name('data_murid');
         Route::get('/data-murid/list',           [DataMuridController::class, 'list'])->name('data_murid.list');
         Route::get('/data-murid/check-username', [DataMuridController::class, 'checkUsername'])->name('data_murid.check_username');
-        Route::post('/data-murid',               [DataMuridController::class, 'store'])->name('data_murid.store');
         Route::get('/data-murid/{id}/edit',      [DataMuridController::class, 'edit'])->name('data_murid.edit');
-        Route::post('/data-murid/{id}',          [DataMuridController::class, 'update'])->name('data_murid.update');
-        Route::delete('/data-murid/{id}',        [DataMuridController::class, 'destroy'])->name('data_murid.destroy');
-        Route::post('/data-murid/{id}/restore',  [DataMuridController::class, 'restore'])->name('data_murid.restore');
-        Route::delete('/data-murid/{id}/force',  [DataMuridController::class, 'forceDelete'])->name('data_murid.force_delete');
     });
 
 /* ====================================================================

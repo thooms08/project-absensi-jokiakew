@@ -155,7 +155,7 @@ class DataMuridController extends Controller
 
         if ($request->hasFile('image')) {
             $file      = $request->file('image');
-            $filename  = uniqid('murid_') . '.' . $file->getClientOriginalExtension();
+            $filename  = uniqid('murid_') . '.' . $file->extension();
             $file->storeAs('assets/profile-murid', $filename, 'public');
             $imagePath = 'assets/profile-murid/' . $filename;
         }
@@ -207,7 +207,7 @@ class DataMuridController extends Controller
                 Storage::disk('public')->delete($murid->image);
             }
             $file      = $request->file('image');
-            $filename  = uniqid('murid_') . '.' . $file->getClientOriginalExtension();
+            $filename  = uniqid('murid_') . '.' . $file->extension();
             $file->storeAs('assets/profile-murid', $filename, 'public');
             $murid->image = 'assets/profile-murid/' . $filename;
         }

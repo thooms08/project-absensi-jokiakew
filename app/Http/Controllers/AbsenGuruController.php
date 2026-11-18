@@ -235,7 +235,7 @@ class AbsenGuruController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $query = \App\Models\User::where('role', 'guru');
+        $query = \App\Models\User::whereIn('role', ['guru_smk', 'guru_smp']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -279,7 +279,7 @@ class AbsenGuruController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $guru = \App\Models\User::where('role', 'guru')->findOrFail($userId);
+        $guru = \App\Models\User::whereIn('role', ['guru_smk', 'guru_smp'])->findOrFail($userId);
 
         $absens = AbsenGuru::with(['jadwal.mapel', 'jadwal.kelas'])
             ->where('user_id', $userId)
@@ -324,7 +324,7 @@ class AbsenGuruController extends Controller
             $akhir = Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $guru = \App\Models\User::where('role', 'guru')->findOrFail($userId);
+        $guru = \App\Models\User::whereIn('role', ['guru_smk', 'guru_smp'])->findOrFail($userId);
 
         $fotos = AbsenGuru::with(['jadwal.kelas', 'jadwal.mapel'])
             ->where('user_id', $userId)
@@ -449,6 +449,12 @@ class AbsenGuruController extends Controller
         $decoded   = base64_decode($imageData);
         if (!$decoded) {
             return null;
+        }
+
+        /* Validasi magic bytes — pastikan konten adalah gambar valid */
+        $imageInfo = @getimagesizefromstring($decoded);
+        if ($imageInfo === false) {
+            return null;  /* bukan gambar valid */
         }
 
         $folder   = storage_path('app/private/assets/guru_hadir');

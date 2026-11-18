@@ -166,10 +166,13 @@ return [
     | By setting this option to true, session cookies will only be sent back
     | to the server if the browser has a HTTPS connection. This will keep
     | the cookie from being sent to you when it can't be done securely.
+    | 
+    | Default: true (secure). Set to false only in development environments
+    | without HTTPS, by explicitly setting SESSION_SECURE_COOKIE=false in .env
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', true),
 
     /*
     |--------------------------------------------------------------------------

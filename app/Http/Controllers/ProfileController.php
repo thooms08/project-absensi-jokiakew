@@ -166,6 +166,10 @@ class ProfileController extends Controller
         $data = base64_decode(substr($base64, strpos($base64, ',') + 1));
         if (!$data) return null;
 
+        /* Validasi magic bytes — pastikan konten adalah gambar valid */
+        $imageInfo = @getimagesizefromstring($data);
+        if ($imageInfo === false) return null;
+
         $dir = storage_path('app/private/assets/' . $folder);
         if (!is_dir($dir)) mkdir($dir, 0755, true);
 

@@ -19,6 +19,8 @@
 /storage/*.key
 /storage/pail
 /vendor
+/.kiro
+SECURITY-AUDIT-REPORT.md
 Homestead.json
 Homestead.yaml
 Thumbs.db
