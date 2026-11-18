@@ -270,18 +270,23 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function semuaMapel()
     {
-        $semua = Mapel::orderBy('nama_mapel')->get(['id', 'nama_mapel']);
+        /* Filter mapel sesuai jenis sekolah admin */
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $semua = Mapel::jenisSekolah($jenis)->orderBy('nama_mapel')->get(['id', 'nama_mapel']);
         return response()->json(['semua_mapel' => $semua]);
     }
 
     /* ----------------------------------------------------------------
        GET MAPEL  –  Ambil mapel yang sudah dipilih + semua mapel
+       Difilter berdasarkan jenis sekolah admin aktif (dari session)
     ---------------------------------------------------------------- */
     public function getMapel($id)
     {
         $guru = User::whereIn('role', self::GURU_ROLES)->findOrFail($id);
 
-        $semuaMapel   = Mapel::orderBy('nama_mapel')->get(['id', 'nama_mapel']);
+        /* Filter mapel sesuai jenis sekolah admin */
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $semuaMapel   = Mapel::jenisSekolah($jenis)->orderBy('nama_mapel')->get(['id', 'nama_mapel']);
         $mapelDipilih = GuruMapel::where('user_id', $id)->pluck('mapel_id')->toArray();
 
         return response()->json([
