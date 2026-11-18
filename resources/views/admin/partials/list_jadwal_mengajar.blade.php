@@ -359,7 +359,7 @@
                     $kelasList = $row['kelas'];
                     $jamList   = $row['jam_range'];
                 @endphp
-                <tr class="{{ $no >= 20 ? 'jadwal-row-hidden' : '' }}"
+                <tr class="{{ $no >= 20 ? 'jadwal-row-hidden' : '' }}">
                     {{-- No --}}
                     <td style="color:rgba(255,255,255,0.3); font-size:0.77rem;">{{ $no + 1 }}</td>
 
