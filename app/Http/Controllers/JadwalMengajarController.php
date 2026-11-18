@@ -36,11 +36,14 @@ class JadwalMengajarController extends Controller
        Query params:
          - hari   : nama hari (Senin … Sabtu), default hari ini
          - search : string
+       Difilter berdasarkan jenis sekolah admin aktif (dari session)
     ---------------------------------------------------------------- */
     public function list(Request $request)
     {
         $hariParam = $request->get('hari', '');
         $search    = trim($request->get('search', ''));
+        $jenis     = session('admin_jenis_sekolah', 'smk');
+        $roleGuru  = 'guru_' . $jenis;
 
         /* Tentukan hari aktif */
         $hariAktif = in_array($hariParam, self::HARI_VALID)
@@ -48,7 +51,8 @@ class JadwalMengajarController extends Controller
             : (self::DOW_TO_HARI[date('N')] ?? 'Senin');   /* date('N') = 1=Sen … 7=Min */
 
         $query = JadwalMengajar::with(['guru', 'mapel', 'kelas'])
-            ->where('hari', $hariAktif);
+            ->where('hari', $hariAktif)
+            ->whereHas('guru', fn($q) => $q->where('role', $roleGuru));
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -97,6 +101,21 @@ class JadwalMengajarController extends Controller
             'hari.in'                  => 'Hari tidak valid.',
             'waktu_berakhir.after'     => 'Waktu berakhir harus setelah waktu mulai.',
         ]);
+
+        /* Validasi: guru, mapel, dan kelas harus sesuai jenis sekolah */
+        $guru  = User::findOrFail($request->user_id);
+        $mapel = Mapel::findOrFail($request->mapel_id);
+        $kelas = Kelas::findOrFail($request->kelas_id);
+
+        /* Ekstrak jenis sekolah dari role guru */
+        $jenisGuru = str_ends_with($guru->role, '_smp') ? 'smp' : 'smk';
+
+        if ($mapel->jenis_sekolah !== $jenisGuru || $kelas->jenis_sekolah !== $jenisGuru) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mapel dan kelas harus sesuai dengan jenis sekolah guru (' . strtoupper($jenisGuru) . ').',
+            ], 422);
+        }
 
         /* Cegah duplikat: guru + kelas + mapel + hari */
         $exists = JadwalMengajar::where('user_id',  $request->user_id)
@@ -192,6 +211,10 @@ class JadwalMengajarController extends Controller
             'sesi.*.waktu_berakhir.date_format' => 'Format jam berakhir tidak valid.',
         ]);
 
+        /* Validasi jenis sekolah guru */
+        $guru      = User::findOrFail($request->user_id);
+        $jenisGuru = str_ends_with($guru->role, '_smp') ? 'smp' : 'smk';
+
         $errors  = [];
         $created = 0;
 
@@ -199,6 +222,20 @@ class JadwalMengajarController extends Controller
             /* Cek waktu berakhir > mulai */
             if ($s['waktu_berakhir'] <= $s['waktu_mulai']) {
                 $errors[] = 'Sesi ' . ($idx + 1) . ': Jam berakhir harus setelah jam mulai.';
+                continue;
+            }
+
+            /* Validasi mapel dan kelas sesuai jenis sekolah guru */
+            $mapel = Mapel::find($s['mapel_id']);
+            $kelas = Kelas::find($s['kelas_id']);
+
+            if (!$mapel || !$kelas) {
+                $errors[] = 'Sesi ' . ($idx + 1) . ': Mapel atau kelas tidak ditemukan.';
+                continue;
+            }
+
+            if ($mapel->jenis_sekolah !== $jenisGuru || $kelas->jenis_sekolah !== $jenisGuru) {
+                $errors[] = 'Sesi ' . ($idx + 1) . ': Mapel dan kelas harus sesuai jenis sekolah guru (' . strtoupper($jenisGuru) . ').';
                 continue;
             }
 
@@ -368,9 +405,15 @@ class JadwalMengajarController extends Controller
     ---------------------------------------------------------------- */
     public function dropdownData()
     {
-        $guru  = User::where('role', 'guru')->orderBy('name')->get(['id', 'name', 'username']);
-        $mapel = Mapel::orderBy('nama_mapel')->get(['id', 'nama_mapel']);
-        $kelas = Kelas::orderBy('nama_kelas')->get(['id', 'nama_kelas']);
+        /* Ambil guru dengan role yang sesuai jenis sekolah admin */
+        $jenis  = session('admin_jenis_sekolah', 'smk');
+        $roles  = $jenis === 'smp' ? ['guru_smp'] : ['guru_smk'];
+        
+        $guru  = User::whereIn('role', $roles)->orderBy('name')->get(['id', 'name', 'username']);
+        
+        /* Filter mapel dan kelas sesuai jenis sekolah */
+        $mapel = Mapel::jenisSekolah($jenis)->orderBy('nama_mapel')->get(['id', 'nama_mapel']);
+        $kelas = Kelas::jenisSekolah($jenis)->orderBy('nama_kelas')->get(['id', 'nama_kelas']);
 
         return response()->json([
             'guru'  => $guru,

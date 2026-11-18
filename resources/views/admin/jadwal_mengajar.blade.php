@@ -790,6 +790,15 @@
     ============================================================ */
     loadList(hariHariIni(), '');
 
+    /* ============================================================
+       LISTEN: SEKOLAH CHANGED (real-time filter update)
+    ============================================================ */
+    document.addEventListener('sekolahChanged', function (e) {
+        console.log('Sekolah berubah ke:', e.detail.jenis);
+        document.getElementById('searchInput').value = ''; /* reset search */
+        loadList(activeHari, '');                         /* reload list */
+    });
+
 }());
 </script>
 @endpush

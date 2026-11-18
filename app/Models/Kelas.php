@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 class Kelas extends Model
 {
     protected $table    = 'kelas';
-    protected $fillable = ['uuid', 'nama_kelas'];
+    protected $fillable = ['uuid', 'nama_kelas', 'jenis_sekolah'];
 
     protected static function boot(): void
     {
@@ -18,6 +18,12 @@ class Kelas extends Model
                 $kelas->uuid = (string) Str::uuid();
             }
         });
+    }
+
+    /* ---- Scope: filter kelas berdasarkan jenis sekolah ---- */
+    public function scopeJenisSekolah($query, string $jenis)
+    {
+        return $query->where('jenis_sekolah', $jenis);
     }
 
     /* ---- Relasi ke peserta ---- */

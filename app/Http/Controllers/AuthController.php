@@ -111,15 +111,17 @@ class AuthController extends Controller
     /* ------------------------------------------------------------------ */
 
     /**
-     * Buat soal captcha: penjumlahan dua angka 10-99.
-     * Range diperluas dari rand(1,5)+rand(1,5) untuk meningkatkan keamanan dari brute-force.
-     * 9 kombinasi → 8,100 kombinasi (90×90).
+     * Buat soal captcha: penjumlahan dua angka 1-5.
+     * Range tetap sederhana (1-5) untuk UX yang baik — guru tidak perlu kalkulator.
+     * Keamanan utama dijamin oleh:
+     *   1. Rate limiting 5 attempts per menit (throttle:5,1)
+     *   2. Session-based captcha yang di-refresh setiap page load
      * TODO: Migrasi ke reCAPTCHA v3 atau hCaptcha untuk solusi jangka panjang.
      */
     private function generateCaptcha(): array
     {
-        $a        = rand(10, 99);
-        $b        = rand(10, 99);
+        $a        = rand(1, 5);
+        $b        = rand(1, 5);
         $question = $a . ' + ' . $b . ' = ?';
         return [$question, $a + $b];
     }

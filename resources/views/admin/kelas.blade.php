@@ -824,6 +824,15 @@
     ============================================================ */
     loadList('');
 
+    /* ============================================================
+       LISTEN: SEKOLAH CHANGED (real-time filter update)
+    ============================================================ */
+    document.addEventListener('sekolahChanged', function (e) {
+        console.log('Sekolah berubah ke:', e.detail.jenis);
+        searchInput.value = ''; /* reset search */
+        loadList('');           /* reload list */
+    });
+
 }());
 </script>
 @endpush

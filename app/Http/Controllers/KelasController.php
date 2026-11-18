@@ -19,13 +19,15 @@ class KelasController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       LIST  –  Partial AJAX: daftar kelas
+       LIST  –  Partial AJAX: daftar kelas per jenis sekolah admin
     ---------------------------------------------------------------- */
     public function list(Request $request)
     {
         $search = trim($request->get('search', ''));
+        $jenis  = session('admin_jenis_sekolah', 'smk');
 
-        $query = Kelas::with(['waliKelas', 'guru', 'murid']);
+        $query = Kelas::with(['waliKelas', 'guru', 'murid'])
+                      ->jenisSekolah($jenis);
 
         if ($search !== '') {
             $query->where('nama_kelas', 'like', "%{$search}%");
@@ -37,18 +39,21 @@ class KelasController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       STORE  –  Simpan kelas baru
+       STORE  –  Simpan kelas baru dengan jenis sekolah
     ---------------------------------------------------------------- */
     public function store(Request $request)
     {
+        $jenis = session('admin_jenis_sekolah', 'smk');
+
         $request->validate([
             'nama_kelas' => 'required|string|max:100|unique:kelas,nama_kelas',
             'wali_id'    => 'nullable|exists:users,id',
         ]);
 
         $kelas = Kelas::create([
-            'uuid'       => (string) Str::uuid(),
-            'nama_kelas' => $request->nama_kelas,
+            'uuid'            => (string) Str::uuid(),
+            'nama_kelas'      => $request->nama_kelas,
+            'jenis_sekolah'   => $jenis,
         ]);
 
         /* Simpan wali kelas jika dipilih */
@@ -63,17 +68,18 @@ class KelasController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       EDIT  –  Ambil data kelas untuk form edit
+       EDIT  –  Ambil data kelas untuk form edit (dengan jenis sekolah)
     ---------------------------------------------------------------- */
     public function edit($id)
     {
         $kelas = Kelas::with('waliKelas.user')->findOrFail($id);
 
         return response()->json([
-            'id'         => $kelas->id,
-            'nama_kelas' => $kelas->nama_kelas,
-            'wali_id'    => $kelas->waliKelas?->user_id,
-            'wali_nama'  => $kelas->waliKelas?->user?->name,
+            'id'              => $kelas->id,
+            'nama_kelas'      => $kelas->nama_kelas,
+            'jenis_sekolah'   => $kelas->jenis_sekolah,
+            'wali_id'         => $kelas->waliKelas?->user_id,
+            'wali_nama'       => $kelas->waliKelas?->user?->name,
         ]);
     }
 
@@ -167,17 +173,22 @@ class KelasController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       MURID LIST (AJAX)  –  Semua murid yang belum masuk kelas ini
+       MURID LIST (AJAX)  –  Semua murid sesuai jenis sekolah kelas ini
     ---------------------------------------------------------------- */
     public function muridList(Request $request, $id)
     {
         $search = trim($request->get('search', ''));
-        $jenis  = session('admin_jenis_sekolah', 'smk');
-        $roles  = $jenis === 'smp' ? ['murid_smp'] : ['murid_smk'];
+        
+        /* Ambil kelas beserta jenis sekolahnya */
+        $kelas = Kelas::findOrFail($id);
+        $jenis = $kelas->jenis_sekolah;
+        $role  = 'murid_' . $jenis;
 
+        /* Murid yang sudah ada di kelas ini */
         $sudahAda = PesertaKelas::where('kelas_id', $id)->pluck('user_id');
 
-        $query = User::whereIn('role', $roles)
+        /* Ambil murid dengan role sesuai jenis sekolah */
+        $query = User::where('role', $role)
                      ->whereNotIn('id', $sudahAda);
 
         if ($search !== '') {

@@ -16,13 +16,14 @@ class MapelController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       LIST  –  Partial AJAX: daftar mapel
+       LIST  –  Partial AJAX: daftar mapel per jenis sekolah admin
     ---------------------------------------------------------------- */
     public function list(Request $request)
     {
         $search = trim($request->get('search', ''));
+        $jenis  = session('admin_jenis_sekolah', 'smk');
 
-        $query = Mapel::query();
+        $query = Mapel::jenisSekolah($jenis);
 
         if ($search !== '') {
             $query->where('nama_mapel', 'like', "%{$search}%");
@@ -34,15 +35,32 @@ class MapelController extends Controller
     }
 
     /* ----------------------------------------------------------------
-       STORE  –  Simpan mapel baru
+       STORE  –  Simpan mapel baru dengan jenis sekolah
     ---------------------------------------------------------------- */
     public function store(Request $request)
     {
+        $jenis = session('admin_jenis_sekolah', 'smk');
+
         $request->validate([
-            'nama_mapel' => 'required|string|max:255|unique:mapel,nama_mapel',
+            'nama_mapel' => 'required|string|max:255',
         ]);
 
-        Mapel::create(['nama_mapel' => $request->nama_mapel]);
+        /* Pastikan nama mapel unique per jenis sekolah */
+        $exists = Mapel::where('nama_mapel', $request->nama_mapel)
+                       ->where('jenis_sekolah', $jenis)
+                       ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mapel ' . $request->nama_mapel . ' sudah ada untuk ' . strtoupper($jenis) . '.',
+            ], 422);
+        }
+
+        Mapel::create([
+            'nama_mapel'    => $request->nama_mapel,
+            'jenis_sekolah' => $jenis,
+        ]);
 
         return response()->json(['success' => true, 'message' => 'Mata pelajaran berhasil ditambahkan.']);
     }
@@ -55,8 +73,9 @@ class MapelController extends Controller
         $mapel = Mapel::findOrFail($id);
 
         return response()->json([
-            'id'         => $mapel->id,
-            'nama_mapel' => $mapel->nama_mapel,
+            'id'             => $mapel->id,
+            'nama_mapel'     => $mapel->nama_mapel,
+            'jenis_sekolah'  => $mapel->jenis_sekolah,
         ]);
     }
 
