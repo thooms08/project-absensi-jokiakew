@@ -48,7 +48,7 @@ class AuthController extends Controller
         if (! $user) {
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Kredensial yang Anda masukkan tidak valid.',
+                'message' => 'Username atau email tidak ditemukan.',
             ], 422);
         }
 
@@ -63,7 +63,7 @@ class AuthController extends Controller
         if (! Auth::attempt($credentials, $remember)) {
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Kredensial yang Anda masukkan tidak valid.',
+                'message' => 'Password yang Anda masukkan salah.',
             ], 422);
         }
 
