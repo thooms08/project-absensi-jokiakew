@@ -139,10 +139,10 @@ class AuthController extends Controller
 
     private function redirectUrlByRole(string $role): string
     {
-        return match ($role) {
-            'admin' => route('admin.dashboard'),
-            'guru'  => route('guru.dashboard'),
-            'murid' => route('murid.dashboard'),
+        return match (true) {
+            $role === 'admin'                          => route('admin.dashboard'),
+            in_array($role, ['guru_smk', 'guru_smp']) => route('guru.dashboard'),
+            in_array($role, ['murid_smk', 'murid_smp']) => route('murid.dashboard'),
             default => '/',
         };
     }

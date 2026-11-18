@@ -145,11 +145,13 @@ class KelasController extends Controller
     public function guruList(Request $request, $id)
     {
         $search = trim($request->get('search', ''));
+        $jenis  = session('admin_jenis_sekolah', 'smk');
+        $roles  = $jenis === 'smp' ? ['guru_smp'] : ['guru_smk'];
 
         /* ID guru yang sudah ada di kelas ini */
         $sudahAda = PesertaKelas::where('kelas_id', $id)->pluck('user_id');
 
-        $query = User::where('role', 'guru')
+        $query = User::whereIn('role', $roles)
                      ->whereNotIn('id', $sudahAda);
 
         if ($search !== '') {
@@ -170,10 +172,12 @@ class KelasController extends Controller
     public function muridList(Request $request, $id)
     {
         $search = trim($request->get('search', ''));
+        $jenis  = session('admin_jenis_sekolah', 'smk');
+        $roles  = $jenis === 'smp' ? ['murid_smp'] : ['murid_smk'];
 
         $sudahAda = PesertaKelas::where('kelas_id', $id)->pluck('user_id');
 
-        $query = User::where('role', 'murid')
+        $query = User::whereIn('role', $roles)
                      ->whereNotIn('id', $sudahAda);
 
         if ($search !== '') {
@@ -194,8 +198,10 @@ class KelasController extends Controller
     public function semuaGuru(Request $request)
     {
         $search = trim($request->get('search', ''));
+        $jenis  = session('admin_jenis_sekolah', 'smk');
+        $roles  = $jenis === 'smp' ? ['guru_smp'] : ['guru_smk'];
 
-        $query = User::where('role', 'guru');
+        $query = User::whereIn('role', $roles);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {

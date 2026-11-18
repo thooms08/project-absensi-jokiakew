@@ -105,6 +105,101 @@
             text-transform: uppercase;
         }
 
+        /* ---- Pilih Sekolah (dropdown school selector) ---- */
+        .school-selector {
+            padding: 0.75rem 0.6rem 0.5rem;
+            border-bottom: 1px solid rgba(74,222,128,0.1);
+            flex-shrink: 0;
+        }
+
+        .school-selector-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: rgba(74,222,128,0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar.collapsed .school-selector-label {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+        }
+
+        .school-btn-group {
+            display: flex;
+            gap: 0.35rem;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar.collapsed .school-btn-group {
+            flex-direction: column;
+            gap: 0.3rem;
+            align-items: center;
+        }
+
+        .school-btn {
+            flex: 1;
+            padding: 0.38rem 0.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(74,222,128,0.18);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s, border-color 0.18s;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .school-btn:hover {
+            background: rgba(74,222,128,0.1);
+            color: #fff;
+        }
+
+        .school-btn.active {
+            background: rgba(74,222,128,0.18);
+            border-color: rgba(74,222,128,0.5);
+            color: #4ade80;
+        }
+
+        .sidebar.collapsed .school-btn {
+            flex: unset;
+            width: 36px;
+            height: 28px;
+            padding: 0.2rem 0;
+            font-size: 0.6rem;
+        }
+
+        .sidebar.collapsed .school-selector-label,
+        .sidebar.collapsed .school-selector-label ~ * {
+            /* label tetap tersembunyi saat collapsed */
+        }
+
+        /* Badge jenis sekolah di topbar */
+        .school-badge-topbar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #4ade80;
+            background: rgba(74,222,128,0.1);
+            border: 1px solid rgba(74,222,128,0.28);
+            border-radius: 50px;
+            padding: 0.2rem 0.65rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+
         /* ---- Label section ---- */
         .sidebar-section-label {
             font-size: 0.62rem;
@@ -212,8 +307,9 @@
         ============================================================ */
         .sidebar-toggle {
             position: fixed;
-            top: 1rem;
-            left: 200px;
+            top: 50%;
+            left: 226px;
+            transform: translateY(-50%);
             z-index: 1100;
             width: 28px;
             height: 28px;
@@ -234,7 +330,7 @@
         }
 
         .sidebar-toggle.collapsed {
-            left: 47px;
+            left: 48px;
         }
 
         .sidebar-toggle i {
@@ -719,12 +815,38 @@
 
     <!-- Brand -->
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
-        <img src="{{ asset('logo.png') }}" alt="Logo SMKS Ibnu Sina" class="sidebar-brand-logo">
+        @php
+            $logoPath = $profileSekolah->logo
+                ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                : asset('logo.png');
+        @endphp
+        <img src="{{ $logoPath }}" alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}" class="sidebar-brand-logo">
         <div class="sidebar-brand-text">
-            <span class="sidebar-brand-title">SMKS Ibnu Sina</span>
+            <span class="sidebar-brand-title">{{ $profileSekolah->nama_sekolah ?? 'Nama Sekolah' }}</span>
             <span class="sidebar-brand-sub">Panel Admin</span>
         </div>
     </a>
+
+    <!-- Pilih Sekolah -->
+    <div class="school-selector" id="schoolSelector">
+        <div class="school-selector-label">Pilih Sekolah</div>
+        <div class="school-btn-group">
+            <button type="button"
+                    class="school-btn {{ session('admin_jenis_sekolah', 'smk') === 'smk' ? 'active' : '' }}"
+                    id="btnSchoolSmk"
+                    data-jenis="smk"
+                    title="SMK">
+                SMK
+            </button>
+            <button type="button"
+                    class="school-btn {{ session('admin_jenis_sekolah', 'smk') === 'smp' ? 'active' : '' }}"
+                    id="btnSchoolSmp"
+                    data-jenis="smp"
+                    title="SMP">
+                SMP
+            </button>
+        </div>
+    </div>
 
     <!-- Nav -->
     <nav class="sidebar-nav" aria-label="Menu admin">
@@ -818,6 +940,12 @@
         </div>
 
         <div class="topbar-right">
+            <!-- Badge jenis sekolah aktif -->
+            <span class="school-badge-topbar" id="schoolBadgeTopbar">
+                <i class="bi bi-building"></i>
+                <span id="schoolBadgeLabel">{{ strtoupper(session('admin_jenis_sekolah', 'smk')) }}</span>
+            </span>
+
             <!-- Lonceng notifikasi (guru + murid) -->
             <div class="notif-btn-wrap" id="notifBtnWrap">
                 <button class="notif-btn" id="notifBtn"
@@ -995,6 +1123,71 @@
 </script>
 
 @stack('scripts')
+
+<script>
+/* ================================================================
+   SCHOOL SELECTOR  –  Pilih SMK / SMP  (AJAX real-time)
+================================================================ */
+(function () {
+    'use strict';
+
+    var CSRF     = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    var btns     = document.querySelectorAll('.school-btn');
+    var badge    = document.getElementById('schoolBadgeLabel');
+    var ENDPOINT = '{{ route("admin.sekolah.set_jenis") }}';
+
+    btns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var jenis = btn.getAttribute('data-jenis');
+            if (btn.classList.contains('active')) return; /* sudah aktif, skip */
+
+            /* Optimistic UI update */
+            btns.forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            if (badge) badge.textContent = jenis.toUpperCase();
+
+            /* Kirim ke server via AJAX */
+            fetch(ENDPOINT, {
+                method:  'POST',
+                headers: {
+                    'Content-Type':     'application/json',
+                    'X-CSRF-TOKEN':     CSRF,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ jenis: jenis }),
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.success) return;
+
+                /* Simpan ke window agar halaman dapat membaca jenis aktif */
+                window.adminJenisSekolah = data.jenis;
+
+                /* Trigger event custom agar list di halaman yang terbuka di-reload */
+                document.dispatchEvent(new CustomEvent('sekolahChanged', {
+                    detail: {
+                        jenis:              data.jenis,
+                        registerMuridUrl:   data.register_murid_url,
+                        registerGuruUrl:    data.register_guru_url,
+                    }
+                }));
+            })
+            .catch(function () {
+                /* Rollback optimistic update jika request gagal */
+                btns.forEach(function (b) { b.classList.remove('active'); });
+                var prev = window.adminJenisSekolah || '{{ session("admin_jenis_sekolah", "smk") }}';
+                document.querySelector('.school-btn[data-jenis="' + prev + '"]')
+                    .classList.add('active');
+                if (badge) badge.textContent = prev.toUpperCase();
+            });
+        });
+    });
+
+    /* Inisialisasi state dari session saat halaman dimuat */
+    window.adminJenisSekolah = '{{ session("admin_jenis_sekolah", "smk") }}';
+
+}());
+</script>
 
 <script>
 /* ================================================================

@@ -63,12 +63,49 @@ class User extends Authenticatable
         );
     }
 
+    /* ================================================================
+       KONSTANTA ROLE
+    ================================================================ */
+
+    const ROLES_GURU  = ['guru_smk', 'guru_smp'];
+    const ROLES_MURID = ['murid_smk', 'murid_smp'];
+
     /**
-     * Scope: hanya guru aktif (tidak di-softdelete).
+     * Apakah user ini termasuk kelompok guru?
+     */
+    public function isGuru(): bool
+    {
+        return in_array($this->role, self::ROLES_GURU, true);
+    }
+
+    /**
+     * Apakah user ini termasuk kelompok murid?
+     */
+    public function isMurid(): bool
+    {
+        return in_array($this->role, self::ROLES_MURID, true);
+    }
+
+    /**
+     * Jenis sekolah dari role: 'smk' | 'smp' | null
+     */
+    public function jenisSekolah(): ?string
+    {
+        if (str_ends_with($this->role, '_smk')) return 'smk';
+        if (str_ends_with($this->role, '_smp')) return 'smp';
+        return null;
+    }
+
+    /* ================================================================
+       SCOPES
+    ================================================================ */
+
+    /**
+     * Scope: hanya guru aktif (tidak di-softdelete) — semua jenis sekolah.
      */
     public function scopeGuruAktif($query)
     {
-        return $query->where('role', 'guru');
+        return $query->whereIn('role', self::ROLES_GURU);
     }
 
     /**
@@ -76,6 +113,18 @@ class User extends Authenticatable
      */
     public function scopeGuruNonaktif($query)
     {
-        return $query->onlyTrashed()->where('role', 'guru');
+        return $query->onlyTrashed()->whereIn('role', self::ROLES_GURU);
+    }
+
+    /**
+     * Scope: filter berdasarkan jenis sekolah ('smk' atau 'smp').
+     */
+    public function scopeJenisSekolah($query, string $jenis)
+    {
+        $jenis = strtolower($jenis);
+        return $query->where(function ($q) use ($jenis) {
+            $q->where('role', 'guru_' . $jenis)
+              ->orWhere('role', 'murid_' . $jenis);
+        });
     }
 }

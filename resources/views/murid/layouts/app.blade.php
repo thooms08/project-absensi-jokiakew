@@ -170,7 +170,8 @@
            TOGGLE BUTTON
         ============================================================ */
         .sidebar-toggle {
-            position: fixed; top: 1rem; left: 200px; z-index: 1100;
+            position: fixed; top: 50%; left: 226px; transform: translateY(-50%);
+            z-index: 1100;
             width: 28px; height: 28px; border-radius: 50%;
             background: #0a7c4a; border: 1px solid rgba(74, 222, 128, 0.35);
             color: #4ade80; display: flex; align-items: center; justify-content: center;
@@ -179,7 +180,7 @@
         }
 
         .sidebar-toggle:hover { background: #0d9e5e; }
-        .sidebar-toggle.collapsed { left: 47px; }
+        .sidebar-toggle.collapsed { left: 48px; }
         .sidebar-toggle i { font-size: 0.85rem; transition: transform 0.28s; }
         .sidebar-toggle.collapsed i { transform: rotate(180deg); }
 
@@ -312,9 +313,14 @@
 <aside class="sidebar" id="sidebar">
 
     <a href="{{ route('murid.dashboard') }}" class="sidebar-brand">
-        <img src="{{ asset('logo.jpeg') }}" alt="Logo SMKS Ibnu Sina" class="sidebar-brand-logo">
+        @php
+            $logoPath = $profileSekolah->logo
+                ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                : asset('logo.jpeg');
+        @endphp
+        <img src="{{ $logoPath }}" alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}" class="sidebar-brand-logo">
         <div class="sidebar-brand-text">
-            <span class="sidebar-brand-title">SMKS Ibnu Sina</span>
+            <span class="sidebar-brand-title">{{ $profileSekolah->nama_sekolah ?? 'Nama Sekolah' }}</span>
             <span class="sidebar-brand-sub">Portal Murid</span>
         </div>
     </a>

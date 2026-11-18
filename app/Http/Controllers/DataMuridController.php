@@ -11,19 +11,28 @@ use Illuminate\Validation\Rules\Password;
 
 class DataMuridController extends Controller
 {
+    /* Semua role yang termasuk kelompok "murid" */
+    private const MURID_ROLES = ['murid_smk', 'murid_smp'];
+
     /* ----------------------------------------------------------------
        SHOW REGISTER  –  Halaman pendaftaran mandiri murid
+       $jenis = 'smk' | 'smp'
     ---------------------------------------------------------------- */
-    public function showRegister()
+    public function showRegister(string $jenis = 'smk')
     {
-        return view('register.murid');
+        $jenis = in_array(strtolower($jenis), ['smk', 'smp']) ? strtolower($jenis) : 'smk';
+        return view('register.murid', compact('jenis'));
     }
 
     /* ----------------------------------------------------------------
        REGISTER  –  Proses pendaftaran mandiri murid
+       Route menerima {jenis} = smk | smp
     ---------------------------------------------------------------- */
-    public function register(Request $request)
+    public function register(Request $request, string $jenis = 'smk')
     {
+        $jenis = in_array(strtolower($jenis), ['smk', 'smp']) ? strtolower($jenis) : 'smk';
+        $role  = 'murid_' . $jenis;
+
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
@@ -46,7 +55,7 @@ class DataMuridController extends Controller
             'email'    => $request->email,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role'     => 'murid',
+            'role'     => $role,
             'image'    => $imagePath,
         ]);
 
@@ -54,7 +63,7 @@ class DataMuridController extends Controller
         Verifikasi::create([
             'user_id' => $user->id,
             'status'  => 'pending',
-            'role'    => 'murid',
+            'role'    => $role,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Pendaftaran berhasil.']);
@@ -78,21 +87,26 @@ class DataMuridController extends Controller
 
     /* ----------------------------------------------------------------
        LIST  –  Partial AJAX: daftar murid (aktif / nonaktif)
+       Parameter opsional: jenis (smk|smp|all)
     ---------------------------------------------------------------- */
     public function list(Request $request)
     {
         $search = trim($request->get('search', ''));
         $tab    = $request->get('tab', 'aktif');
+        $jenis  = $request->get('jenis', session('admin_jenis_sekolah', 'smk'));
+
+        /* Tentukan roles yang difilter */
+        $roles = $this->rolesForJenis($jenis);
 
         $query = ($tab === 'nonaktif')
-            ? User::onlyTrashed()->where('role', 'murid')
-            : User::where('role', 'murid');
+            ? User::onlyTrashed()->whereIn('role', $roles)
+            : User::whereIn('role', $roles);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->where('name',     'like', "%{$search}%")
+                $q->where('name',       'like', "%{$search}%")
                   ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhere('email',   'like', "%{$search}%");
+                  ->orWhere('email',    'like', "%{$search}%");
             });
         }
 
@@ -122,6 +136,7 @@ class DataMuridController extends Controller
 
     /* ----------------------------------------------------------------
        STORE  –  Simpan murid baru via admin
+       Jenis sekolah diambil dari session admin_jenis_sekolah
     ---------------------------------------------------------------- */
     public function store(Request $request)
     {
@@ -132,6 +147,9 @@ class DataMuridController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)->numbers()],
             'image'    => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
+
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $role  = 'murid_' . $jenis;
 
         $imagePath = null;
 
@@ -147,7 +165,7 @@ class DataMuridController extends Controller
             'email'    => $request->email,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role'     => 'murid',
+            'role'     => $role,
             'image'    => $imagePath,
         ]);
 
@@ -159,7 +177,7 @@ class DataMuridController extends Controller
     ---------------------------------------------------------------- */
     public function edit($id)
     {
-        $murid = User::where('role', 'murid')->findOrFail($id);
+        $murid = User::whereIn('role', self::MURID_ROLES)->findOrFail($id);
 
         return response()->json([
             'id'       => $murid->id,
@@ -175,7 +193,7 @@ class DataMuridController extends Controller
     ---------------------------------------------------------------- */
     public function update(Request $request, $id)
     {
-        $murid = User::where('role', 'murid')->findOrFail($id);
+        $murid = User::whereIn('role', self::MURID_ROLES)->findOrFail($id);
 
         $request->validate([
             'name'     => 'required|string|max:255',
@@ -215,7 +233,7 @@ class DataMuridController extends Controller
     ---------------------------------------------------------------- */
     public function destroy($id)
     {
-        $murid = User::where('role', 'murid')->findOrFail($id);
+        $murid = User::whereIn('role', self::MURID_ROLES)->findOrFail($id);
         $murid->delete();
 
         return response()->json(['success' => true, 'message' => 'Murid berhasil dinonaktifkan.']);
@@ -226,7 +244,7 @@ class DataMuridController extends Controller
     ---------------------------------------------------------------- */
     public function restore($id)
     {
-        $murid = User::onlyTrashed()->where('role', 'murid')->findOrFail($id);
+        $murid = User::onlyTrashed()->whereIn('role', self::MURID_ROLES)->findOrFail($id);
         $murid->restore();
 
         return response()->json(['success' => true, 'message' => 'Murid berhasil diaktifkan kembali.']);
@@ -237,7 +255,7 @@ class DataMuridController extends Controller
     ---------------------------------------------------------------- */
     public function forceDelete($id)
     {
-        $murid = User::onlyTrashed()->where('role', 'murid')->findOrFail($id);
+        $murid = User::onlyTrashed()->whereIn('role', self::MURID_ROLES)->findOrFail($id);
 
         if ($murid->image && Storage::disk('public')->exists($murid->image)) {
             Storage::disk('public')->delete($murid->image);
@@ -254,7 +272,9 @@ class DataMuridController extends Controller
 
     public function notifCount()
     {
-        $count = Verifikasi::pending()->forRole('murid')->count();
+        $count = Verifikasi::pending()
+            ->whereIn('role', self::MURID_ROLES)
+            ->count();
         return response()->json(['count' => $count]);
     }
 
@@ -262,7 +282,7 @@ class DataMuridController extends Controller
     {
         $list = Verifikasi::with('user')
             ->pending()
-            ->forRole('murid')
+            ->whereIn('role', self::MURID_ROLES)
             ->latest()
             ->take(20)
             ->get()
@@ -273,6 +293,7 @@ class DataMuridController extends Controller
                     'name'       => $v->user->name     ?? '-',
                     'email'      => $v->user->email    ?? '-',
                     'username'   => $v->user->username ?? '-',
+                    'role'       => $v->role,
                     'created_at' => $v->created_at->diffForHumans(),
                     'avatar'     => strtoupper(mb_substr($v->user->name ?? 'M', 0, 1)),
                 ];
@@ -283,7 +304,10 @@ class DataMuridController extends Controller
 
     public function notifApprove($id)
     {
-        $verifikasi = Verifikasi::pending()->forRole('murid')->findOrFail($id);
+        $verifikasi = Verifikasi::pending()
+            ->whereIn('role', self::MURID_ROLES)
+            ->findOrFail($id);
+
         $verifikasi->update(['status' => 'success']);
 
         return response()->json(['success' => true, 'message' => 'Pendaftaran murid disetujui.']);
@@ -291,7 +315,9 @@ class DataMuridController extends Controller
 
     public function notifReject($id)
     {
-        $verifikasi = Verifikasi::pending()->forRole('murid')->findOrFail($id);
+        $verifikasi = Verifikasi::pending()
+            ->whereIn('role', self::MURID_ROLES)
+            ->findOrFail($id);
 
         $user = User::find($verifikasi->user_id);
         if ($user) {
@@ -304,5 +330,22 @@ class DataMuridController extends Controller
         $verifikasi->update(['status' => 'fail']);
 
         return response()->json(['success' => true, 'message' => 'Pendaftaran murid ditolak.']);
+    }
+
+    /* ================================================================
+       PRIVATE HELPERS
+    ================================================================ */
+
+    /**
+     * Kembalikan array roles berdasarkan jenis sekolah.
+     * $jenis = 'smk' | 'smp' | 'all'
+     */
+    private function rolesForJenis(string $jenis): array
+    {
+        return match (strtolower($jenis)) {
+            'smk'   => ['murid_smk'],
+            'smp'   => ['murid_smp'],
+            default => self::MURID_ROLES,
+        };
     }
 }

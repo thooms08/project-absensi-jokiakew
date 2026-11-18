@@ -13,19 +13,28 @@ use Illuminate\Validation\Rules\Password;
 
 class DataGuruController extends Controller
 {
+    /* Semua role yang termasuk kelompok "guru" */
+    private const GURU_ROLES = ['guru_smk', 'guru_smp'];
+
     /* ----------------------------------------------------------------
        SHOW REGISTER  –  Halaman pendaftaran mandiri guru
+       $jenis = 'smk' | 'smp'
     ---------------------------------------------------------------- */
-    public function showRegister()
+    public function showRegister(string $jenis = 'smk')
     {
-        return view('register.guru');
+        $jenis = in_array(strtolower($jenis), ['smk', 'smp']) ? strtolower($jenis) : 'smk';
+        return view('register.guru', compact('jenis'));
     }
 
     /* ----------------------------------------------------------------
        REGISTER  –  Proses pendaftaran mandiri guru
+       Route menerima {jenis} = smk | smp
     ---------------------------------------------------------------- */
-    public function register(Request $request)
+    public function register(Request $request, string $jenis = 'smk')
     {
+        $jenis = in_array(strtolower($jenis), ['smk', 'smp']) ? strtolower($jenis) : 'smk';
+        $role  = 'guru_' . $jenis;
+
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
@@ -50,14 +59,14 @@ class DataGuruController extends Controller
             'email'    => $request->email,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role'     => 'guru',
+            'role'     => $role,
             'image'    => $imagePath,
         ]);
 
         Verifikasi::create([
             'user_id' => $user->id,
             'status'  => 'pending',
-            'role'    => 'guru',
+            'role'    => $role,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Pendaftaran berhasil.']);
@@ -73,21 +82,26 @@ class DataGuruController extends Controller
 
     /* ----------------------------------------------------------------
        LIST  –  Partial AJAX: daftar guru (aktif / nonaktif)
+       Parameter opsional: jenis (smk|smp|all)
     ---------------------------------------------------------------- */
     public function list(Request $request)
     {
         $search = trim($request->get('search', ''));
         $tab    = $request->get('tab', 'aktif');
+        $jenis  = $request->get('jenis', session('admin_jenis_sekolah', 'smk'));
+
+        /* Tentukan roles yang difilter */
+        $roles = $this->rolesForJenis($jenis);
 
         $query = ($tab === 'nonaktif')
-            ? User::onlyTrashed()->where('role', 'guru')
-            : User::where('role', 'guru');
+            ? User::onlyTrashed()->whereIn('role', $roles)
+            : User::whereIn('role', $roles);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->where('name',     'like', "%{$search}%")
+                $q->where('name',       'like', "%{$search}%")
                   ->orWhere('username', 'like', "%{$search}%")
-                  ->orWhere('email',   'like', "%{$search}%");
+                  ->orWhere('email',    'like', "%{$search}%");
             });
         }
 
@@ -117,6 +131,7 @@ class DataGuruController extends Controller
 
     /* ----------------------------------------------------------------
        STORE  –  Simpan guru baru via admin (modal +Guru, tanpa verifikasi)
+       Jenis sekolah diambil dari session admin_jenis_sekolah
     ---------------------------------------------------------------- */
     public function store(Request $request)
     {
@@ -129,6 +144,9 @@ class DataGuruController extends Controller
         ], [
             'username.regex' => 'Username hanya boleh mengandung huruf, angka, titik, underscore, dan dash.',
         ]);
+
+        $jenis = session('admin_jenis_sekolah', 'smk');
+        $role  = 'guru_' . $jenis;
 
         $imagePath = null;
 
@@ -144,7 +162,7 @@ class DataGuruController extends Controller
             'email'    => $request->email,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role'     => 'guru',
+            'role'     => $role,
             'image'    => $imagePath,
         ]);
 
@@ -156,7 +174,7 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function edit($id)
     {
-        $guru = User::where('role', 'guru')->findOrFail($id);
+        $guru = User::whereIn('role', self::GURU_ROLES)->findOrFail($id);
 
         return response()->json([
             'id'       => $guru->id,
@@ -172,7 +190,7 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function update(Request $request, $id)
     {
-        $guru = User::where('role', 'guru')->findOrFail($id);
+        $guru = User::whereIn('role', self::GURU_ROLES)->findOrFail($id);
 
         $request->validate([
             'name'     => 'required|string|max:255',
@@ -214,7 +232,7 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function destroy($id)
     {
-        $guru = User::where('role', 'guru')->findOrFail($id);
+        $guru = User::whereIn('role', self::GURU_ROLES)->findOrFail($id);
         $guru->delete();
 
         return response()->json(['success' => true, 'message' => 'Guru berhasil dinonaktifkan.']);
@@ -225,7 +243,7 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function restore($id)
     {
-        $guru = User::onlyTrashed()->where('role', 'guru')->findOrFail($id);
+        $guru = User::onlyTrashed()->whereIn('role', self::GURU_ROLES)->findOrFail($id);
         $guru->restore();
 
         return response()->json(['success' => true, 'message' => 'Guru berhasil diaktifkan kembali.']);
@@ -236,11 +254,11 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function forceDelete($id)
     {
-        $guru = User::onlyTrashed()->where('role', 'guru')->findOrFail($id);
+        $guru = User::onlyTrashed()->whereIn('role', self::GURU_ROLES)->findOrFail($id);
 
         if ($guru->image && Storage::disk('public')->exists($guru->image)) {
-                Storage::disk('public')->delete($guru->image);
-            }
+            Storage::disk('public')->delete($guru->image);
+        }
 
         $guru->forceDelete();
 
@@ -261,7 +279,7 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function getMapel($id)
     {
-        $guru = User::where('role', 'guru')->findOrFail($id);
+        $guru = User::whereIn('role', self::GURU_ROLES)->findOrFail($id);
 
         $semuaMapel   = Mapel::orderBy('nama_mapel')->get(['id', 'nama_mapel']);
         $mapelDipilih = GuruMapel::where('user_id', $id)->pluck('mapel_id')->toArray();
@@ -282,7 +300,7 @@ class DataGuruController extends Controller
             'mapel_ids.*' => 'exists:mapel,id',
         ]);
 
-        User::where('role', 'guru')->findOrFail($id);
+        User::whereIn('role', self::GURU_ROLES)->findOrFail($id);
 
         /* Hapus semua mapel lama, ganti dengan yang baru */
         GuruMapel::where('user_id', $id)->delete();
@@ -305,11 +323,13 @@ class DataGuruController extends Controller
     ================================================================ */
 
     /* ----------------------------------------------------------------
-       NOTIF COUNT  –  Jumlah pengajuan pending (untuk badge lonceng)
+       NOTIF COUNT  –  Jumlah pengajuan pending guru (semua jenis sekolah)
     ---------------------------------------------------------------- */
     public function notifCount()
     {
-        $count = Verifikasi::pending()->forRole('guru')->count();
+        $count = Verifikasi::pending()
+            ->whereIn('role', self::GURU_ROLES)
+            ->count();
         return response()->json(['count' => $count]);
     }
 
@@ -320,7 +340,7 @@ class DataGuruController extends Controller
     {
         $list = Verifikasi::with('user')
             ->pending()
-            ->forRole('guru')
+            ->whereIn('role', self::GURU_ROLES)
             ->latest()
             ->take(20)
             ->get()
@@ -328,9 +348,10 @@ class DataGuruController extends Controller
                 return [
                     'id'         => $v->id,
                     'user_id'    => $v->user_id,
-                    'name'       => $v->user->name    ?? '-',
-                    'email'      => $v->user->email   ?? '-',
+                    'name'       => $v->user->name     ?? '-',
+                    'email'      => $v->user->email    ?? '-',
                     'username'   => $v->user->username ?? '-',
+                    'role'       => $v->role,
                     'created_at' => $v->created_at->diffForHumans(),
                     'avatar'     => strtoupper(mb_substr($v->user->name ?? 'G', 0, 1)),
                 ];
@@ -344,7 +365,10 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function notifApprove($id)
     {
-        $verifikasi = Verifikasi::pending()->forRole('guru')->findOrFail($id);
+        $verifikasi = Verifikasi::pending()
+            ->whereIn('role', self::GURU_ROLES)
+            ->findOrFail($id);
+
         $verifikasi->update(['status' => 'success']);
 
         return response()->json(['success' => true, 'message' => 'Pendaftaran guru disetujui.']);
@@ -355,7 +379,9 @@ class DataGuruController extends Controller
     ---------------------------------------------------------------- */
     public function notifReject($id)
     {
-        $verifikasi = Verifikasi::pending()->forRole('guru')->findOrFail($id);
+        $verifikasi = Verifikasi::pending()
+            ->whereIn('role', self::GURU_ROLES)
+            ->findOrFail($id);
 
         $user = User::find($verifikasi->user_id);
         if ($user) {
@@ -370,4 +396,20 @@ class DataGuruController extends Controller
         return response()->json(['success' => true, 'message' => 'Pendaftaran guru ditolak.']);
     }
 
+    /* ================================================================
+       PRIVATE HELPERS
+    ================================================================ */
+
+    /**
+     * Kembalikan array roles berdasarkan jenis sekolah.
+     * $jenis = 'smk' | 'smp' | 'all'
+     */
+    private function rolesForJenis(string $jenis): array
+    {
+        return match (strtolower($jenis)) {
+            'smk'   => ['guru_smk'],
+            'smp'   => ['guru_smp'],
+            default => self::GURU_ROLES,
+        };
+    }
 }

@@ -11,10 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /* Tabel profile_sekolah sudah dibuat di migration September — skip jika sudah ada */
+        if (Schema::hasTable('profile_sekolah')) {
+            return;
+        }
+
         Schema::create('profile_sekolah', function (Blueprint $table) {
             $table->id();
             $table->string('nama_sekolah')->nullable();
-            $table->string('logo')->nullable();   // path relatif: assets/logo_sekolah/...
+            $table->string('logo')->nullable();
             $table->timestamps();
         });
     }

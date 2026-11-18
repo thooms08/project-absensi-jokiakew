@@ -12,26 +12,24 @@ class AbsenMuridSeeder extends Seeder
 {
     public function run(): void
     {
-        $muridIds = User::where('role', 'murid')
-                        ->orderBy('id')
-                        ->pluck('id')
-                        ->toArray();
+        /*
+         * Ambil semua murid SMK dan SMP secara terpisah
+         * agar kode absen yang dipakai sesuai kelas masing-masing.
+         */
+        $muridSmkIds = User::where('role', 'murid_smk')
+                           ->orderBy('id')
+                           ->pluck('id')
+                           ->toArray();
 
-        /* Kode absen per hari: ambil kode RPL1 karena murid seeder diasumsikan 1 kelas */
-        $kodePerHari = [];
-        for ($d = 6; $d >= 0; $d--) {
-            $tanggal           = Carbon::today()->subDays($d)->format('Ymd');
-            $kodePerHari[$d]   = $tanggal . '-RPL1';
-        }
+        $muridSmpIds = User::where('role', 'murid_smp')
+                           ->orderBy('id')
+                           ->pluck('id')
+                           ->toArray();
 
         /*
-         * Probabilitas kehadiran:
-         *  - 85% hadir
-         *  - 8%  izin
-         *  - 7%  tidak hadir
-         *
-         * Supaya deterministik (tidak random setiap seed), gunakan
-         * pola berulang berbasis indeks murid + hari.
+         * Pola kehadiran deterministik (tidak random setiap seed).
+         * Dipakai bergantian berdasarkan (indeks_murid + hari_ke) % panjang_pola.
+         *   85% hadir, 8% izin, 7% tidak hadir
          */
         $pola = [
             'hadir','hadir','hadir','hadir','hadir','hadir','hadir',
@@ -43,31 +41,66 @@ class AbsenMuridSeeder extends Seeder
 
         $rows = [];
 
-        foreach ($muridIds as $mIdx => $muridId) {
+        /* ---- Murid SMK — kode absen pakai kelas RPL1 ---- */
+        $kodeSmk = [];
+        for ($d = 6; $d >= 0; $d--) {
+            $kodeSmk[$d] = Carbon::today()->subDays($d)->format('Ymd') . '-RPL1';
+        }
+
+        foreach ($muridSmkIds as $mIdx => $muridId) {
             for ($d = 6; $d >= 0; $d--) {
                 $hariKe  = 6 - $d;
                 $tanggal = Carbon::today()->subDays($d);
+                $status  = $pola[($mIdx + $hariKe) % count($pola)];
 
-                /* Status diambil dari pola dengan offset berbeda tiap murid */
-                $polaIdx = ($mIdx + $hariKe) % count($pola);
-                $status  = $pola[$polaIdx];
-
-                $waktuAbsen = ($status === 'hadir')
+                $waktu = ($status === 'hadir')
                     ? $tanggal->copy()->setTime(rand(6, 7), rand(5, 55))
                     : $tanggal->copy()->setTime(0, 0);
 
                 $rows[] = [
                     'uuid'       => (string) Str::uuid(),
                     'user_id'    => $muridId,
-                    'kode_absen' => $kodePerHari[$d],
+                    'kode_absen' => $kodeSmk[$d],
                     'status'     => $status,
                     'alasan'     => match ($status) {
                         'izin'  => 'Sakit',
                         'tidak' => 'Tanpa Keterangan',
                         default => null,
                     },
-                    'created_at' => $waktuAbsen,
-                    'updated_at' => $waktuAbsen,
+                    'created_at' => $waktu,
+                    'updated_at' => $waktu,
+                ];
+            }
+        }
+
+        /* ---- Murid SMP — kode absen pakai kelas VII-A ---- */
+        $kodeSmp = [];
+        for ($d = 6; $d >= 0; $d--) {
+            $kodeSmp[$d] = Carbon::today()->subDays($d)->format('Ymd') . '-VIIA';
+        }
+
+        foreach ($muridSmpIds as $mIdx => $muridId) {
+            for ($d = 6; $d >= 0; $d--) {
+                $hariKe  = 6 - $d;
+                $tanggal = Carbon::today()->subDays($d);
+                $status  = $pola[($mIdx + $hariKe + 7) % count($pola)]; /* offset +7 agar beda pola dari SMK */
+
+                $waktu = ($status === 'hadir')
+                    ? $tanggal->copy()->setTime(rand(6, 7), rand(5, 55))
+                    : $tanggal->copy()->setTime(0, 0);
+
+                $rows[] = [
+                    'uuid'       => (string) Str::uuid(),
+                    'user_id'    => $muridId,
+                    'kode_absen' => $kodeSmp[$d],
+                    'status'     => $status,
+                    'alasan'     => match ($status) {
+                        'izin'  => 'Sakit',
+                        'tidak' => 'Tanpa Keterangan',
+                        default => null,
+                    },
+                    'created_at' => $waktu,
+                    'updated_at' => $waktu,
                 ];
             }
         }

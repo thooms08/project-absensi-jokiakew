@@ -1811,18 +1811,29 @@
 
     /* ============================================================
        TOMBOL BAGIKAN TAUTAN REGISTRASI
+       URL dinamis sesuai jenis sekolah aktif (SMK / SMP)
     ============================================================ */
-    var REGISTER_URL = '{{ route("register.guru") }}';
+    var REGISTER_URLS = {
+        smk: '{{ route("register.guru.jenis", ["jenis" => "smk"]) }}',
+        smp: '{{ route("register.guru.jenis", ["jenis" => "smp"]) }}',
+    };
+
+    /* Gunakan jenis dari window (di-set oleh sidebar school selector) */
+    function getRegisterUrl() {
+        var jenis = (window.adminJenisSekolah || '{{ session("admin_jenis_sekolah", "smk") }}');
+        return REGISTER_URLS[jenis] || REGISTER_URLS.smk;
+    }
 
     document.getElementById('btnBagikanLink').addEventListener('click', function () {
+        var url = getRegisterUrl();
         if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(REGISTER_URL).then(function () {
-                showCopiedAlert();
+            navigator.clipboard.writeText(url).then(function () {
+                showCopiedAlert(url);
             }).catch(function () {
-                fallbackCopy(REGISTER_URL);
+                fallbackCopy(url);
             });
         } else {
-            fallbackCopy(REGISTER_URL);
+            fallbackCopy(url);
         }
     });
 
@@ -1835,7 +1846,7 @@
         ta.select();
         try {
             document.execCommand('copy');
-            showCopiedAlert();
+            showCopiedAlert(text);
         } catch (e) {
             Swal.fire({
                 icon: 'info',
@@ -1849,11 +1860,11 @@
         document.body.removeChild(ta);
     }
 
-    function showCopiedAlert() {
+    function showCopiedAlert(url) {
         Swal.fire({
             icon: 'success',
             title: 'Tautan disalin!',
-            html: '<p style="font-size:0.85rem;color:rgba(255,255,255,0.65);margin-bottom:0.5rem;">Bagikan tautan berikut kepada guru agar dapat mendaftar secara mandiri:</p><div style="word-break:break-all;font-size:0.78rem;background:rgba(255,255,255,0.06);padding:0.55rem 0.8rem;border-radius:8px;color:#4ade80;border:1px solid rgba(74,222,128,0.18);">' + REGISTER_URL + '</div>',
+            html: '<p style="font-size:0.85rem;color:rgba(255,255,255,0.65);margin-bottom:0.5rem;">Bagikan tautan berikut kepada guru agar dapat mendaftar secara mandiri:</p><div style="word-break:break-all;font-size:0.78rem;background:rgba(255,255,255,0.06);padding:0.55rem 0.8rem;border-radius:8px;color:#4ade80;border:1px solid rgba(74,222,128,0.18);">' + url + '</div>',
             confirmButtonText: 'Oke',
             confirmButtonColor: '#22c55e',
             background: '#0a2e1c',
@@ -1862,6 +1873,13 @@
             timerProgressBar: true,
         });
     }
+
+    /* ============================================================
+       REAL-TIME: reload list saat admin ganti sekolah dari sidebar
+    ============================================================ */
+    document.addEventListener('sekolahChanged', function () {
+        loadList(searchInput.value.trim(), currentTab);
+    });
 
     /* ============================================================
        INISIALISASI

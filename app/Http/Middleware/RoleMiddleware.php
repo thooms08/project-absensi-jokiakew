@@ -22,7 +22,25 @@ class RoleMiddleware
 
         $userRole = Auth::user()->role;
 
-        if (! in_array($userRole, $roles, true)) {
+        /*
+         * Ekspansi alias role:
+         *   'guru'  → cocok dengan 'guru_smk' dan 'guru_smp'
+         *   'murid' → cocok dengan 'murid_smk' dan 'murid_smp'
+         */
+        $expanded = [];
+        foreach ($roles as $r) {
+            if ($r === 'guru') {
+                $expanded[] = 'guru_smk';
+                $expanded[] = 'guru_smp';
+            } elseif ($r === 'murid') {
+                $expanded[] = 'murid_smk';
+                $expanded[] = 'murid_smp';
+            } else {
+                $expanded[] = $r;
+            }
+        }
+
+        if (! in_array($userRole, $expanded, true)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

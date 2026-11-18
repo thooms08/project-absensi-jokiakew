@@ -1535,16 +1535,30 @@
 
     /* ============================================================
        TOMBOL BAGIKAN TAUTAN REGISTRASI MURID
+       URL dinamis sesuai jenis sekolah aktif (SMK / SMP)
     ============================================================ */
-    var REGISTER_MURID_URL = '{{ route("register.murid") }}';
+    var REGISTER_MURID_URLS = {
+        smk: '{{ route("register.murid.jenis", ["jenis" => "smk"]) }}',
+        smp: '{{ route("register.murid.jenis", ["jenis" => "smp"]) }}',
+    };
+
+    function getRegisterMuridUrl() {
+        var jenis = (window.adminJenisSekolah || '{{ session("admin_jenis_sekolah", "smk") }}');
+        return REGISTER_MURID_URLS[jenis] || REGISTER_MURID_URLS.smk;
+    }
+
+    /* Alias agar showCopiedAlert bisa menggunakannya */
+    var REGISTER_MURID_URL = getRegisterMuridUrl();
 
     document.getElementById('btnBagikanLinkMurid').addEventListener('click', function () {
+        var url = getRegisterMuridUrl();
+        REGISTER_MURID_URL = url; /* sinkronkan alias */
         if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(REGISTER_MURID_URL)
-                .then(showCopiedAlert)
-                .catch(function () { fallbackCopy(REGISTER_MURID_URL); });
+            navigator.clipboard.writeText(url)
+                .then(function () { showCopiedAlert(url); })
+                .catch(function () { fallbackCopy(url); });
         } else {
-            fallbackCopy(REGISTER_MURID_URL);
+            fallbackCopy(url);
         }
     });
 
@@ -1554,7 +1568,7 @@
         ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
         document.body.appendChild(ta);
         ta.focus(); ta.select();
-        try { document.execCommand('copy'); showCopiedAlert(); } catch (e) {
+        try { document.execCommand('copy'); showCopiedAlert(text); } catch (e) {
             Swal.fire({
                 icon: 'info',
                 title: 'Tautan Pendaftaran Murid',
@@ -1571,7 +1585,7 @@
         document.body.removeChild(ta);
     }
 
-    function showCopiedAlert() {
+    function showCopiedAlert(url) {
         Swal.fire({
             icon: 'success',
             title: 'Tautan disalin!',
@@ -1579,7 +1593,7 @@
                 + 'Bagikan tautan berikut kepada murid agar dapat mendaftar secara mandiri:</p>'
                 + '<div style="word-break:break-all;font-size:0.78rem;background:rgba(255,255,255,0.06);'
                 + 'padding:0.55rem 0.8rem;border-radius:8px;color:#4ade80;'
-                + 'border:1px solid rgba(74,222,128,0.18);">' + REGISTER_MURID_URL + '</div>',
+                + 'border:1px solid rgba(74,222,128,0.18);">' + url + '</div>',
             confirmButtonText: 'Oke',
             confirmButtonColor: '#22c55e',
             background: '#0a2e1c',
@@ -1588,6 +1602,13 @@
             timerProgressBar: true,
         });
     }
+
+    /* ============================================================
+       REAL-TIME: reload list saat admin ganti sekolah dari sidebar
+    ============================================================ */
+    document.addEventListener('sekolahChanged', function () {
+        loadList(document.getElementById('searchInput').value.trim(), currentTab);
+    });
 
     /* ============================================================
        INISIALISASI

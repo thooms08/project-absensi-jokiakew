@@ -11,6 +11,7 @@ use App\Http\Controllers\AbsenGuruController;
 use App\Http\Controllers\AbsenMuridController;
 use App\Http\Controllers\KodeAbsenController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminSekolahController;
 
 /* ====================================================================
    HALAMAN UTAMA
@@ -29,14 +30,30 @@ Route::middleware('guest')->group(function () {
 });
 
 /* Registrasi mandiri guru  –  publik */
-Route::get('/register/guru',  [DataGuruController::class, 'showRegister'])->name('register.guru');
-Route::post('/register/guru', [DataGuruController::class, 'register'])->name('register.guru.post');
+Route::get('/register/guru',         [DataGuruController::class, 'showRegister'])->name('register.guru');
+Route::post('/register/guru',        [DataGuruController::class, 'register'])->name('register.guru.post');
 Route::get('/register/guru/check-username', [DataGuruController::class, 'checkUsername'])->name('register.guru.check_username');
 
+/* Registrasi mandiri guru per jenis sekolah  –  publik */
+Route::get('/register/guru/{jenis}',  [DataGuruController::class, 'showRegister'])
+    ->where('jenis', 'smk|smp')
+    ->name('register.guru.jenis');
+Route::post('/register/guru/{jenis}', [DataGuruController::class, 'register'])
+    ->where('jenis', 'smk|smp')
+    ->name('register.guru.jenis.post');
+
 /* Registrasi mandiri murid  –  publik */
-Route::get('/register/murid',  [DataMuridController::class, 'showRegister'])->name('register.murid');
-Route::post('/register/murid', [DataMuridController::class, 'register'])->name('register.murid.post');
+Route::get('/register/murid',         [DataMuridController::class, 'showRegister'])->name('register.murid');
+Route::post('/register/murid',        [DataMuridController::class, 'register'])->name('register.murid.post');
 Route::get('/register/murid/check-username', [DataMuridController::class, 'checkUsername'])->name('register.murid.check_username');
+
+/* Registrasi mandiri murid per jenis sekolah  –  publik */
+Route::get('/register/murid/{jenis}',  [DataMuridController::class, 'showRegister'])
+    ->where('jenis', 'smk|smp')
+    ->name('register.murid.jenis');
+Route::post('/register/murid/{jenis}', [DataMuridController::class, 'register'])
+    ->where('jenis', 'smk|smp')
+    ->name('register.murid.jenis.post');
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
@@ -52,6 +69,13 @@ Route::prefix('admin')
         Route::get('/dashboard', function () {
             return view('admin.index');
         })->name('dashboard');
+
+        /* -- Pilih Jenis Sekolah (AJAX) -- */
+        Route::get('/sekolah/jenis',      [AdminSekolahController::class, 'getJenis'])->name('sekolah.get_jenis');
+        Route::post('/sekolah/jenis',     [AdminSekolahController::class, 'setJenis'])->name('sekolah.set_jenis');
+
+        /* -- Dashboard Data (AJAX) -- */
+        Route::get('/dashboard/data',     [AdminSekolahController::class, 'dashboardData'])->name('dashboard.data');
 
         Route::get('/profile', [ProfileController::class, 'showAdmin'])->name('profile');
         Route::post('/profile',                    [ProfileController::class, 'updateAdmin'])->name('profile.update');
