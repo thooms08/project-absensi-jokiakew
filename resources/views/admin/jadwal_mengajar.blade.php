@@ -796,6 +796,8 @@
     document.addEventListener('sekolahChanged', function (e) {
         console.log('Sekolah berubah ke:', e.detail.jenis);
         document.getElementById('searchInput').value = ''; /* reset search */
+        dropdownLoaded = false;                            /* paksa reload dropdown */
+        dropdownCache  = { guru: [], mapel: [], kelas: [] };
         loadList(activeHari, '');                         /* reload list */
     });
 

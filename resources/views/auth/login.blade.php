@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Login SIKIB - Sistem Informasi Kehadiran Ibnu Sina">
-    <title>Login - SMKS Ibnu Sina</title>
+    <meta name="description" content="Login SIKIB - Sistem Informasi Kehadiran {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}">
+    <title>Login - {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}</title>
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -435,13 +435,18 @@
                  KOLOM KIRI: Identitas sekolah
             ==================================================== -->
             <div class="card-left">
+                @php
+                    $logoPath = $profileSekolah->logo
+                        ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                        : asset('logo.jpeg');
+                @endphp
                 <img
-                    src="{{ asset('logo.jpeg') }}"
-                    alt="Logo SMKS Ibnu Sina"
+                    src="{{ $logoPath }}"
+                    alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}"
                     class="login-school-logo"
                 >
                 <div>
-                    <div class="login-school-name">SMKS IBNU SINA</div>
+                    <div class="login-school-name">{{ strtoupper($profileSekolah->nama_sekolah ?? 'NAMA SEKOLAH') }}</div>
                     <div class="login-divider" aria-hidden="true"></div>
                     <div class="login-system-name">SIKIB</div>
                     <div class="login-system-desc">Sistem Informasi<br>Kehadiran Ibnu Sina</div>

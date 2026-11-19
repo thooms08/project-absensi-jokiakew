@@ -29,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
             'admin.layouts.app',
             'guru.layouts.app',
             'murid.layouts.app',
+            'index',
+            'auth.login',
+            'layouts.footer',
         ], function ($view) {
             $view->with('profileSekolah', ProfileSekolah::getInstance());
         });

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SIKIB - Sistem Informasi Kehadiran Ibnu Sina, SMKS Ibnu Sina">
-    <title>SMKS Ibnu Sina - SIKIB</title>
+    <meta name="description" content="SIKIB - Sistem Informasi Kehadiran {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}">
+    <title>{{ $profileSekolah->nama_sekolah ?? 'Sekolah' }} - SIKIB</title>
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -326,12 +326,17 @@
         <div class="hero-overlay" aria-hidden="true"></div>
         <div class="hero-card">
             <div class="school-brand">
+                @php
+                    $logoPath = $profileSekolah->logo
+                        ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                        : asset('logo.jpeg');
+                @endphp
                 <img
-                    src="{{ asset('logo.jpeg') }}"
-                    alt="Logo SMKS Ibnu Sina"
+                    src="{{ $logoPath }}"
+                    alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}"
                     class="school-logo"
                 >
-                <div class="school-name">SMKS IBNU SINA</div>
+                <div class="school-name">{{ strtoupper($profileSekolah->nama_sekolah ?? 'NAMA SEKOLAH') }}</div>
             </div>
             <div class="hero-divider" aria-hidden="true"></div>
              <h1 class="hero-subtitle">

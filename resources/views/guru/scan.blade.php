@@ -333,6 +333,10 @@
     var riwayat     = [];
     var lastScanned = null;
     var processing  = false;
+    
+    /* Inisialisasi audio untuk konfirmasi absen */
+    var audioKonfirmasi = new Audio('{{ asset("konfirmasi.mp3") }}');
+    audioKonfirmasi.volume = 0.7;
 
     /* ============================================================
        STATUS
@@ -350,9 +354,11 @@
         if (el) el.style.display = 'none';
     };
 
-    function tampil(type, html) {
+    function tampil(type, html, persist) {
         ['alertOk','alertWarn','alertErr'].forEach(function (id) {
-            document.getElementById(id).style.display = 'none';
+            var el = document.getElementById(id);
+            clearTimeout(el._t);
+            el.style.display = 'none';
         });
         var ids  = { ok:'alertOk',    warn:'alertWarn',    err:'alertErr'    };
         var msgs = { ok:'alertOkMsg', warn:'alertWarnMsg', err:'alertErrMsg' };
@@ -361,8 +367,9 @@
         if (!el || !mg) return;
         mg.innerHTML = html;
         el.style.display = 'flex';
-        clearTimeout(el._t);
-        el._t = setTimeout(function () { el.style.display = 'none'; }, 5000);
+        if (!persist) {
+            el._t = setTimeout(function () { el.style.display = 'none'; }, 5000);
+        }
     }
 
     /* ============================================================
@@ -480,12 +487,17 @@
                 );
                 setStatus('Siap scan berikutnya', 'scanning');
                 pushRiwayat({ s:'ok',  ini:(d.nama||'M').charAt(0).toUpperCase(), nama:d.nama||'-', kelas:d.kelas||kelas, mapel:d.mapel||mapel, jam:jam });
+                /* Putar sound konfirmasi */
+                audioKonfirmasi.currentTime = 0;
+                audioKonfirmasi.play().catch(function(){});
             } else if (res.st === 422 && d.sudah_absen) {
                 tampil('warn', '<strong>' + esc(d.nama||'Murid') + '</strong> sudah tercatat absen untuk jadwal ini.');
                 pushRiwayat({ s:'dup', ini:(d.nama||'M').charAt(0).toUpperCase(), nama:d.nama||'-', kelas:d.kelas||kelas, mapel:d.mapel||mapel, jam:jam });
             } else {
-                tampil('err', d.message || 'Gagal mencatat absen.');
-                pushRiwayat({ s:'err', ini:'?', nama:d.nama||'Unknown', kelas:kelas, mapel:mapel, jam:jam });
+                /* Pesan lebih spesifik untuk murid bukan peserta kelas */
+                var errMsg = d.message || 'Gagal mencatat absen.';
+                tampil('err', '<strong>Scan ditolak:</strong> ' + esc(errMsg), true);
+                pushRiwayat({ s:'err', ini:(d.nama||'?').charAt(0).toUpperCase(), nama:d.nama||'Unknown', kelas:kelas, mapel:mapel, jam:jam });
                 setStatus('Siap scan', 'scanning');
             }
         })
