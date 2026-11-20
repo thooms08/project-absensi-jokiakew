@@ -12,207 +12,116 @@
         background: linear-gradient(135deg, rgba(10,124,74,0.25) 0%, rgba(6,78,46,0.15) 100%);
         border: 1px solid rgba(74,222,128,0.18);
         border-radius: 20px 0 20px 0;
-        padding: 2.5rem 2rem;
-        display: flex;
-        align-items: center;
-        gap: 1.75rem;
-        margin-bottom: 1.75rem;
-        position: relative;
-        overflow: hidden;
+        padding: 2rem 1.75rem;
+        display: flex; align-items: center; gap: 1.5rem;
+        flex-wrap: wrap; margin-bottom: 1.75rem;
+        position: relative; overflow: hidden;
     }
 
     .welcome-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
+        content: ''; position: absolute; inset: 0;
         background: linear-gradient(135deg, rgba(74,222,128,0.06) 0%, transparent 60%);
         pointer-events: none;
     }
 
-    .welcome-icon-wrap {
-        width: 72px;
-        height: 72px;
-        border-radius: 18px;
-        background: rgba(74,222,128,0.12);
-        border: 1px solid rgba(74,222,128,0.22);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: #4ade80;
-        flex-shrink: 0;
+    .welcome-avatar {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: linear-gradient(135deg, #16a34a, #4ade80);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem; font-weight: 800; color: #fff; flex-shrink: 0;
+        border: 3px solid rgba(74,222,128,0.35);
+        overflow: hidden;
     }
 
-    .welcome-body h2 {
-        font-size: 1.45rem;
-        font-weight: 800;
-        color: #ffffff;
-        margin: 0 0 0.35rem;
-        line-height: 1.25;
-    }
+    .welcome-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-    .welcome-body p {
-        font-size: 0.88rem;
-        color: rgba(255,255,255,0.55);
-        margin: 0;
-        line-height: 1.6;
-    }
+    .welcome-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0 0 .25rem; }
+    .welcome-sub   { font-size: .82rem; color: rgba(226,245,234,.6); margin: 0 0 .75rem; }
 
-    .welcome-body .name-highlight {
-        color: #4ade80;
-        font-weight: 700;
-    }
-
-    /* ============================================================
-       INFO STRIP
-    ============================================================ */
     .info-strip {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
+        display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
     }
 
     .info-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        background: rgba(74,222,128,0.08);
-        border: 1px solid rgba(74,222,128,0.15);
-        border-radius: 50px;
-        padding: 0.28rem 0.75rem;
-        font-size: 0.75rem;
-        color: rgba(255,255,255,0.55);
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.15);
+        border-radius: 50px; padding: 0.22rem 0.65rem;
+        font-size: 0.72rem; color: rgba(255,255,255,0.55);
     }
 
-    .info-chip i { color: #4ade80; font-size: 0.8rem; }
+    .info-chip i { color: #4ade80; font-size: 0.75rem; }
 
     /* ============================================================
-       MENU SHORTCUT CARDS
+       SECTION LABEL
+    ============================================================ */
+    .section-label {
+        font-size: .75rem; font-weight: 700;
+        color: rgba(74,222,128,.65);
+        text-transform: uppercase; letter-spacing: .08em;
+        margin-bottom: .75rem;
+    }
+
+    /* ============================================================
+       SHORTCUT GRID  –  icon-only style (sama seperti murid)
     ============================================================ */
     .shortcut-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 1rem;
         margin-bottom: 1.75rem;
     }
 
     .shortcut-card {
         background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(74,222,128,0.12);
-        border-radius: 16px 0 16px 0;
-        padding: 1.35rem 1.25rem;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: background 0.18s, transform 0.18s, border-color 0.18s;
-        position: relative;
-        overflow: hidden;
+        border: 1px solid rgba(74,222,128,.14);
+        border-radius: 14px;
+        padding: 1.25rem 1rem;
+        display: flex; flex-direction: column; align-items: center; gap: .5rem;
+        text-decoration: none; color: rgba(226,245,234,.7);
+        font-size: .82rem; font-weight: 600;
+        transition: background .18s, border-color .18s, transform .15s;
+        text-align: center;
     }
 
     .shortcut-card:hover {
-        background: rgba(74,222,128,0.07);
-        border-color: rgba(74,222,128,0.25);
-        transform: translateY(-2px);
+        background: rgba(74,222,128,.12);
+        border-color: rgba(74,222,128,.35);
+        color: #4ade80; transform: translateY(-2px);
     }
 
-    .shortcut-card::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(74,222,128,0.04) 0%, transparent 60%);
-        pointer-events: none;
-    }
-
-    .shortcut-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-        background: rgba(74,222,128,0.12);
-        color: #4ade80;
-    }
-
-    .shortcut-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #ffffff;
-        line-height: 1.3;
-    }
-
-    .shortcut-desc {
-        font-size: 0.73rem;
-        color: rgba(255,255,255,0.4);
-        margin-top: 0.15rem;
-    }
-
-    /* ============================================================
-       SECTION HEADING
-    ============================================================ */
-    .section-heading {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: rgba(74,222,128,0.7);
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.55rem;
-    }
-
-    .section-heading::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: rgba(74,222,128,0.12);
-    }
+    .shortcut-card i { font-size: 1.5rem; }
 
     /* ============================================================
        RESPONSIVE
     ============================================================ */
     @media (max-width: 767.98px) {
-        .welcome-card {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 1.75rem 1.5rem;
-        }
-
-        .welcome-body h2 { font-size: 1.2rem; }
-        .shortcut-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 399.98px) {
-        .shortcut-grid { grid-template-columns: 1fr; }
+        .welcome-card { padding: 1.5rem 1.25rem; }
+        .welcome-title { font-size: 1.05rem; }
+        .shortcut-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
     }
 </style>
 @endpush
 
 @section('content')
 
-{{-- ================================================================
-     WELCOME CARD
-================================================================ --}}
+{{-- Welcome --}}
 <div class="welcome-card">
-    <div class="welcome-icon-wrap">
-        <i class="bi bi-person-check-fill"></i>
+    @php
+        $guruImg = Auth::user()->image ?? null;
+        $guruFotoUrl = $guruImg
+            ? route('guru.profile.foto', ['filename' => basename($guruImg)])
+            : null;
+    @endphp
+    <div class="welcome-avatar">
+        @if($guruFotoUrl)
+            <img src="{{ $guruFotoUrl }}" alt="Foto profil">
+        @else
+            {{ strtoupper(substr(Auth::user()->name ?? 'G', 0, 1)) }}
+        @endif
     </div>
-    <div class="welcome-body">
-        <h2>
-            Selamat Datang,
-            <span class="name-highlight">{{ Auth::user()->name ?? 'Guru' }}</span>
-        </h2>
-        <p>
-            Anda masuk sebagai guru di sistem informasi kehadiran SMKS Ibnu Sina.<br>
-            Gunakan menu di sebelah kiri untuk mengakses fitur yang tersedia.
-        </p>
-
+    <div>
+        <p class="welcome-title">Halo, {{ Auth::user()->name ?? 'Guru' }}!</p>
+        <p class="welcome-sub">Selamat datang di panel guru. Kelola kelas dan absensi di sini.</p>
         <div class="info-strip">
             <span class="info-chip">
                 <i class="bi bi-calendar3"></i>
@@ -226,51 +135,41 @@
     </div>
 </div>
 
-{{-- ================================================================
-     MENU SHORTCUT
-================================================================ --}}
-<p class="section-heading">Akses Cepat</p>
+{{-- Shortcut Menu --}}
+<p class="section-label">
+    <i class="bi bi-lightning-fill me-1"></i>Akses Cepat
+</p>
 
 <div class="shortcut-grid">
 
     <a href="{{ route('guru.absen_guru') }}" class="shortcut-card">
-        <div class="shortcut-icon">
-            <i class="bi bi-clipboard2-check-fill"></i>
-        </div>
-        <div>
-            <div class="shortcut-label">Absensi Saya</div>
-            <div class="shortcut-desc">Catat kehadiran Anda hari ini</div>
-        </div>
+        <i class="bi bi-clipboard2-check-fill" style="color:#4ade80;"></i>
+        Absensi Saya
     </a>
 
     <a href="{{ route('guru.absen_murid') }}" class="shortcut-card">
-        <div class="shortcut-icon">
-            <i class="bi bi-clipboard2-pulse-fill"></i>
-        </div>
-        <div>
-            <div class="shortcut-label">Absensi Murid</div>
-            <div class="shortcut-desc">Kelola kehadiran murid</div>
-        </div>
+        <i class="bi bi-clipboard2-pulse-fill" style="color:#38bdf8;"></i>
+        Absensi Murid
     </a>
 
     <a href="{{ route('guru.jadwal_mengajar') }}" class="shortcut-card">
-        <div class="shortcut-icon">
-            <i class="bi bi-calendar2-week-fill"></i>
-        </div>
-        <div>
-            <div class="shortcut-label">Jadwal Mengajar</div>
-            <div class="shortcut-desc">Lihat jadwal mengajar Anda</div>
-        </div>
+        <i class="bi bi-calendar2-week-fill" style="color:#fbbf24;"></i>
+        Jadwal Mengajar
     </a>
 
     <a href="{{ route('guru.data_kelas') }}" class="shortcut-card">
-        <div class="shortcut-icon">
-            <i class="bi bi-mortarboard-fill"></i>
-        </div>
-        <div>
-            <div class="shortcut-label">Data Kelas</div>
-            <div class="shortcut-desc">Informasi kelas yang diajar</div>
-        </div>
+        <i class="bi bi-mortarboard-fill" style="color:#a78bfa;"></i>
+        Data Kelas
+    </a>
+
+    <a href="{{ route('guru.data_murid') }}" class="shortcut-card">
+        <i class="bi bi-people-fill" style="color:#fb923c;"></i>
+        Data Murid
+    </a>
+
+    <a href="{{ route('guru.profile') }}" class="shortcut-card">
+        <i class="bi bi-person-circle" style="color:#34d399;"></i>
+        Profil Saya
     </a>
 
 </div>
@@ -282,14 +181,11 @@
 (function () {
     'use strict';
 
-    /* Jam berjalan */
     function updateJam() {
         var el = document.getElementById('jamSekarang');
         if (!el) return;
-        var now  = new Date();
-        var hh   = String(now.getHours()).padStart(2, '0');
-        var mm   = String(now.getMinutes()).padStart(2, '0');
-        el.textContent = hh + ':' + mm;
+        var now = new Date();
+        el.textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
     }
 
     updateJam();

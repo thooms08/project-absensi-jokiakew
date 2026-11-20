@@ -18,17 +18,12 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           RESET & BASE (Disesuaikan dengan tema Admin)
-        ============================================================ */
         *, *::before, *::after { box-sizing: border-box; }
-
         html { height: 100%; }
 
         body {
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: #0d1f14;
             color: #e2f5ea;
             min-height: 100vh;
@@ -39,27 +34,22 @@
            SIDEBAR
         ============================================================ */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 240px;
+            position: fixed; top: 0; left: 0;
+            height: 100vh; width: 240px;
             background: linear-gradient(180deg, #0a2e1c 0%, #062015 100%);
-            border-right: 1px solid rgba(74, 222, 128, 0.12);
-            display: flex;
-            flex-direction: column;
+            border-right: 1px solid rgba(74,222,128,0.12);
+            display: flex; flex-direction: column;
             z-index: 1000;
-            transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.28s cubic-bezier(0.4,0,0.2,1);
             overflow: hidden;
         }
 
         .sidebar.collapsed { width: 62px; }
 
-        /* ---- Brand sidebar ---- */
         .sidebar-brand {
             display: flex; align-items: center; gap: 0.85rem;
             padding: 1.25rem 1rem 1rem;
-            border-bottom: 1px solid rgba(74, 222, 128, 0.1);
+            border-bottom: 1px solid rgba(74,222,128,0.1);
             text-decoration: none; flex-shrink: 0;
             overflow: hidden; min-width: 0;
         }
@@ -86,10 +76,9 @@
 
         .sidebar.collapsed .sidebar-brand-text { opacity: 0; width: 0; }
 
-        /* ---- Label section ---- */
         .sidebar-section-label {
             font-size: 0.62rem; font-weight: 700;
-            color: rgba(74, 222, 128, 0.5); text-transform: uppercase;
+            color: rgba(74,222,128,0.5); text-transform: uppercase;
             letter-spacing: 0.1em; padding: 1.1rem 1.1rem 0.35rem;
             white-space: nowrap; overflow: hidden;
             transition: opacity 0.2s, padding 0.28s;
@@ -99,7 +88,6 @@
             opacity: 0; padding: 0.55rem 0 0; height: 0; pointer-events: none;
         }
 
-        /* ---- Nav items ---- */
         .sidebar-nav {
             flex: 1; overflow-y: auto; overflow-x: hidden;
             padding: 0.5rem 0 1rem;
@@ -114,16 +102,16 @@
         .nav-item-link {
             display: flex; align-items: center; gap: 0.85rem;
             padding: 0.65rem 1.1rem; margin: 0.15rem 0.5rem;
-            border-radius: 10px; color: rgba(255, 255, 255, 0.6);
+            border-radius: 10px; color: rgba(255,255,255,0.6);
             text-decoration: none; font-size: 0.875rem; font-weight: 500;
             transition: background 0.18s, color 0.18s;
             white-space: nowrap; overflow: hidden; position: relative;
         }
 
-        .nav-item-link:hover { background: rgba(74, 222, 128, 0.1); color: #ffffff; }
+        .nav-item-link:hover { background: rgba(74,222,128,0.1); color: #ffffff; }
 
         .nav-item-link.active {
-            background: rgba(74, 222, 128, 0.15); color: #4ade80; font-weight: 600;
+            background: rgba(74,222,128,0.15); color: #4ade80; font-weight: 600;
         }
 
         .nav-item-link.active::before {
@@ -134,7 +122,6 @@
         .nav-icon { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
 
         .nav-label { transition: opacity 0.2s, width 0.28s; overflow: hidden; white-space: nowrap; }
-
         .sidebar.collapsed .nav-label { opacity: 0; width: 0; }
 
         .sidebar.collapsed .nav-item-link {
@@ -142,10 +129,9 @@
             margin: 0.15rem auto; width: 42px; border-radius: 10px;
         }
 
-        /* ---- Logout di bawah ---- */
         .sidebar-footer {
             padding: 0.75rem 0.5rem;
-            border-top: 1px solid rgba(74, 222, 128, 0.1); flex-shrink: 0;
+            border-top: 1px solid rgba(74,222,128,0.1); flex-shrink: 0;
         }
 
         .sidebar-footer form { margin: 0; }
@@ -153,13 +139,13 @@
         .btn-logout {
             display: flex; align-items: center; gap: 0.85rem;
             padding: 0.65rem 1.1rem; border-radius: 10px;
-            color: rgba(255, 100, 100, 0.75); background: none; border: none;
+            color: rgba(255,100,100,0.75); background: none; border: none;
             font-size: 0.875rem; font-weight: 500; cursor: pointer;
             width: 100%; text-align: left; transition: background 0.18s, color 0.18s;
             white-space: nowrap; overflow: hidden; font-family: 'Inter', sans-serif;
         }
 
-        .btn-logout:hover { background: rgba(248, 113, 113, 0.12); color: #f87171; }
+        .btn-logout:hover { background: rgba(248,113,113,0.12); color: #f87171; }
 
         .sidebar.collapsed .btn-logout {
             justify-content: center; padding: 0.65rem; width: 42px; margin: 0 auto;
@@ -173,9 +159,9 @@
             position: fixed; top: 50%; left: 226px; transform: translateY(-50%);
             z-index: 1100;
             width: 28px; height: 28px; border-radius: 50%;
-            background: #0a7c4a; border: 1px solid rgba(74, 222, 128, 0.35);
+            background: #0a7c4a; border: 1px solid rgba(74,222,128,0.35);
             color: #4ade80; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1), background 0.18s;
+            cursor: pointer; transition: left 0.28s cubic-bezier(0.4,0,0.2,1), background 0.18s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.35);
         }
 
@@ -185,22 +171,24 @@
         .sidebar-toggle.collapsed i { transform: rotate(180deg); }
 
         /* ============================================================
-           MAIN CONTENT AREA
+           MAIN WRAPPER
         ============================================================ */
         .main-wrapper {
             margin-left: 240px; flex: 1; min-width: 0;
             display: flex; flex-direction: column;
-            transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: margin-left 0.28s cubic-bezier(0.4,0,0.2,1);
         }
 
         .main-wrapper.expanded { margin-left: 62px; }
 
-        /* ---- Topbar ---- */
+        /* ============================================================
+           TOPBAR
+        ============================================================ */
         .topbar {
             position: sticky; top: 0; z-index: 900;
-            background: rgba(10, 46, 28, 0.92);
+            background: rgba(10,46,28,0.92);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(74, 222, 128, 0.1);
+            border-bottom: 1px solid rgba(74,222,128,0.1);
             padding: 0.75rem 1.75rem; display: flex;
             align-items: center; justify-content: space-between; gap: 1rem;
         }
@@ -209,17 +197,15 @@
 
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
 
-        .topbar-user {
-            display: flex; align-items: center; gap: 0.6rem;
-            font-size: 0.85rem; color: rgba(255,255,255,0.72);
-        }
-
         .topbar-avatar {
             width: 32px; height: 32px; border-radius: 50%;
             background: linear-gradient(135deg, #4ade80, #22c55e);
             display: flex; align-items: center; justify-content: center;
             font-size: 0.8rem; font-weight: 700; color: #064e2e; flex-shrink: 0;
+            overflow: hidden;
         }
+
+        .topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         .topbar-badge {
             font-size: 0.68rem; font-weight: 600; color: #4ade80;
@@ -228,35 +214,136 @@
             letter-spacing: 0.04em; text-transform: uppercase;
         }
 
-        /* ---- Content ---- */
+        /* ============================================================
+           AVATAR DROPDOWN — Desktop (topbar)
+        ============================================================ */
+        .avatar-dropdown-wrap { position: relative; }
+
+        .avatar-dropdown-trigger {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 0.85rem; color: rgba(255,255,255,0.72);
+            cursor: pointer; background: none; border: none;
+            padding: 0; font-family: 'Inter', sans-serif;
+            transition: color 0.18s;
+        }
+
+        .avatar-dropdown-trigger:hover { color: #ffffff; }
+
+        .avatar-dropdown-trigger .avatar-caret {
+            font-size: 0.7rem; color: rgba(255,255,255,0.4);
+            transition: transform 0.2s;
+        }
+
+        .avatar-dropdown-trigger.open .avatar-caret { transform: rotate(180deg); }
+
+        .avatar-dropdown-menu {
+            display: none;
+            position: absolute; top: calc(100% + 10px); right: 0;
+            min-width: 180px;
+            background: #0a2e1c;
+            border: 1px solid rgba(74,222,128,0.16);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            z-index: 1200; overflow: hidden;
+            animation: dropFadeIn 0.18s ease;
+        }
+
+        @keyframes dropFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar-dropdown-menu.show { display: block; }
+
+        .avatar-drop-header {
+            padding: 0.9rem 1rem 0.7rem;
+            border-bottom: 1px solid rgba(74,222,128,0.1);
+        }
+
+        .avatar-drop-name {
+            font-size: 0.82rem; font-weight: 700; color: #ffffff;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .avatar-drop-role {
+            font-size: 0.68rem; color: rgba(74,222,128,0.65);
+            font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .avatar-drop-item {
+            display: flex; align-items: center; gap: 0.65rem;
+            padding: 0.6rem 1rem; color: rgba(255,255,255,0.7);
+            text-decoration: none; font-size: 0.82rem; font-weight: 500;
+            transition: background 0.15s, color 0.15s;
+            cursor: pointer; background: none; border: none;
+            width: 100%; text-align: left; font-family: 'Inter', sans-serif;
+        }
+
+        .avatar-drop-item:hover { background: rgba(74,222,128,0.1); color: #ffffff; }
+        .avatar-drop-item.danger { color: rgba(255,100,100,0.75); }
+        .avatar-drop-item.danger:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+        .avatar-drop-item i { font-size: 0.95rem; width: 16px; text-align: center; }
+
+        .avatar-drop-divider {
+            height: 1px; background: rgba(74,222,128,0.08); margin: 0.2rem 0;
+        }
+
+        /* ============================================================
+           CONTENT
+        ============================================================ */
         .main-content { flex: 1; padding: 1.75rem; }
 
         /* ============================================================
-           BOTTOM BAR (MOBILE ONLY)
+           BOTTOM BAR (Mobile Only)
         ============================================================ */
         .bottom-bar {
-            display: none; /* Hidden by default di desktop */
+            display: none;
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
             background: linear-gradient(180deg, #0a2e1c 0%, #062015 100%);
             border-top: 1px solid rgba(74,222,128,0.12);
-            padding: .5rem .5rem calc(.5rem + env(safe-area-inset-bottom));
+            padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
         }
 
         .bottom-item {
             flex: 1; display: flex; flex-direction: column;
-            align-items: center; gap: .18rem;
-            padding: .42rem .25rem; border-radius: 10px;
-            color: rgba(255,255,255,.45); text-decoration: none;
-            font-size: .6rem; font-weight: 600;
-            transition: color .18s, background .18s;
+            align-items: center; gap: 0.18rem;
+            padding: 0.42rem 0.25rem; border-radius: 10px;
+            color: rgba(255,255,255,0.45); text-decoration: none;
+            font-size: 0.6rem; font-weight: 600;
+            transition: color 0.18s, background 0.18s;
             min-width: 0; border: none; background: none; cursor: pointer;
-            font-family: 'Inter',sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         .bottom-item i { font-size: 1.2rem; }
+        .bottom-item:hover, .bottom-item.active { color: #4ade80; background: rgba(74,222,128,0.1); }
 
-        .bottom-item:hover,
-        .bottom-item.active { color: #4ade80; background: rgba(74,222,128,.1); }
+        /* ============================================================
+           AVATAR DROPDOWN — Mobile (bottom bar)
+        ============================================================ */
+        .bottom-avatar-wrap {
+            position: relative; flex: 1;
+            display: flex; justify-content: center;
+        }
+
+        .bottom-avatar-menu {
+            display: none;
+            position: absolute; bottom: calc(100% + 10px); right: 0;
+            min-width: 180px;
+            background: #0a2e1c;
+            border: 1px solid rgba(74,222,128,0.16);
+            border-radius: 12px;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.55);
+            z-index: 1300; overflow: hidden;
+            animation: dropFadeInUp 0.18s ease;
+        }
+
+        @keyframes dropFadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .bottom-avatar-menu.show { display: block; }
 
         /* ============================================================
            OVERLAY MOBILE
@@ -272,24 +359,23 @@
         @media (max-width: 991.98px) {
             .sidebar {
                 transform: translateX(-100%); width: 240px;
-                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
             }
             .sidebar.mobile-open { transform: translateX(0); }
             .sidebar-backdrop.show { display: block; }
             .sidebar-toggle { display: none; }
             .main-wrapper { margin-left: 0 !important; }
-            
-            /* Bottom bar tampil di mobile */
+
             .bottom-bar { display: flex; }
-            
-            /* Beri ruang agar konten tidak tertutup bottom bar */
             .main-content { padding: 1.25rem 1rem 5.5rem; }
             .topbar-menu-btn { display: flex !important; }
+
+            /* Sembunyikan avatar user desktop di topbar saat mobile */
+            .topbar-user-desktop { display: none !important; }
         }
 
         @media (min-width: 992px) {
             .topbar-menu-btn { display: none !important; }
-            /* Memastikan bottom bar tetap hilang di desktop */
             .bottom-bar { display: none !important; }
         }
 
@@ -303,6 +389,11 @@
     @stack('styles')
 </head>
 <body>
+
+<!-- form logout global -->
+<form method="POST" action="{{ route('logout') }}" id="muridLogoutForm" style="display:none;">
+    @csrf
+</form>
 
 <!-- Backdrop mobile -->
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -352,22 +443,21 @@
 
         <div class="sidebar-section-label">Akun</div>
 
-        <a href="#" class="nav-item-link" title="Profil">
+        <a href="{{ route('murid.profile') }}"
+           class="nav-item-link {{ request()->routeIs('murid.profile') ? 'active' : '' }}"
+           title="Profil Saya">
             <i class="bi bi-person-circle nav-icon"></i>
-            <span class="nav-label">Profil</span>
+            <span class="nav-label">Profil Saya</span>
         </a>
 
     </nav>
 
-    <!-- Logout -->
+    <!-- Logout di sidebar (desktop) -->
     <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}" id="sidebarLogoutForm">
-            @csrf
-            <button type="button" class="btn-logout" onclick="confirmLogout()" title="Log Out">
-                <i class="bi bi-box-arrow-left nav-icon"></i>
-                <span class="nav-label">Log Out</span>
-            </button>
-        </form>
+        <button type="button" class="btn-logout" onclick="confirmLogout()" title="Log Out">
+            <i class="bi bi-box-arrow-left nav-icon"></i>
+            <span class="nav-label">Log Out</span>
+        </button>
     </div>
 
 </aside>
@@ -393,11 +483,44 @@
 
         <div class="topbar-right">
             <span class="topbar-badge">Murid</span>
-            <div class="topbar-user">
-                <div class="topbar-avatar">
-                    {{ strtoupper(substr(Auth::user()->name ?? 'M', 0, 1)) }}
+
+            {{-- Avatar dropdown (desktop) --}}
+            <div class="avatar-dropdown-wrap topbar-user-desktop" id="avatarDropWrap">
+                <button class="avatar-dropdown-trigger" id="avatarDropTrigger"
+                        aria-haspopup="true" aria-expanded="false">
+                    <div class="topbar-avatar" id="topbarAvatar">
+                        @php
+                            $muridImg    = Auth::user()->image ?? null;
+                            $muridFotoUrl = $muridImg
+                                ? route('murid.profile.foto', ['filename' => basename($muridImg)])
+                                : null;
+                        @endphp
+                        @if($muridFotoUrl)
+                            <img src="{{ $muridFotoUrl }}" alt="Foto profil">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name ?? 'M', 0, 1)) }}
+                        @endif
+                    </div>
+                    <span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Murid' }}</span>
+                    <i class="bi bi-chevron-down avatar-caret"></i>
+                </button>
+
+                <div class="avatar-dropdown-menu" id="avatarDropMenu" role="menu">
+                    <div class="avatar-drop-header">
+                        <div class="avatar-drop-name">{{ Auth::user()->name ?? 'Murid' }}</div>
+                        <div class="avatar-drop-role">{{ Auth::user()->role ?? 'Murid' }}</div>
+                    </div>
+                    <a href="{{ route('murid.profile') }}" class="avatar-drop-item" role="menuitem">
+                        <i class="bi bi-person-circle"></i>
+                        Profil Saya
+                    </a>
+                    <div class="avatar-drop-divider"></div>
+                    <button type="button" class="avatar-drop-item danger"
+                            onclick="confirmLogout()" role="menuitem">
+                        <i class="bi bi-box-arrow-left"></i>
+                        Log Out
+                    </button>
                 </div>
-                <span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Murid' }}</span>
             </div>
         </div>
     </header>
@@ -429,10 +552,46 @@
         <i class="bi bi-clock-history"></i>
         <span>Riwayat</span>
     </a>
-    <a href="#" class="bottom-item">
-        <i class="bi bi-person-circle"></i>
-        <span>Profil</span>
-    </a>
+
+    {{-- Avatar + dropdown profile/logout --}}
+    <div class="bottom-avatar-wrap" id="bottomAvatarWrap">
+        <button class="bottom-item {{ request()->routeIs('murid.profile') ? 'active' : '' }}"
+                id="bottomAvatarBtn" aria-haspopup="true" aria-expanded="false"
+                style="font-family:'Inter',sans-serif;">
+            @php
+                $muridImgBottom   = Auth::user()->image ?? null;
+                $muridFotoUrlBottom = $muridImgBottom
+                    ? route('murid.profile.foto', ['filename' => basename($muridImgBottom)])
+                    : null;
+            @endphp
+            @if($muridFotoUrlBottom)
+                <img src="{{ $muridFotoUrlBottom }}" alt="Avatar"
+                     style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(74,222,128,0.4);">
+            @else
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4ade80,#22c55e);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#064e2e;border:2px solid rgba(74,222,128,0.4);">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'M', 0, 1)) }}
+                </div>
+            @endif
+            <span>Akun</span>
+        </button>
+
+        <div class="bottom-avatar-menu" id="bottomAvatarMenu" role="menu">
+            <div class="avatar-drop-header">
+                <div class="avatar-drop-name">{{ Auth::user()->name ?? 'Murid' }}</div>
+                <div class="avatar-drop-role">{{ Auth::user()->role ?? 'Murid' }}</div>
+            </div>
+            <a href="{{ route('murid.profile') }}" class="avatar-drop-item" role="menuitem">
+                <i class="bi bi-person-circle"></i>
+                Profil Saya
+            </a>
+            <div class="avatar-drop-divider"></div>
+            <button type="button" class="avatar-drop-item danger"
+                    onclick="confirmLogout()" role="menuitem">
+                <i class="bi bi-box-arrow-left"></i>
+                Log Out
+            </button>
+        </div>
+    </div>
 </nav>
 
 <!-- Bootstrap 5 JS -->
@@ -447,18 +606,18 @@
     /* ----------------------------------------------------------------
        SIDEBAR TOGGLE (Desktop)
     ---------------------------------------------------------------- */
-    var sidebar  = document.getElementById('sidebar');
-    var toggle   = document.getElementById('sidebarToggle');
-    var wrapper  = document.getElementById('mainWrapper');
+    var sidebar   = document.getElementById('sidebar');
+    var toggle    = document.getElementById('sidebarToggle');
+    var wrapper   = document.getElementById('mainWrapper');
     var STORE_KEY = 'sikib_murid_sidebar_collapsed';
 
     if (localStorage.getItem(STORE_KEY) === '1') {
         sidebar.classList.add('collapsed');
-        if(toggle) toggle.classList.add('collapsed');
+        if (toggle) toggle.classList.add('collapsed');
         wrapper.classList.add('expanded');
     }
 
-    if(toggle) {
+    if (toggle) {
         toggle.addEventListener('click', function () {
             var isCollapsed = sidebar.classList.toggle('collapsed');
             toggle.classList.toggle('collapsed', isCollapsed);
@@ -486,7 +645,54 @@
     }
 
     if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
-    if (backdrop) backdrop.addEventListener('click', closeMobileSidebar);
+    if (backdrop)  backdrop.addEventListener('click', closeMobileSidebar);
+
+    /* ----------------------------------------------------------------
+       AVATAR DROPDOWN — Desktop
+    ---------------------------------------------------------------- */
+    var avatarWrap    = document.getElementById('avatarDropWrap');
+    var avatarTrigger = document.getElementById('avatarDropTrigger');
+    var avatarMenu    = document.getElementById('avatarDropMenu');
+
+    if (avatarTrigger) {
+        avatarTrigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = avatarMenu.classList.toggle('show');
+            avatarTrigger.classList.toggle('open', open);
+            avatarTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+            /* tutup bottom dropdown */
+            if (bottomMenu) bottomMenu.classList.remove('show');
+        });
+    }
+
+    /* ----------------------------------------------------------------
+       AVATAR DROPDOWN — Mobile (bottom bar)
+    ---------------------------------------------------------------- */
+    var bottomBtn  = document.getElementById('bottomAvatarBtn');
+    var bottomMenu = document.getElementById('bottomAvatarMenu');
+
+    if (bottomBtn) {
+        bottomBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = bottomMenu.classList.toggle('show');
+            bottomBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            /* tutup desktop dropdown */
+            if (avatarMenu)    avatarMenu.classList.remove('show');
+            if (avatarTrigger) { avatarTrigger.classList.remove('open'); avatarTrigger.setAttribute('aria-expanded','false'); }
+        });
+    }
+
+    /* Klik di luar — tutup semua dropdown */
+    document.addEventListener('click', function (e) {
+        if (avatarWrap && !avatarWrap.contains(e.target)) {
+            if (avatarMenu)    avatarMenu.classList.remove('show');
+            if (avatarTrigger) { avatarTrigger.classList.remove('open'); avatarTrigger.setAttribute('aria-expanded','false'); }
+        }
+        var bottomWrap = document.getElementById('bottomAvatarWrap');
+        if (bottomWrap && !bottomWrap.contains(e.target)) {
+            if (bottomMenu) { bottomMenu.classList.remove('show'); if (bottomBtn) bottomBtn.setAttribute('aria-expanded','false'); }
+        }
+    });
 
     /* ----------------------------------------------------------------
        LOGOUT KONFIRMASI
@@ -505,7 +711,7 @@
             color: '#ffffff',
         }).then(function (result) {
             if (result.isConfirmed) {
-                document.getElementById('sidebarLogoutForm').submit();
+                document.getElementById('muridLogoutForm').submit();
             }
         });
     };

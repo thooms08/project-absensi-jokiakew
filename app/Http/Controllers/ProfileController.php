@@ -142,6 +142,208 @@ class ProfileController extends Controller
     }
 
     /* ================================================================
+       GURU — Halaman profile
+    ================================================================ */
+
+    public function showGuru()
+    {
+        return view('guru.profile');
+    }
+
+    /* ----------------------------------------------------------------
+       UPDATE PROFILE GURU  –  name, username, password, foto
+    ---------------------------------------------------------------- */
+    public function updateGuru(Request $request)
+    {
+        $guru = Auth::user();
+
+        $rules = [
+            'name'     => 'required|string|max:255',
+            'username' => [
+                'required', 'string', 'max:60',
+                "unique:users,username,{$guru->id}",
+                'regex:/^[a-zA-Z0-9_.\-]+$/',
+            ],
+        ];
+
+        $messages = [
+            'username.regex' => 'Username hanya boleh mengandung huruf, angka, titik, underscore, dan dash.',
+        ];
+
+        if ($request->filled('password')) {
+            $rules['password']              = ['required', 'string', Password::min(8)->numbers()];
+            $rules['password_confirmation'] = 'required|same:password';
+            $messages['password_confirmation.same'] = 'Konfirmasi password tidak cocok.';
+        }
+
+        $request->validate($rules, $messages);
+
+        $guru->name     = $request->name;
+        $guru->username = $request->username;
+
+        if ($request->filled('password')) {
+            $guru->password = Hash::make($request->password);
+        }
+
+        if ($request->filled('foto_base64')) {
+            $path = $this->simpanFotoBase64(
+                $request->foto_base64,
+                'profile_guru',
+                'guru_' . $guru->id
+            );
+            if ($path) {
+                $this->hapusFotoPrivate($guru->image);
+                $guru->image = $path;
+            }
+        }
+
+        $guru->save();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Profil berhasil diperbarui.',
+            'foto_url' => $guru->image
+                ? route('guru.profile.foto', ['filename' => basename($guru->image)])
+                : null,
+        ]);
+    }
+
+    /* ----------------------------------------------------------------
+       CHECK USERNAME GURU  –  AJAX uniqueness check
+    ---------------------------------------------------------------- */
+    public function checkUsernameGuru(Request $request)
+    {
+        $username  = $request->input('username', '');
+        $currentId = Auth::id();
+
+        if (!$username || !preg_match('/^[a-zA-Z0-9_.\-]+$/', $username)) {
+            return response()->json(['available' => false, 'message' => 'Format username tidak valid.']);
+        }
+
+        $exists = \App\Models\User::where('username', $username)
+            ->where('id', '!=', $currentId)
+            ->whereIn('role', \App\Models\User::ROLES_GURU)
+            ->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message'   => $exists ? 'Username sudah digunakan guru lain.' : 'Username tersedia.',
+        ]);
+    }
+
+    /* ----------------------------------------------------------------
+       SERVE FOTO GURU  –  stream dari storage private
+    ---------------------------------------------------------------- */
+    public function fotoGuru($filename)
+    {
+        $path = storage_path('app/private/assets/profile_guru/' . $filename);
+        if (!file_exists($path)) abort(404);
+        $mime = mime_content_type($path) ?: 'image/jpeg';
+        return response()->file($path, ['Content-Type' => $mime]);
+    }
+
+    /* ================================================================
+       MURID — Halaman profile
+    ================================================================ */
+
+    public function showMurid()
+    {
+        return view('murid.profile');
+    }
+
+    /* ----------------------------------------------------------------
+       UPDATE PROFILE MURID  –  name, username, password, foto
+    ---------------------------------------------------------------- */
+    public function updateMurid(Request $request)
+    {
+        $murid = Auth::user();
+
+        $rules = [
+            'name'     => 'required|string|max:255',
+            'username' => [
+                'required', 'string', 'max:60',
+                "unique:users,username,{$murid->id}",
+                'regex:/^[a-zA-Z0-9_.\-]+$/',
+            ],
+        ];
+
+        $messages = [
+            'username.regex' => 'Username hanya boleh mengandung huruf, angka, titik, underscore, dan dash.',
+        ];
+
+        if ($request->filled('password')) {
+            $rules['password']              = ['required', 'string', Password::min(8)->numbers()];
+            $rules['password_confirmation'] = 'required|same:password';
+            $messages['password_confirmation.same'] = 'Konfirmasi password tidak cocok.';
+        }
+
+        $request->validate($rules, $messages);
+
+        $murid->name     = $request->name;
+        $murid->username = $request->username;
+
+        if ($request->filled('password')) {
+            $murid->password = Hash::make($request->password);
+        }
+
+        if ($request->filled('foto_base64')) {
+            $path = $this->simpanFotoBase64(
+                $request->foto_base64,
+                'profile_murid',
+                'murid_' . $murid->id
+            );
+            if ($path) {
+                $this->hapusFotoPrivate($murid->image);
+                $murid->image = $path;
+            }
+        }
+
+        $murid->save();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Profil berhasil diperbarui.',
+            'foto_url' => $murid->image
+                ? route('murid.profile.foto', ['filename' => basename($murid->image)])
+                : null,
+        ]);
+    }
+
+    /* ----------------------------------------------------------------
+       CHECK USERNAME MURID  –  AJAX uniqueness check
+    ---------------------------------------------------------------- */
+    public function checkUsernameMurid(Request $request)
+    {
+        $username  = $request->input('username', '');
+        $currentId = Auth::id();
+
+        if (!$username || !preg_match('/^[a-zA-Z0-9_.\-]+$/', $username)) {
+            return response()->json(['available' => false, 'message' => 'Format username tidak valid.']);
+        }
+
+        $exists = \App\Models\User::where('username', $username)
+            ->where('id', '!=', $currentId)
+            ->whereIn('role', \App\Models\User::ROLES_MURID)
+            ->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message'   => $exists ? 'Username sudah digunakan murid lain.' : 'Username tersedia.',
+        ]);
+    }
+
+    /* ----------------------------------------------------------------
+       SERVE FOTO MURID  –  stream dari storage private
+    ---------------------------------------------------------------- */
+    public function fotoMurid($filename)
+    {
+        $path = storage_path('app/private/assets/profile_murid/' . $filename);
+        if (!file_exists($path)) abort(404);
+        $mime = mime_content_type($path) ?: 'image/jpeg';
+        return response()->file($path, ['Content-Type' => $mime]);
+    }
+
+    /* ================================================================
        PRIVATE HELPERS
     ================================================================ */
 

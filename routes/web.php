@@ -9,7 +9,6 @@ use App\Http\Controllers\KelasController;
 use App\Http\Controllers\JadwalMengajarController;
 use App\Http\Controllers\AbsenGuruController;
 use App\Http\Controllers\AbsenMuridController;
-use App\Http\Controllers\KodeAbsenController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminSekolahController;
 
@@ -199,9 +198,10 @@ Route::prefix('guru')
             return view('guru.index');
         })->name('dashboard');
 
-        Route::get('/profile', function () {
-            return view('guru.profile');
-        })->name('profile');
+        Route::get('/profile',                    [ProfileController::class, 'showGuru'])->name('profile');
+        Route::post('/profile',                   [ProfileController::class, 'updateGuru'])->name('profile.update');
+        Route::get('/profile/check-username',     [ProfileController::class, 'checkUsernameGuru'])->name('profile.check_username');
+        Route::get('/profile/foto/{filename}',    [ProfileController::class, 'fotoGuru'])->name('profile.foto');
 
         Route::get('/absen-guru',               [AbsenGuruController::class, 'index'])->name('absen_guru');
         Route::get('/absen-guru/kartu',          [AbsenGuruController::class, 'kartu'])->name('absen_guru.kartu');
@@ -212,12 +212,7 @@ Route::prefix('guru')
         Route::get('/absen-murid/hari-ini',                [AbsenMuridController::class, 'guruHariIniList'])->name('absen_murid.hari_ini');
         Route::get('/absen-murid/scan',                    [AbsenMuridController::class, 'guruScanPage'])->name('absen_murid.scan');
         Route::post('/absen-murid/scan-qr',                [AbsenMuridController::class, 'guruScanQr'])->name('absen_murid.scan_qr');
-        Route::get('/absen-murid/notif/count',             [AbsenMuridController::class, 'guruNotifCount'])->name('absen_murid.notif_count');
-        Route::get('/absen-murid/notif/list',              [AbsenMuridController::class, 'guruNotifList'])->name('absen_murid.notif_list');
-        Route::post('/absen-murid/notif/{id}/konfirmasi',  [AbsenMuridController::class, 'guruKonfirmasi'])->name('absen_murid.notif_konfirmasi');
-        Route::get('/kode-absen/jadwal-hari-ini',          [KodeAbsenController::class, 'jadwalHariIni'])->name('kode_absen.jadwal_hari_ini');
-        Route::post('/kode-absen/buat',                    [KodeAbsenController::class, 'buat'])->name('kode_absen.buat');
-        Route::get('/kode-absen/status',                   [KodeAbsenController::class, 'status'])->name('kode_absen.status');
+        Route::get('/absen-murid/jadwal-hari-ini',         [AbsenMuridController::class, 'guruJadwalHariIni'])->name('absen_murid.jadwal_hari_ini');
 
         Route::get('/jadwal-mengajar',      [JadwalMengajarController::class, 'guruIndex'])->name('jadwal_mengajar');
         Route::get('/jadwal-mengajar/list', [JadwalMengajarController::class, 'guruList'])->name('jadwal_mengajar.list');
@@ -240,11 +235,13 @@ Route::prefix('murid')
     ->name('murid.')
     ->group(function () {
         Route::get('/dashboard',      [AbsenMuridController::class, 'index'])->name('dashboard');
+        Route::get('/profile',                    [ProfileController::class, 'showMurid'])->name('profile');
+        Route::post('/profile',                   [ProfileController::class, 'updateMurid'])->name('profile.update');
+        Route::get('/profile/check-username',     [ProfileController::class, 'checkUsernameMurid'])->name('profile.check_username');
+        Route::get('/profile/foto/{filename}',    [ProfileController::class, 'fotoMurid'])->name('profile.foto');
         Route::get('/absen',          [AbsenMuridController::class, 'absenPage'])->name('absen');
         Route::get('/absen/kartu',    [AbsenMuridController::class, 'kartu'])->name('absen.kartu');
-        Route::post('/absen',         [AbsenMuridController::class, 'store'])->name('absen.store');
         Route::get('/absen/summary',  [AbsenMuridController::class, 'summary'])->name('absen.summary');
-        Route::get('/foto/{tipe}/{filename}', [AbsenMuridController::class, 'fotoServe'])->name('foto_serve');
 
         Route::get('/riwayat-absen', function () {
             return view('murid.riwayat_absen');

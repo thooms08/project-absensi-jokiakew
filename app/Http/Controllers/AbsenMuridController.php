@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbsenMurid;
-use App\Models\KodeAbsen;
 use App\Models\JadwalMengajar;
 use App\Models\PesertaKelas;
 use Illuminate\Http\Request;
@@ -16,7 +15,7 @@ class AbsenMuridController extends Controller
     ];
 
     /* ================================================================
-       MURID — Halaman & logika absensi dari sisi murid
+       MURID — Halaman & rekap (read-only)
     ================================================================ */
 
     public function index()
@@ -27,6 +26,53 @@ class AbsenMuridController extends Controller
     public function absenPage()
     {
         return view('murid.absen');
+    }
+
+    /* ----------------------------------------------------------------
+       KARTU  –  Partial AJAX: kartu jadwal hari ini untuk murid (read-only)
+    ---------------------------------------------------------------- */
+    public function kartu()
+    {
+        $muridId    = auth()->id();
+        $hariIni    = self::DOW_TO_HARI[date('N')] ?? null;
+        $sekarang   = Carbon::now();
+        $tglHariIni = $sekarang->toDateString();
+
+        $kelasIds = PesertaKelas::where('user_id', $muridId)->pluck('kelas_id');
+
+        $jadwals = JadwalMengajar::with(['guru', 'mapel', 'kelas'])
+            ->whereIn('kelas_id', $kelasIds)
+            ->where('hari', $hariIni)
+            ->orderBy('waktu_mulai')
+            ->get();
+
+        $absenHariIni = AbsenMurid::where('user_id', $muridId)
+            ->where('tanggal_absen', $tglHariIni)
+            ->whereNotNull('jadwal_mengajar_id')
+            ->get()
+            ->keyBy('jadwal_mengajar_id');
+
+        $nowHi = $sekarang->format('H:i');
+
+        $kartuList = $jadwals->map(function ($jadwal) use ($absenHariIni, $nowHi) {
+            $absen      = $absenHariIni->get($jadwal->id);
+            $jamMulaiHi = substr($jadwal->waktu_mulai, 0, 5);
+            $jamAkhirHi = substr($jadwal->waktu_berakhir, 0, 5);
+
+            $sudahMulai   = $nowHi >= $jamMulaiHi;
+            $sudahLewat   = $nowHi >  $jamAkhirHi;
+            $dalamJendela = $sudahMulai && !$sudahLewat;
+
+            return [
+                'jadwal'        => $jadwal,
+                'absen'         => $absen,
+                'dalam_jendela' => $dalamJendela,
+                'belum_mulai'   => !$sudahMulai,
+                'sudah_lewat'   => $sudahLewat,
+            ];
+        });
+
+        return view('murid.partials.card_absen', compact('kartuList', 'tglHariIni'));
     }
 
     /* ----------------------------------------------------------------
@@ -51,254 +97,10 @@ class AbsenMuridController extends Controller
         ]);
     }
 
-    /* ----------------------------------------------------------------
-       KARTU  –  Partial AJAX: kartu jadwal hari ini untuk murid
-    ---------------------------------------------------------------- */
-    public function kartu()
-    {
-        $muridId    = auth()->id();
-        $hariIni    = self::DOW_TO_HARI[date('N')] ?? null;
-        $sekarang   = Carbon::now();
-        $tglHariIni = $sekarang->toDateString();
-
-        /* Ambil kelas murid ini */
-        $kelasIds = PesertaKelas::where('user_id', $muridId)->pluck('kelas_id');
-
-        /* Jadwal semua guru di kelas murid ini, hari ini */
-        $jadwals = JadwalMengajar::with(['guru', 'mapel', 'kelas'])
-            ->whereIn('kelas_id', $kelasIds)
-            ->where('hari', $hariIni)
-            ->orderBy('waktu_mulai')
-            ->get();
-
-        /* Absen murid hari ini indexed by jadwal_id */
-        $absenHariIni = AbsenMurid::where('user_id', $muridId)
-            ->where('tanggal_absen', $tglHariIni)
-            ->whereNotNull('jadwal_mengajar_id')
-            ->get()
-            ->keyBy('jadwal_mengajar_id');
-
-        $nowHi = $sekarang->format('H:i');
-
-        $kartuList = $jadwals->map(function ($jadwal) use ($absenHariIni, $sekarang, $muridId, $tglHariIni, $nowHi) {
-            $absen      = $absenHariIni->get($jadwal->id);
-            $jamMulaiHi = substr($jadwal->waktu_mulai, 0, 5);
-            $jamAkhirHi = substr($jadwal->waktu_berakhir, 0, 5);
-
-            $sudahMulai   = $nowHi >= $jamMulaiHi;
-            $sudahLewat   = $nowHi >  $jamAkhirHi;
-            $dalamJendela = $sudahMulai && !$sudahLewat;
-
-            /* Auto tidak jika sudah lewat & belum absen */
-            if (!$absen && $sudahLewat) {
-                $absen = AbsenMurid::create([
-                    'user_id'            => $muridId,
-                    'jadwal_mengajar_id' => $jadwal->id,
-                    'tanggal_absen'      => $tglHariIni,
-                    'kode_absen'         => '-',
-                    'status'             => 'tidak',
-                    'alasan'             => 'Tidak hadir (melewati batas waktu)',
-                ]);
-            }
-
-            return [
-                'jadwal'        => $jadwal,
-                'absen'         => $absen,
-                'dalam_jendela' => $dalamJendela,
-                'belum_mulai'   => !$sudahMulai,
-                'sudah_lewat'   => $sudahLewat,
-            ];
-        });
-
-        return view('murid.partials.card_absen', compact('kartuList', 'tglHariIni'));
-    }
-
-    /* ----------------------------------------------------------------
-       STORE  –  Simpan absen murid (hadir / izin)
-    ---------------------------------------------------------------- */
-    public function store(Request $request)
-    {
-        $muridId    = auth()->id();
-        $tglHariIni = Carbon::today()->toDateString();
-        $sekarang   = Carbon::now();
-
-        $request->validate([
-            'jadwal_id'  => 'required|exists:jadwal_mengajar,id',
-            'status'     => 'required|in:hadir,izin',
-            'kode_absen' => 'required_if:status,hadir|nullable|string|size:6',
-            'foto_selfie'=> 'required_if:status,hadir|nullable|string',
-            'alasan'     => 'required_if:status,izin|nullable|string|max:500',
-            'foto_izin'  => 'nullable|string',
-        ], [
-            'kode_absen.required_if'  => 'Kode absen wajib diisi.',
-            'foto_selfie.required_if' => 'Foto selfie wajib diambil.',
-            'alasan.required_if'      => 'Keterangan izin wajib diisi.',
-        ]);
-
-        $jadwal = JadwalMengajar::findOrFail($request->jadwal_id);
-
-        /* Validasi jendela waktu */
-        $nowHi      = $sekarang->format('H:i');
-        $jamMulaiHi = substr($jadwal->waktu_mulai, 0, 5);
-        $jamAkhirHi = substr($jadwal->waktu_berakhir, 0, 5);
-
-        if ($nowHi < $jamMulaiHi) {
-            return response()->json(['success'=>false, 'message'=>'Absen belum dimulai. Jadwal mulai pukul '.$jamMulaiHi.'.'], 422);
-        }
-        if ($nowHi > $jamAkhirHi) {
-            return response()->json(['success'=>false, 'message'=>'Waktu absen sudah berakhir pukul '.$jamAkhirHi.'.'], 422);
-        }
-
-        /* Cegah duplikat */
-        if (AbsenMurid::where('user_id',$muridId)->where('jadwal_mengajar_id',$jadwal->id)->where('tanggal_absen',$tglHariIni)->exists()) {
-            return response()->json(['success'=>false,'message'=>'Anda sudah absen untuk jadwal ini.'], 422);
-        }
-
-        /* Validasi kode absen */
-        if ($request->status === 'hadir') {
-            $kode = KodeAbsen::where('kode', strtoupper($request->kode_absen))
-                             ->where('jadwal_mengajar_id', $jadwal->id)
-                             ->where('is_active', true)
-                             ->first();
-
-            if (!$kode || !$kode->masihBerlaku()) {
-                return response()->json(['success'=>false,'message'=>'Kode absen tidak valid atau sudah kedaluwarsa.'], 422);
-            }
-        }
-
-        /* Simpan foto */
-        $fotoSelfie = null;
-        $fotoIzin   = null;
-
-        if ($request->status === 'hadir' && $request->filled('foto_selfie')) {
-            $fotoSelfie = $this->simpanFoto($request->foto_selfie, 'absen_murid');
-        }
-        if ($request->filled('foto_izin')) {
-            $fotoIzin = $this->simpanFoto($request->foto_izin, 'izin_murid');
-        }
-
-        AbsenMurid::create([
-            'user_id'            => $muridId,
-            'jadwal_mengajar_id' => $jadwal->id,
-            'tanggal_absen'      => $tglHariIni,
-            'kode_absen'         => $request->status === 'hadir' ? strtoupper($request->kode_absen) : '-',
-            'status'             => $request->status,
-            'alasan'             => $request->status === 'izin' ? $request->alasan : null,
-            'foto_selfie'        => $fotoSelfie,
-            'foto_izin'          => $fotoIzin,
-        ]);
-
-        return response()->json(['success'=>true,'message'=> $request->status === 'hadir' ? 'Absen hadir berhasil dicatat.' : 'Izin berhasil dicatat.']);
-    }
-
-    /* ----------------------------------------------------------------
-       FOTO SERVE  –  Stream foto murid dari storage private
-    ---------------------------------------------------------------- */
-    public function fotoServe($tipe, $filename)
-    {
-        /* tipe: absen_murid | izin_murid */
-        $allowed = ['absen_murid','izin_murid'];
-        if (!in_array($tipe, $allowed)) abort(404);
-
-        $muridId = auth()->id();
-        
-        /* Validasi bahwa file tersebut milik murid yang sedang login */
-        $absen = AbsenMurid::where('user_id', $muridId)
-                           ->where(function($q) use ($filename) {
-                               $q->where('foto_selfie', $filename)
-                                 ->orWhere('foto_izin', $filename);
-                           })
-                           ->firstOrFail();
-
-        $path = storage_path('app/private/'.$tipe.'/'.$filename);
-        if (!file_exists($path)) abort(404);
-
-        $mime = mime_content_type($path) ?: 'image/jpeg';
-        return response()->file($path, ['Content-Type' => $mime]);
-    }
-
     /* ================================================================
-       GURU — Notifikasi absen murid
+       GURU — Halaman & scan QR
     ================================================================ */
 
-    /* ----------------------------------------------------------------
-       NOTIF COUNT  –  Jumlah absen murid belum dikonfirmasi hari ini
-    ---------------------------------------------------------------- */
-    public function guruNotifCount()
-    {
-        $guruId  = auth()->id();
-        $tgl     = Carbon::today()->toDateString();
-
-        /* Jadwal guru hari ini */
-        $jadwalIds = JadwalMengajar::where('user_id', $guruId)->pluck('id');
-
-        $count = AbsenMurid::whereIn('jadwal_mengajar_id', $jadwalIds)
-                           ->where('tanggal_absen', $tgl)
-                           ->whereIn('status', ['hadir','izin'])
-                           ->whereNull('dikonfirmasi_at')
-                           ->count();
-
-        return response()->json(['count' => $count]);
-    }
-
-    /* ----------------------------------------------------------------
-       NOTIF LIST  –  Daftar absen murid hari ini untuk lonceng guru
-    ---------------------------------------------------------------- */
-    public function guruNotifList()
-    {
-        $guruId  = auth()->id();
-        $tgl     = Carbon::today()->toDateString();
-
-        $jadwalIds = JadwalMengajar::where('user_id', $guruId)->pluck('id');
-
-        $list = AbsenMurid::with(['murid','jadwal.kelas','jadwal.mapel'])
-            ->whereIn('jadwal_mengajar_id', $jadwalIds)
-            ->where('tanggal_absen', $tgl)
-            ->whereIn('status', ['hadir','izin'])
-            ->whereNull('dikonfirmasi_at')
-            ->latest()
-            ->take(30)
-            ->get()
-            ->map(function ($a) {
-                return [
-                    'id'       => $a->id,
-                    'nama'     => $a->murid?->name ?? '-',
-                    'username' => $a->murid?->username ?? '-',
-                    'avatar'   => strtoupper(mb_substr($a->murid?->name ?? 'M', 0, 1)),
-                    'kelas'    => $a->jadwal?->kelas?->nama_kelas ?? '-',
-                    'mapel'    => $a->jadwal?->mapel?->nama_mapel ?? '-',
-                    'jam_mulai'=> $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
-                    'status'   => $a->status,
-                    'alasan'   => $a->alasan ?? '',
-                    'waktu'    => $a->created_at ? $a->created_at->locale('id')->diffForHumans() : '-',
-                    'foto_url' => $a->status === 'hadir' && $a->foto_selfie
-                                  ? route('murid.foto_serve', ['tipe'=>'absen_murid','filename'=>basename($a->foto_selfie)])
-                                  : null,
-                    'foto_izin_url' => $a->foto_izin
-                                  ? route('murid.foto_serve', ['tipe'=>'izin_murid','filename'=>basename($a->foto_izin)])
-                                  : null,
-                ];
-            });
-
-        return response()->json(['list' => $list]);
-    }
-
-    /* ----------------------------------------------------------------
-       KONFIRMASI NOTIF  –  Guru konfirmasi absen murid
-    ---------------------------------------------------------------- */
-    public function guruKonfirmasi($id)
-    {
-        $guruId = auth()->id();
-        $absen = AbsenMurid::whereHas('jadwal', function($q) use ($guruId) {
-            $q->where('user_id', $guruId);
-        })->findOrFail($id);
-        $absen->update(['dikonfirmasi_at' => now()]);
-        return response()->json(['success' => true]);
-    }
-
-    /* ----------------------------------------------------------------
-       ABSEN MURID PAGE  –  Halaman absensi murid untuk guru
-    ---------------------------------------------------------------- */
     public function guruPage()
     {
         return view('guru.absen_murid');
@@ -306,8 +108,6 @@ class AbsenMuridController extends Controller
 
     /* ----------------------------------------------------------------
        GURU HARI INI LIST  –  AJAX: daftar absen murid hari ini
-       Menampilkan semua absen (hadir/izin/tidak) dari jadwal guru
-       yang login hari ini, dengan/tanpa dikonfirmasi.
     ---------------------------------------------------------------- */
     public function guruHariIniList(Request $request)
     {
@@ -329,20 +129,17 @@ class AbsenMuridController extends Controller
             ->get()
             ->map(function ($a) {
                 return [
-                    'id'             => $a->id,
-                    'nama'           => $a->murid?->name ?? '-',
-                    'username'       => $a->murid?->username ?? '-',
-                    'avatar'         => strtoupper(mb_substr($a->murid?->name ?? 'M', 0, 1)),
-                    'kelas'          => $a->jadwal?->kelas?->nama_kelas ?? '-',
-                    'mapel'          => $a->jadwal?->mapel?->nama_mapel ?? '-',
-                    'jam_mulai'      => $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
-                    'jam_berakhir'   => $a->jadwal ? substr($a->jadwal->waktu_berakhir, 0, 5) : '-',
-                    'status'         => $a->status,
-                    'kode_absen'     => $a->kode_absen ?? '-',
-                    'via_qr'         => ($a->kode_absen === 'QR-SCAN'),
-                    'alasan'         => $a->alasan ?? '',
-                    'dikonfirmasi'   => !is_null($a->dikonfirmasi_at),
-                    'waktu'          => $a->created_at ? $a->created_at->format('H:i') : '-',
+                    'id'           => $a->id,
+                    'nama'         => $a->murid?->name ?? '-',
+                    'username'     => $a->murid?->username ?? '-',
+                    'avatar'       => strtoupper(mb_substr($a->murid?->name ?? 'M', 0, 1)),
+                    'kelas'        => $a->jadwal?->kelas?->nama_kelas ?? '-',
+                    'mapel'        => $a->jadwal?->mapel?->nama_mapel ?? '-',
+                    'jam_mulai'    => $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
+                    'jam_berakhir' => $a->jadwal ? substr($a->jadwal->waktu_berakhir, 0, 5) : '-',
+                    'status'       => $a->status,
+                    'alasan'       => $a->alasan ?? '',
+                    'waktu'        => $a->created_at ? $a->created_at->format('H:i') : '-',
                 ];
             });
 
@@ -359,19 +156,18 @@ class AbsenMuridController extends Controller
 
     /* ----------------------------------------------------------------
        GURU SCAN QR  –  Proses QR scan dari kamera guru
-       Payload: { user_id: int, jadwal_id: int }
     ---------------------------------------------------------------- */
     public function guruScanQr(Request $request)
     {
         $guruId = auth()->id();
         $request->validate([
-            'user_id'  => 'required|integer|exists:users,id',
-            'jadwal_id'=> 'required|integer|exists:jadwal_mengajar,id',
+            'user_id'   => 'required|integer|exists:users,id',
+            'jadwal_id' => 'required|integer|exists:jadwal_mengajar,id',
         ]);
 
-        $murid  = \App\Models\User::where('id', $request->user_id)
-                                   ->whereIn('role', ['murid_smk', 'murid_smp'])
-                                   ->first();
+        $murid = \App\Models\User::where('id', $request->user_id)
+                                  ->whereIn('role', ['murid_smk', 'murid_smp'])
+                                  ->first();
 
         if (!$murid) {
             return response()->json([
@@ -380,16 +176,12 @@ class AbsenMuridController extends Controller
             ], 404);
         }
 
-        $jadwal     = JadwalMengajar::where('id', $request->jadwal_id)
-                                     ->where('user_id', $guruId)
-                                     ->firstOrFail();
-        $tglHariIni = Carbon::today()->toDateString();
-        $sekarang   = Carbon::now();
-        $nowHi      = $sekarang->format('H:i');
-        $jamMulaiHi = substr($jadwal->waktu_mulai, 0, 5);
-        $jamAkhirHi = substr($jadwal->waktu_berakhir, 0, 5);
+        $jadwal = JadwalMengajar::where('id', $request->jadwal_id)
+                                 ->where('user_id', $guruId)
+                                 ->firstOrFail();
 
-        /* Validasi: murid harus peserta kelas tersebut */
+        $tglHariIni = Carbon::today()->toDateString();
+
         $isAnggota = \App\Models\PesertaKelas::where('user_id', $murid->id)
                                               ->where('kelas_id', $jadwal->kelas_id)
                                               ->exists();
@@ -401,7 +193,6 @@ class AbsenMuridController extends Controller
             ], 422);
         }
 
-        /* Cek duplikat */
         $sudahAbsen = AbsenMurid::where('user_id', $murid->id)
                                  ->where('jadwal_mengajar_id', $jadwal->id)
                                  ->where('tanggal_absen', $tglHariIni)
@@ -418,15 +209,12 @@ class AbsenMuridController extends Controller
             ], 422);
         }
 
-        /* Simpan absen hadir via QR — langsung dikonfirmasi karena guru yang scan */
         AbsenMurid::create([
             'user_id'            => $murid->id,
             'jadwal_mengajar_id' => $jadwal->id,
             'tanggal_absen'      => $tglHariIni,
-            'kode_absen'         => 'QR-SCAN',
             'status'             => 'hadir',
             'alasan'             => null,
-            'foto_selfie'        => null,
             'dikonfirmasi_at'    => now(),
         ]);
 
@@ -437,6 +225,34 @@ class AbsenMuridController extends Controller
             'mapel'   => $jadwal->mapel?->nama_mapel ?? '-',
             'message' => $murid->name . ' berhasil dicatat hadir.',
         ]);
+    }
+
+    /* ----------------------------------------------------------------
+       JADWAL HARI INI  –  Daftar jadwal guru hari ini untuk dropdown scan QR
+    ---------------------------------------------------------------- */
+    public function guruJadwalHariIni()
+    {
+        $guruId  = auth()->id();
+        $hariIni = self::DOW_TO_HARI[date('N')] ?? null;
+
+        if (!$hariIni) {
+            return response()->json(['jadwals' => []]);
+        }
+
+        $jadwals = JadwalMengajar::with(['mapel', 'kelas'])
+            ->where('user_id', $guruId)
+            ->where('hari', $hariIni)
+            ->orderBy('waktu_mulai')
+            ->get()
+            ->map(fn($j) => [
+                'id'             => $j->id,
+                'kelas'          => $j->kelas?->nama_kelas ?? '-',
+                'mapel'          => $j->mapel?->nama_mapel ?? '-',
+                'waktu_mulai'    => substr($j->waktu_mulai, 0, 5),
+                'waktu_berakhir' => substr($j->waktu_berakhir, 0, 5),
+            ]);
+
+        return response()->json(['jadwals' => $jadwals]);
     }
 
     /* ================================================================
@@ -479,10 +295,10 @@ class AbsenMuridController extends Controller
                 ->whereNotNull('jadwal_mengajar_id')
                 ->get();
             return [
-                'murid'        => $m,
-                'total_hadir'  => $rows->where('status', 'hadir')->count(),
-                'total_izin'   => $rows->where('status', 'izin')->count(),
-                'total_tidak'  => $rows->where('status', 'tidak')->count(),
+                'murid'       => $m,
+                'total_hadir' => $rows->where('status', 'hadir')->count(),
+                'total_izin'  => $rows->where('status', 'izin')->count(),
+                'total_tidak' => $rows->where('status', 'tidak')->count(),
             ];
         });
 
@@ -513,20 +329,14 @@ class AbsenMuridController extends Controller
             ->get()
             ->map(function ($a) {
                 return [
-                    'tanggal'        => $a->tanggal_absen?->translatedFormat('d F Y') ?? '-',
-                    'hari'           => $a->jadwal?->hari ?? '-',
-                    'kelas'          => $a->jadwal?->kelas?->nama_kelas ?? '-',
-                    'mapel'          => $a->jadwal?->mapel?->nama_mapel ?? '-',
-                    'jam_mulai'      => $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
-                    'jam_berakhir'   => $a->jadwal ? substr($a->jadwal->waktu_berakhir, 0, 5) : '-',
-                    'status'         => $a->status,
-                    'alasan'         => $a->alasan ?? '-',
-                    'foto_selfie_url'=> $a->foto_selfie
-                                       ? route('murid.foto_serve', ['tipe'=>'absen_murid','filename'=>basename($a->foto_selfie)])
-                                       : null,
-                    'foto_izin_url'  => $a->foto_izin
-                                       ? route('murid.foto_serve', ['tipe'=>'izin_murid','filename'=>basename($a->foto_izin)])
-                                       : null,
+                    'tanggal'      => $a->tanggal_absen?->translatedFormat('d F Y') ?? '-',
+                    'hari'         => $a->jadwal?->hari ?? '-',
+                    'kelas'        => $a->jadwal?->kelas?->nama_kelas ?? '-',
+                    'mapel'        => $a->jadwal?->mapel?->nama_mapel ?? '-',
+                    'jam_mulai'    => $a->jadwal ? substr($a->jadwal->waktu_mulai, 0, 5) : '-',
+                    'jam_berakhir' => $a->jadwal ? substr($a->jadwal->waktu_berakhir, 0, 5) : '-',
+                    'status'       => $a->status,
+                    'alasan'       => $a->alasan ?? '-',
                 ];
             });
 
@@ -534,30 +344,5 @@ class AbsenMuridController extends Controller
             'murid'  => ['id' => $murid->id, 'name' => $murid->name],
             'absens' => $absens,
         ]);
-    }
-
-    /* ----------------------------------------------------------------
-       SIMPAN FOTO BASE64
-    ---------------------------------------------------------------- */
-    private function simpanFoto(string $base64, string $folder): ?string
-    {
-        if (!preg_match('/^data:image\/(\w+);base64,/', $base64, $match)) return null;
-        $ext     = strtolower($match[1]);
-        $allowed = ['jpeg','jpg','png','webp'];
-        if (!in_array($ext, $allowed)) return null;
-
-        $data = base64_decode(substr($base64, strpos($base64, ',') + 1));
-        if (!$data) return null;
-
-        /* Validasi magic bytes — pastikan konten adalah gambar valid */
-        $imageInfo = @getimagesizefromstring($data);
-        if ($imageInfo === false) return null;
-
-        $dir = storage_path('app/private/'.$folder);
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-
-        $filename = $folder.'_'.auth()->id().'_'.time().'_'.uniqid().'.'.$ext;
-        file_put_contents($dir.'/'.$filename, $data);
-        return $filename;
     }
 }

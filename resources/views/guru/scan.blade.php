@@ -328,7 +328,7 @@
 
     var CSRF       = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
     var SCAN_URL   = '{{ route("guru.absen_murid.scan_qr") }}';
-    var JADWAL_URL = '{{ route("guru.kode_absen.jadwal_hari_ini") }}';
+    var JADWAL_URL = '{{ route("guru.absen_murid.jadwal_hari_ini") }}';
 
     var riwayat     = [];
     var lastScanned = null;

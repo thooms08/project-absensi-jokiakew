@@ -12,10 +12,9 @@ class DatabaseSeeder extends Seeder
      * Urutan penting:
      *  1. ProfileSekolahSeeder  - tidak ada dependensi
      *  2. UserSeeder            - mengisi tabel users (FK dipakai seeder lain)
-     *  3. KodeAbsenSeeder       - mengisi tabel kode_absen (FK dipakai AbsenMuridSeeder)
-     *  4. WaliMuridSeeder       - butuh user_id murid
-     *  5. AbsenGuruSeeder       - butuh user_id guru
-     *  6. AbsenMuridSeeder      - butuh user_id murid + kode_absen
+     *  3. WaliMuridSeeder       - butuh user_id murid
+     *  4. AbsenGuruSeeder       - butuh user_id guru
+     *  5. AbsenMuridSeeder      - butuh user_id murid
      */
     public function run(): void
     {
@@ -24,7 +23,6 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             MapelSeeder::class,
             KelasSeeder::class,
-            KodeAbsenSeeder::class,
             WaliMuridSeeder::class,
             AbsenGuruSeeder::class,
             AbsenMuridSeeder::class,

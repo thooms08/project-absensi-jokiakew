@@ -261,7 +261,7 @@
         }
 
         var html = '<div style="overflow-x:auto;"><table class="modal-table"><thead><tr>'
-            + '<th>Tanggal</th><th>Hari</th><th>Kelas</th><th>Mapel</th><th>Jam</th><th>Status</th><th>Ket.</th><th>Foto</th>'
+            + '<th>Tanggal</th><th>Hari</th><th>Kelas</th><th>Mapel</th><th>Jam</th><th>Status</th><th>Ket.</th><th>Foto Izin</th>'
             + '</tr></thead><tbody>';
 
         absens.forEach(function(a) {
@@ -276,8 +276,7 @@
                 + '<td><span class="sbadge '+cls+'"><i class="bi '+ico+'" style="font-size:.6rem;"></i>'+escHtml(a.status)+'</span></td>'
                 + '<td style="font-size:.78rem;color:rgba(255,255,255,.5);max-width:160px;">'+(a.alasan && a.alasan!=='-' ? escHtml(a.alasan) : '<span style="opacity:.3;">–</span>')+'</td>'
                 + '<td>'
-                + (a.foto_selfie_url ? '<a href="'+escHtml(a.foto_selfie_url)+'" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2);text-decoration:none;" title="Foto selfie"><i class="bi bi-camera-fill" style="font-size:.75rem;"></i></a>' : '')
-                + (a.foto_izin_url ? '<a href="'+escHtml(a.foto_izin_url)+'" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:rgba(251,191,36,.08);color:#fbbf24;border:1px solid rgba(251,191,36,.2);text-decoration:none;margin-left:3px;" title="Foto izin"><i class="bi bi-image" style="font-size:.75rem;"></i></a>' : '')
+                + (a.foto_izin_url ? '<a href="'+escHtml(a.foto_izin_url)+'" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:rgba(251,191,36,.08);color:#fbbf24;border:1px solid rgba(251,191,36,.2);text-decoration:none;" title="Foto izin"><i class="bi bi-image" style="font-size:.75rem;"></i></a>' : '<span style="opacity:.3;">–</span>')
                 + '</td>'
                 + '</tr>';
         });

@@ -12,10 +12,6 @@ class AbsenMuridSeeder extends Seeder
 {
     public function run(): void
     {
-        /*
-         * Ambil semua murid SMK dan SMP secara terpisah
-         * agar kode absen yang dipakai sesuai kelas masing-masing.
-         */
         $muridSmkIds = User::where('role', 'murid_smk')
                            ->orderBy('id')
                            ->pluck('id')
@@ -28,8 +24,7 @@ class AbsenMuridSeeder extends Seeder
 
         /*
          * Pola kehadiran deterministik (tidak random setiap seed).
-         * Dipakai bergantian berdasarkan (indeks_murid + hari_ke) % panjang_pola.
-         *   85% hadir, 8% izin, 7% tidak hadir
+         * 85% hadir, 8% izin, 7% tidak hadir
          */
         $pola = [
             'hadir','hadir','hadir','hadir','hadir','hadir','hadir',
@@ -41,12 +36,7 @@ class AbsenMuridSeeder extends Seeder
 
         $rows = [];
 
-        /* ---- Murid SMK — kode absen pakai kelas RPL1 ---- */
-        $kodeSmk = [];
-        for ($d = 6; $d >= 0; $d--) {
-            $kodeSmk[$d] = Carbon::today()->subDays($d)->format('Ymd') . '-RPL1';
-        }
-
+        /* ---- Murid SMK ---- */
         foreach ($muridSmkIds as $mIdx => $muridId) {
             for ($d = 6; $d >= 0; $d--) {
                 $hariKe  = 6 - $d;
@@ -60,7 +50,6 @@ class AbsenMuridSeeder extends Seeder
                 $rows[] = [
                     'uuid'       => (string) Str::uuid(),
                     'user_id'    => $muridId,
-                    'kode_absen' => $kodeSmk[$d],
                     'status'     => $status,
                     'alasan'     => match ($status) {
                         'izin'  => 'Sakit',
@@ -73,17 +62,12 @@ class AbsenMuridSeeder extends Seeder
             }
         }
 
-        /* ---- Murid SMP — kode absen pakai kelas VII-A ---- */
-        $kodeSmp = [];
-        for ($d = 6; $d >= 0; $d--) {
-            $kodeSmp[$d] = Carbon::today()->subDays($d)->format('Ymd') . '-VIIA';
-        }
-
+        /* ---- Murid SMP ---- */
         foreach ($muridSmpIds as $mIdx => $muridId) {
             for ($d = 6; $d >= 0; $d--) {
                 $hariKe  = 6 - $d;
                 $tanggal = Carbon::today()->subDays($d);
-                $status  = $pola[($mIdx + $hariKe + 7) % count($pola)]; /* offset +7 agar beda pola dari SMK */
+                $status  = $pola[($mIdx + $hariKe + 7) % count($pola)];
 
                 $waktu = ($status === 'hadir')
                     ? $tanggal->copy()->setTime(rand(6, 7), rand(5, 55))
@@ -92,7 +76,6 @@ class AbsenMuridSeeder extends Seeder
                 $rows[] = [
                     'uuid'       => (string) Str::uuid(),
                     'user_id'    => $muridId,
-                    'kode_absen' => $kodeSmp[$d],
                     'status'     => $status,
                     'alasan'     => match ($status) {
                         'izin'  => 'Sakit',

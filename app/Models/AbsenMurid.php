@@ -10,8 +10,8 @@ class AbsenMurid extends Model
     protected $table    = 'absen_murid';
     protected $fillable = [
         'uuid', 'user_id', 'jadwal_mengajar_id', 'tanggal_absen',
-        'kode_absen', 'status', 'alasan',
-        'foto_selfie', 'foto_izin', 'dikonfirmasi_at',
+        'status', 'alasan',
+        'foto_izin', 'dikonfirmasi_at',
     ];
 
     protected $casts = [

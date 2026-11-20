@@ -27,8 +27,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: #0d1f14;
             color: #e2f5ea;
             min-height: 100vh;
@@ -41,12 +40,10 @@
         .sidebar {
             position: fixed;
             top: 0; left: 0;
-            height: 100vh;
-            width: 240px;
+            height: 100vh; width: 240px;
             background: linear-gradient(180deg, #0a2e1c 0%, #062015 100%);
             border-right: 1px solid rgba(74,222,128,0.12);
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             z-index: 1000;
             transition: width 0.28s cubic-bezier(0.4,0,0.2,1);
             overflow: hidden;
@@ -55,22 +52,16 @@
         .sidebar.collapsed { width: 62px; }
 
         .sidebar-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
+            display: flex; align-items: center; gap: 0.85rem;
             padding: 1.25rem 1rem 1rem;
             border-bottom: 1px solid rgba(74,222,128,0.1);
-            text-decoration: none;
-            flex-shrink: 0;
-            overflow: hidden;
-            min-width: 0;
+            text-decoration: none; flex-shrink: 0;
+            overflow: hidden; min-width: 0;
         }
 
         .sidebar-brand-logo {
             width: 36px; height: 36px;
-            object-fit: contain;
-            border-radius: 8px;
-            flex-shrink: 0;
+            object-fit: contain; border-radius: 8px; flex-shrink: 0;
         }
 
         .sidebar-brand-text {
@@ -169,7 +160,7 @@
         .sidebar.collapsed .btn-logout .nav-label { opacity: 0; width: 0; }
 
         /* ============================================================
-           TOGGLE BUTTON
+           TOGGLE BUTTON (Desktop)
         ============================================================ */
         .sidebar-toggle {
             position: fixed; top: 50%; left: 226px; transform: translateY(-50%);
@@ -198,6 +189,9 @@
 
         .main-wrapper.expanded { margin-left: 62px; }
 
+        /* ============================================================
+           TOPBAR
+        ============================================================ */
         .topbar {
             position: sticky; top: 0; z-index: 900;
             background: rgba(10,46,28,0.92);
@@ -221,6 +215,11 @@
             background: linear-gradient(135deg, #4ade80, #22c55e);
             display: flex; align-items: center; justify-content: center;
             font-size: 0.8rem; font-weight: 700; color: #064e2e; flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .topbar-avatar img {
+            width: 100%; height: 100%; object-fit: cover;
         }
 
         .topbar-badge {
@@ -233,6 +232,143 @@
         .main-content { flex: 1; padding: 1.75rem; }
 
         /* ============================================================
+           AVATAR DROPDOWN (Profile & Logout)
+        ============================================================ */
+        .avatar-dropdown-wrap {
+            position: relative;
+        }
+
+        .avatar-dropdown-trigger {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 0.85rem; color: rgba(255,255,255,0.72);
+            cursor: pointer; background: none; border: none;
+            padding: 0; font-family: 'Inter', sans-serif;
+            border-radius: 50px;
+            transition: color 0.18s;
+        }
+
+        .avatar-dropdown-trigger:hover { color: #ffffff; }
+
+        .avatar-dropdown-trigger .avatar-caret {
+            font-size: 0.7rem; color: rgba(255,255,255,0.4);
+            transition: transform 0.2s;
+        }
+
+        .avatar-dropdown-trigger.open .avatar-caret {
+            transform: rotate(180deg);
+        }
+
+        .avatar-dropdown-menu {
+            display: none;
+            position: absolute; top: calc(100% + 10px); right: 0;
+            min-width: 180px;
+            background: #0a2e1c;
+            border: 1px solid rgba(74,222,128,0.16);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            z-index: 1200;
+            overflow: hidden;
+            animation: dropFadeIn 0.18s ease;
+        }
+
+        @keyframes dropFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar-dropdown-menu.show { display: block; }
+
+        .avatar-drop-header {
+            padding: 0.9rem 1rem 0.7rem;
+            border-bottom: 1px solid rgba(74,222,128,0.1);
+        }
+
+        .avatar-drop-name {
+            font-size: 0.82rem; font-weight: 700; color: #ffffff;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .avatar-drop-role {
+            font-size: 0.68rem; color: rgba(74,222,128,0.65);
+            font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .avatar-drop-item {
+            display: flex; align-items: center; gap: 0.65rem;
+            padding: 0.6rem 1rem; color: rgba(255,255,255,0.7);
+            text-decoration: none; font-size: 0.82rem; font-weight: 500;
+            transition: background 0.15s, color 0.15s;
+            cursor: pointer; background: none; border: none;
+            width: 100%; text-align: left; font-family: 'Inter', sans-serif;
+        }
+
+        .avatar-drop-item:hover { background: rgba(74,222,128,0.1); color: #ffffff; }
+
+        .avatar-drop-item.danger { color: rgba(255,100,100,0.75); }
+        .avatar-drop-item.danger:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+        .avatar-drop-item i { font-size: 0.95rem; width: 16px; text-align: center; }
+
+        .avatar-drop-divider {
+            height: 1px; background: rgba(74,222,128,0.08); margin: 0.2rem 0;
+        }
+
+        /* ============================================================
+           BOTTOM BAR (Mobile Only)
+        ============================================================ */
+        .bottom-bar {
+            display: none;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+            background: linear-gradient(180deg, #0a2e1c 0%, #062015 100%);
+            border-top: 1px solid rgba(74,222,128,0.12);
+            padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+        }
+
+        .bottom-item {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; gap: 0.18rem;
+            padding: 0.42rem 0.25rem; border-radius: 10px;
+            color: rgba(255,255,255,0.45); text-decoration: none;
+            font-size: 0.6rem; font-weight: 600;
+            transition: color 0.18s, background 0.18s;
+            min-width: 0; border: none; background: none; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bottom-item i { font-size: 1.2rem; }
+
+        .bottom-item:hover,
+        .bottom-item.active { color: #4ade80; background: rgba(74,222,128,0.1); }
+
+        /* ============================================================
+           AVATAR DROPDOWN (Mobile — di dalam bottom bar)
+        ============================================================ */
+        .bottom-avatar-wrap {
+            position: relative; flex: 1;
+            display: flex; justify-content: center;
+        }
+
+        .bottom-avatar-menu {
+            display: none;
+            position: absolute; bottom: calc(100% + 10px); right: 0;
+            min-width: 180px;
+            background: #0a2e1c;
+            border: 1px solid rgba(74,222,128,0.16);
+            border-radius: 12px;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.55);
+            z-index: 1300;
+            overflow: hidden;
+            animation: dropFadeInUp 0.18s ease;
+        }
+
+        @keyframes dropFadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .bottom-avatar-menu.show { display: block; }
+
+        /* ============================================================
            OVERLAY MOBILE
         ============================================================ */
         .sidebar-backdrop {
@@ -240,6 +376,9 @@
             background: rgba(0,0,0,0.55); z-index: 999;
         }
 
+        /* ============================================================
+           RESPONSIVE
+        ============================================================ */
         @media (max-width: 991.98px) {
             .sidebar {
                 transform: translateX(-100%); width: 240px;
@@ -249,10 +388,23 @@
             .sidebar-backdrop.show { display: block; }
             .sidebar-toggle { display: none; }
             .main-wrapper { margin-left: 0 !important; }
+
+            /* Bottom bar tampil di mobile */
+            .bottom-bar { display: flex; }
+
+            /* Beri ruang agar konten tidak tertutup bottom bar */
+            .main-content { padding: 1.25rem 1rem 5.5rem; }
             .topbar-menu-btn { display: flex !important; }
+
+            /* Sembunyikan avatar user desktop di topbar saat mobile */
+            .topbar-user-desktop { display: none !important; }
         }
 
-        @media (min-width: 992px) { .topbar-menu-btn { display: none !important; } }
+        @media (min-width: 992px) {
+            .topbar-menu-btn { display: none !important; }
+            /* Bottom bar tetap hilang di desktop */
+            .bottom-bar { display: none !important; }
+        }
 
         .topbar-menu-btn {
             background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2);
@@ -266,6 +418,11 @@
 <body>
 
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<!-- form logout (dipakai di sidebar footer & avatar dropdown) -->
+<form method="POST" action="{{ route('logout') }}" id="guruLogoutForm" style="display:none;">
+    @csrf
+</form>
 
 <!-- ================================================================
      SIDEBAR
@@ -341,19 +498,16 @@
            class="nav-item-link {{ request()->routeIs('guru.profile') ? 'active' : '' }}"
            title="Profil">
             <i class="bi bi-person-circle nav-icon"></i>
-            <span class="nav-label">Profil</span>
+            <span class="nav-label">Profil Saya</span>
         </a>
 
     </nav>
 
     <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}" id="guruLogoutForm">
-            @csrf
-            <button type="button" class="btn-logout" onclick="confirmLogout()" title="Log Out">
-                <i class="bi bi-box-arrow-left nav-icon"></i>
-                <span class="nav-label">Log Out</span>
-            </button>
-        </form>
+        <button type="button" class="btn-logout" onclick="confirmLogout()" title="Log Out">
+            <i class="bi bi-box-arrow-left nav-icon"></i>
+            <span class="nav-label">Log Out</span>
+        </button>
     </div>
 
 </aside>
@@ -378,33 +532,41 @@
         <div class="topbar-right">
             <span class="topbar-badge">Guru</span>
 
-            {{-- Lonceng notif absen murid --}}
-            <div style="position:relative;" id="guruNotifWrap">
-                <button class="notif-btn" id="guruNotifBtn"
-                        aria-label="Notifikasi absen murid" title="Absen Murid"
-                        style="width:34px;height:34px;border-radius:50%;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.18);color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:background .18s;position:relative;">
-                    <i class="bi bi-bell-fill"></i>
-                    <span id="guruNotifBadge"
-                          style="position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;background:#f87171;border-radius:50px;font-size:.58rem;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px;border:2px solid #0a2e1c;line-height:1;"></span>
+            {{-- Avatar dropdown (desktop) --}}
+            <div class="avatar-dropdown-wrap topbar-user-desktop" id="avatarDropWrap">
+                <button class="avatar-dropdown-trigger" id="avatarDropTrigger" aria-haspopup="true" aria-expanded="false">
+                    <div class="topbar-avatar" id="topbarAvatar">
+                        @php
+                            $guruImg = Auth::user()->image ?? null;
+                            $guruFotoUrl = $guruImg
+                                ? route('guru.profile.foto', ['filename' => basename($guruImg)])
+                                : null;
+                        @endphp
+                        @if($guruFotoUrl)
+                            <img src="{{ $guruFotoUrl }}" alt="Foto profil">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name ?? 'G', 0, 1)) }}
+                        @endif
+                    </div>
+                    <span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Guru' }}</span>
+                    <i class="bi bi-chevron-down avatar-caret"></i>
                 </button>
 
-                <div id="guruNotifDropdown"
-                     style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:310px;background:#0a2e1c;border:1px solid rgba(74,222,128,.16);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:1200;overflow:hidden;">
-                    <div style="padding:.8rem 1rem .65rem;font-size:.8rem;font-weight:700;color:#fff;border-bottom:1px solid rgba(74,222,128,.1);display:flex;align-items:center;justify-content:space-between;">
-                        Absen Murid
-                        <span id="guruNotifCount" style="font-size:.68rem;color:rgba(74,222,128,.6);font-weight:600;">0 baru</span>
+                <div class="avatar-dropdown-menu" id="avatarDropMenu" role="menu">
+                    <div class="avatar-drop-header">
+                        <div class="avatar-drop-name">{{ Auth::user()->name ?? 'Guru' }}</div>
+                        <div class="avatar-drop-role">{{ Auth::user()->role ?? 'Guru' }}</div>
                     </div>
-                    <div id="guruNotifList" style="max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(74,222,128,.2) transparent;">
-                        <div style="text-align:center;padding:1.25rem;font-size:.78rem;color:rgba(255,255,255,.3);">Memuat...</div>
-                    </div>
+                    <a href="{{ route('guru.profile') }}" class="avatar-drop-item" role="menuitem">
+                        <i class="bi bi-person-circle"></i>
+                        Profil Saya
+                    </a>
+                    <div class="avatar-drop-divider"></div>
+                    <button type="button" class="avatar-drop-item danger" onclick="confirmLogout()" role="menuitem">
+                        <i class="bi bi-box-arrow-left"></i>
+                        Log Out
+                    </button>
                 </div>
-            </div>
-
-            <div class="topbar-user">
-                <div class="topbar-avatar">
-                    {{ strtoupper(substr(Auth::user()->name ?? 'G', 0, 1)) }}
-                </div>
-                <span class="d-none d-sm-inline">{{ Auth::user()->name ?? 'Guru' }}</span>
             </div>
         </div>
     </header>
@@ -414,6 +576,72 @@
     </main>
 
 </div>
+<!-- akhir main-wrapper -->
+
+<!-- ================================================================
+     BOTTOM BAR (Mobile Saja)
+================================================================ -->
+<nav class="bottom-bar" aria-label="Navigasi bawah">
+    <a href="{{ route('guru.dashboard') }}"
+       class="bottom-item {{ request()->routeIs('guru.dashboard') ? 'active' : '' }}">
+        <i class="bi bi-grid-1x2-fill"></i>
+        <span>Beranda</span>
+    </a>
+    <a href="{{ route('guru.absen_guru') }}"
+       class="bottom-item {{ request()->routeIs('guru.absen_guru') ? 'active' : '' }}">
+        <i class="bi bi-clipboard2-check-fill"></i>
+        <span>Absensi</span>
+    </a>
+    <a href="{{ route('guru.absen_murid') }}"
+       class="bottom-item {{ request()->routeIs('guru.absen_murid') ? 'active' : '' }}">
+        <i class="bi bi-clipboard2-pulse-fill"></i>
+        <span>Absen Murid</span>
+    </a>
+    <a href="{{ route('guru.jadwal_mengajar') }}"
+       class="bottom-item {{ request()->routeIs('guru.jadwal_mengajar') ? 'active' : '' }}">
+        <i class="bi bi-calendar2-week-fill"></i>
+        <span>Jadwal</span>
+    </a>
+
+    {{-- Avatar + dropdown profile/logout --}}
+    <div class="bottom-avatar-wrap" id="bottomAvatarWrap">
+        <button class="bottom-item {{ request()->routeIs('guru.profile') ? 'active' : '' }}"
+                id="bottomAvatarBtn" aria-haspopup="true" aria-expanded="false"
+                style="font-family:'Inter',sans-serif;">
+            @php
+                $guruImgBottom = Auth::user()->image ?? null;
+                $guruFotoUrlBottom = $guruImgBottom
+                    ? route('guru.profile.foto', ['filename' => basename($guruImgBottom)])
+                    : null;
+            @endphp
+            @if($guruFotoUrlBottom)
+                <img src="{{ $guruFotoUrlBottom }}" alt="Avatar"
+                     style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(74,222,128,0.4);">
+            @else
+                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4ade80,#22c55e);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#064e2e;border:2px solid rgba(74,222,128,0.4);">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'G', 0, 1)) }}
+                </div>
+            @endif
+            <span>Akun</span>
+        </button>
+
+        <div class="bottom-avatar-menu" id="bottomAvatarMenu" role="menu">
+            <div class="avatar-drop-header">
+                <div class="avatar-drop-name">{{ Auth::user()->name ?? 'Guru' }}</div>
+                <div class="avatar-drop-role">{{ Auth::user()->role ?? 'Guru' }}</div>
+            </div>
+            <a href="{{ route('guru.profile') }}" class="avatar-drop-item" role="menuitem">
+                <i class="bi bi-person-circle"></i>
+                Profil Saya
+            </a>
+            <div class="avatar-drop-divider"></div>
+            <button type="button" class="avatar-drop-item danger" onclick="confirmLogout()" role="menuitem">
+                <i class="bi bi-box-arrow-left"></i>
+                Log Out
+            </button>
+        </div>
+    </div>
+</nav>
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -430,21 +658,25 @@
     var wrapper  = document.getElementById('mainWrapper');
     var STORE_KEY = 'sikib_guru_sidebar_collapsed';
 
-    /* Restore state */
+    /* Restore sidebar state */
     if (localStorage.getItem(STORE_KEY) === '1') {
         sidebar.classList.add('collapsed');
-        toggle.classList.add('collapsed');
+        if (toggle) toggle.classList.add('collapsed');
         wrapper.classList.add('expanded');
     }
 
-    toggle.addEventListener('click', function () {
-        var collapsed = sidebar.classList.toggle('collapsed');
-        toggle.classList.toggle('collapsed', collapsed);
-        wrapper.classList.toggle('expanded', collapsed);
-        localStorage.setItem(STORE_KEY, collapsed ? '1' : '0');
-    });
+    if (toggle) {
+        toggle.addEventListener('click', function () {
+            var collapsed = sidebar.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed', collapsed);
+            wrapper.classList.toggle('expanded', collapsed);
+            localStorage.setItem(STORE_KEY, collapsed ? '1' : '0');
+        });
+    }
 
-    /* Mobile */
+    /* ----------------------------------------------------------------
+       SIDEBAR MOBILE
+    ---------------------------------------------------------------- */
     var mobileBtn = document.getElementById('mobileMenuBtn');
     var backdrop  = document.getElementById('sidebarBackdrop');
 
@@ -461,9 +693,62 @@
     }
 
     if (mobileBtn) mobileBtn.addEventListener('click', openSidebar);
-    backdrop.addEventListener('click', closeSidebar);
+    if (backdrop)  backdrop.addEventListener('click', closeSidebar);
 
-    /* Logout */
+    /* ----------------------------------------------------------------
+       AVATAR DROPDOWN — Desktop (topbar)
+    ---------------------------------------------------------------- */
+    var avatarWrap    = document.getElementById('avatarDropWrap');
+    var avatarTrigger = document.getElementById('avatarDropTrigger');
+    var avatarMenu    = document.getElementById('avatarDropMenu');
+
+    function toggleDesktopMenu() {
+        var open = avatarMenu.classList.toggle('show');
+        avatarTrigger.classList.toggle('open', open);
+        avatarTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    if (avatarTrigger) {
+        avatarTrigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleDesktopMenu();
+            /* tutup bottom dropdown jika terbuka */
+            if (bottomMenu) bottomMenu.classList.remove('show');
+        });
+    }
+
+    /* ----------------------------------------------------------------
+       AVATAR DROPDOWN — Mobile (bottom bar)
+    ---------------------------------------------------------------- */
+    var bottomBtn  = document.getElementById('bottomAvatarBtn');
+    var bottomMenu = document.getElementById('bottomAvatarMenu');
+
+    if (bottomBtn) {
+        bottomBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = bottomMenu.classList.toggle('show');
+            bottomBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            /* tutup desktop dropdown jika terbuka */
+            if (avatarMenu) avatarMenu.classList.remove('show');
+            if (avatarTrigger) avatarTrigger.classList.remove('open');
+        });
+    }
+
+    /* Klik di luar — tutup semua dropdown */
+    document.addEventListener('click', function (e) {
+        if (avatarWrap && !avatarWrap.contains(e.target)) {
+            if (avatarMenu) avatarMenu.classList.remove('show');
+            if (avatarTrigger) { avatarTrigger.classList.remove('open'); avatarTrigger.setAttribute('aria-expanded','false'); }
+        }
+        var bottomWrap = document.getElementById('bottomAvatarWrap');
+        if (bottomWrap && !bottomWrap.contains(e.target)) {
+            if (bottomMenu) { bottomMenu.classList.remove('show'); bottomBtn && bottomBtn.setAttribute('aria-expanded','false'); }
+        }
+    });
+
+    /* ----------------------------------------------------------------
+       LOGOUT
+    ---------------------------------------------------------------- */
     window.confirmLogout = function () {
         Swal.fire({
             title: 'Keluar dari sistem?',
@@ -484,167 +769,8 @@
     };
 
     /* ================================================================
-       NOTIF LONCENG  –  Absen Murid
+       INIT
     ================================================================ */
-    var guruNotifBtn      = document.getElementById('guruNotifBtn');
-    var guruNotifDropdown = document.getElementById('guruNotifDropdown');
-    var guruNotifBadge    = document.getElementById('guruNotifBadge');
-    var guruNotifList     = document.getElementById('guruNotifList');
-    var guruNotifCount    = document.getElementById('guruNotifCount');
-    var guruNotifOpen     = false;
-    var lastAbsenMurid    = parseInt(sessionStorage.getItem('sikib_guru_absen_murid') || '0', 10);
-    var CSRF              = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
-
-    var audio = new Audio('{{ asset("notif_admin.mp3") }}');
-    audio.volume = 0.65;
-
-    if (guruNotifBtn) {
-        guruNotifBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            guruNotifOpen = !guruNotifOpen;
-            guruNotifDropdown.style.display = guruNotifOpen ? 'block' : 'none';
-            if (guruNotifOpen) fetchGuruNotifList();
-        });
-    }
-
-    document.addEventListener('click', function (e) {
-        var wrap = document.getElementById('guruNotifWrap');
-        if (wrap && !wrap.contains(e.target)) {
-            guruNotifOpen = false;
-            guruNotifDropdown.style.display = 'none';
-        }
-    });
-
-    function fetchGuruNotifCount() {
-        fetch('{{ route("guru.absen_murid.notif_count") }}', {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-            var c = parseInt(d.count, 10) || 0;
-            if (c > lastAbsenMurid) {
-                audio.currentTime = 0; audio.play().catch(function(){});
-                if (guruNotifOpen) fetchGuruNotifList();
-            }
-            lastAbsenMurid = c;
-            sessionStorage.setItem('sikib_guru_absen_murid', c);
-
-            if (c > 0) {
-                guruNotifBadge.textContent = c > 99 ? '99+' : c;
-                guruNotifBadge.style.display = 'flex';
-            } else {
-                guruNotifBadge.style.display = 'none';
-            }
-        })
-        .catch(function () {});
-    }
-
-    function fetchGuruNotifList() {
-        guruNotifList.innerHTML = '<div style="text-align:center;padding:1.25rem;font-size:.78rem;color:rgba(255,255,255,.3);">Memuat...</div>';
-
-        fetch('{{ route("guru.absen_murid.notif_list") }}', {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-            var list = d.list || [];
-            guruNotifCount.textContent = list.length + ' baru';
-
-            if (!list.length) {
-                guruNotifList.innerHTML = '<div style="text-align:center;padding:1.5rem;font-size:.8rem;color:rgba(255,255,255,.28);">'
-                    + '<i class="bi bi-bell-slash" style="font-size:1.4rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>'
-                    + 'Tidak ada absen baru.</div>';
-                return;
-            }
-
-            var html = '';
-            list.forEach(function (item) {
-                var sColor = item.status === 'hadir' ? '#4ade80' : '#fbbf24';
-                var sIcon  = item.status === 'hadir' ? 'bi-check-circle-fill' : 'bi-envelope-fill';
-                var sTxt   = item.status === 'hadir' ? 'Hadir' : 'Izin';
-
-                html += '<div class="notif-item" id="guru-notif-' + item.id + '" style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;">'
-                    + '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e1b4b,#818cf8);color:#c7d2fe;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;">' + escHtml(item.avatar) + '</div>'
-                    + '<div style="flex:1;min-width:0;">'
-                    +   '<div style="font-size:.82rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(item.nama) + '</div>'
-                    +   '<div style="font-size:.7rem;color:rgba(255,255,255,.38);">' + escHtml(item.kelas) + ' &bull; ' + escHtml(item.mapel) + ' &bull; ' + escHtml(item.jam_mulai) + '</div>'
-                    +   '<div style="font-size:.7rem;color:rgba(255,255,255,.28);margin-top:.1rem;"><i class="bi bi-clock me-1" style="font-size:.62rem;"></i>' + escHtml(item.waktu) + '</div>'
-                    +   '<span style="display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;font-weight:700;padding:.12rem .45rem;border-radius:50px;margin-top:.15rem;background:rgba(34,211,238,.1);color:#22d3ee;border:1px solid rgba(34,211,238,.22);">'
-                    +     '<i class="bi ' + sIcon + '" style="color:' + sColor + ';"></i>' + sTxt
-                    +   '</span>'
-                    + '</div>'
-                    + '<div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0;">'
-                    +   (item.status === 'hadir' && item.foto_url
-                            ? '<a style="width:28px;height:28px;border-radius:50%;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.22);color:#4ade80;display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;" href="' + escHtml(item.foto_url) + '" target="_blank" title="Lihat selfie"><i class="bi bi-image"></i></a>'
-                            : '')
-                    +   (item.status === 'izin' && item.alasan
-                            ? '<button style="width:28px;height:28px;border-radius:50%;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.22);color:#fbbf24;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;" onclick="guruLihatAlasan(\'' + escAttr(item.nama) + '\',\'' + escAttr(item.alasan) + '\')" title="Lihat alasan"><i class="bi bi-chat-text"></i></button>'
-                            : '')
-                    +   '<button style="width:28px;height:28px;border-radius:50%;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:#4ade80;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;" onclick="guruKonfirmasi(' + item.id + ')" title="Konfirmasi"><i class="bi bi-check2-all"></i></button>'
-                    + '</div>'
-                    + '</div>';
-            });
-
-            guruNotifList.innerHTML = html;
-        })
-        .catch(function () {
-            guruNotifList.innerHTML = '<div style="text-align:center;padding:1rem;font-size:.78rem;color:#f87171;">Gagal memuat.</div>';
-        });
-    }
-
-    window.guruLihatAlasan = function (nama, alasan) {
-        Swal.fire({
-            icon: 'info',
-            title: nama + ' — Izin',
-            html: '<div style="text-align:left;background:rgba(255,255,255,.05);border-radius:8px;padding:.75rem 1rem;font-size:.875rem;color:#e2f5ea;">'
-                + '<i class="bi bi-chat-quote me-2" style="color:rgba(251,191,36,.7);"></i>' + escHtml(alasan) + '</div>',
-            confirmButtonText: 'Tutup',
-            confirmButtonColor: '#22c55e',
-            background: '#0a2e1c', color: '#fff',
-        });
-    };
-
-    window.guruKonfirmasi = function (id) {
-        fetch('{{ url("guru/absen-murid/notif") }}/' + id + '/konfirmasi', {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
-        })
-        .then(function () {
-            var el = document.getElementById('guru-notif-' + id);
-            if (el) {
-                el.style.transition = 'opacity .3s,transform .3s';
-                el.style.opacity    = '0';
-                el.style.transform  = 'translateX(20px)';
-                setTimeout(function () {
-                    el.remove();
-                    var rem = guruNotifList.querySelectorAll('[id^="guru-notif-"]').length;
-                    guruNotifCount.textContent = rem + ' baru';
-                    if (!rem) {
-                        guruNotifList.innerHTML = '<div style="text-align:center;padding:1.5rem;font-size:.8rem;color:rgba(255,255,255,.28);">'
-                            + '<i class="bi bi-bell-slash" style="font-size:1.4rem;display:block;margin-bottom:.4rem;opacity:.3;"></i>Tidak ada absen baru.</div>';
-                    }
-                }, 300);
-            }
-            var cur = parseInt(guruNotifBadge.textContent, 10) || 0;
-            if (cur > 1) { guruNotifBadge.textContent = cur - 1; }
-            else { guruNotifBadge.style.display = 'none'; }
-            lastAbsenMurid = Math.max(0, lastAbsenMurid - 1);
-            sessionStorage.setItem('sikib_guru_absen_murid', lastAbsenMurid);
-        })
-        .catch(function () {});
-    };
-
-    function escHtml(s) {
-        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function escAttr(s) {
-        return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
-    }
-
-    /* Poll setiap 10 detik */
-    fetchGuruNotifCount();
-    setInterval(fetchGuruNotifCount, 10000);
 
 }());
 </script>
