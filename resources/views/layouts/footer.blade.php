@@ -8,7 +8,7 @@
                     <div class="footer-brand d-flex align-items-center gap-3 mb-3">
                         @php
                             $logoPath = $profileSekolah->logo
-                                ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                                ? asset('uploads/logo/' . basename($profileSekolah->logo))
                                 : asset('logo.jpeg');
                         @endphp
                         <img src="{{ $logoPath }}" alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}" class="footer-logo">

@@ -107,38 +107,24 @@ class ProfileController extends Controller
         $sekolah->nama_sekolah = $request->nama_sekolah;
 
         if ($request->filled('logo_base64')) {
-            $path = $this->simpanFotoBase64(
-                $request->logo_base64,
-                'logo_sekolah',
-                'logo_sekolah'
-            );
-            if ($path) {
-                $this->hapusFotoPrivate($sekolah->logo);
-                $sekolah->logo = $path;
+            $filename = $this->simpanLogoPublic($request->logo_base64);
+            if ($filename) {
+                /* Hapus logo lama dari public jika ada */
+                $this->hapusLogoPublic($sekolah->logo);
+                $sekolah->logo = $filename;
             }
         }
 
         $sekolah->save();
 
         return response()->json([
-            'success'  => true,
-            'message'  => 'Profil sekolah berhasil diperbarui.',
-            'logo_url' => $sekolah->logo
-                ? route('admin.profile.logo', ['filename' => basename($sekolah->logo)])
+            'success'      => true,
+            'message'      => 'Profil sekolah berhasil diperbarui.',
+            'logo_url'     => $sekolah->logo
+                ? asset('uploads/logo/' . $sekolah->logo)
                 : null,
             'nama_sekolah' => $sekolah->nama_sekolah,
         ]);
-    }
-
-    /* ----------------------------------------------------------------
-       SERVE LOGO SEKOLAH  –  stream dari storage private
-    ---------------------------------------------------------------- */
-    public function fotoSekolah($filename)
-    {
-        $path = storage_path('app/private/assets/logo_sekolah/' . $filename);
-        if (!file_exists($path)) abort(404);
-        $mime = mime_content_type($path) ?: 'image/png';
-        return response()->file($path, ['Content-Type' => $mime]);
     }
 
     /* ================================================================
@@ -348,12 +334,52 @@ class ProfileController extends Controller
     ================================================================ */
 
     /**
-     * Simpan gambar dari string base64 ke folder private.
-     *
-     * @param  string $base64   Data URI base64 (data:image/...;base64,...)
-     * @param  string $folder   Sub-folder di storage/app/private/assets/
-     * @param  string $prefix   Prefix nama file
-     * @return string|null      Path relatif (folder/filename) atau null jika gagal
+     * Simpan LOGO SEKOLAH dari base64 ke public/uploads/logo/.
+     * Kolom DB menyimpan nama file saja (bukan path).
+     * Mengembalikan nama file, atau null jika gagal.
+     */
+    private function simpanLogoPublic(string $base64): ?string
+    {
+        if (!preg_match('/^data:image\/(\w+);base64,/', $base64, $match)) {
+            return null;
+        }
+
+        $ext     = strtolower($match[1]) === 'jpeg' ? 'jpg' : strtolower($match[1]);
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+        if (!in_array($ext, $allowed)) return null;
+
+        $data = base64_decode(substr($base64, strpos($base64, ',') + 1));
+        if (!$data) return null;
+
+        $imageInfo = @getimagesizefromstring($data);
+        if ($imageInfo === false) return null;
+
+        $dir = public_path('uploads/logo');
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+
+        $filename = 'logo_sekolah_' . time() . '.' . $ext;
+        file_put_contents($dir . '/' . $filename, $data);
+
+        return $filename;   // hanya nama file
+    }
+
+    /**
+     * Hapus logo lama dari public/uploads/logo/.
+     * Menerima nama file (format baru) ATAU path relatif lama (logo_sekolah/nama.jpg).
+     */
+    private function hapusLogoPublic(?string $value): void
+    {
+        if (!$value) return;
+
+        // Format baru: hanya nama file
+        $filename = basename($value);
+        $full     = public_path('uploads/logo/' . $filename);
+        if (file_exists($full)) @unlink($full);
+    }
+
+    /**
+     * Simpan foto profil user dari base64 ke storage/app/private/assets/{folder}/.
+     * Mengembalikan path relatif (folder/filename), atau null jika gagal.
      */
     private function simpanFotoBase64(string $base64, string $folder, string $prefix): ?string
     {
@@ -368,7 +394,6 @@ class ProfileController extends Controller
         $data = base64_decode(substr($base64, strpos($base64, ',') + 1));
         if (!$data) return null;
 
-        /* Validasi magic bytes — pastikan konten adalah gambar valid */
         $imageInfo = @getimagesizefromstring($data);
         if ($imageInfo === false) return null;
 
@@ -378,13 +403,11 @@ class ProfileController extends Controller
         $filename = $prefix . '_' . time() . '.' . $ext;
         file_put_contents($dir . '/' . $filename, $data);
 
-        return $folder . '/' . $filename;   // relatif terhadap private/assets/
+        return $folder . '/' . $filename;
     }
 
     /**
-     * Hapus file foto dari storage private (jika ada).
-     *
-     * @param  string|null $relativePath  Path relatif (folder/filename)
+     * Hapus foto profil user dari storage private.
      */
     private function hapusFotoPrivate(?string $relativePath): void
     {

@@ -74,7 +74,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
    SHARED ASSETS  --  accessible by authenticated users (admin/guru/murid)
 ==================================================================== */
 Route::middleware('auth')->group(function () {
-    Route::get('/profile/logo/{filename}', [ProfileController::class, 'fotoSekolah'])->name('admin.profile.logo');
+    // logo sekolah kini disimpan di public/uploads/logo/ — tidak perlu route serve
 });
 
 /* ====================================================================
@@ -194,9 +194,7 @@ Route::prefix('guru')
     ->middleware(['auth', 'role:guru'])
     ->name('guru.')
     ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('guru.index');
-        })->name('dashboard');
+        Route::get('/dashboard', [AbsenGuruController::class, 'dashboard'])->name('dashboard');
 
         Route::get('/profile',                    [ProfileController::class, 'showGuru'])->name('profile');
         Route::post('/profile',                   [ProfileController::class, 'updateGuru'])->name('profile.update');

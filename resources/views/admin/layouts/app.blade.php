@@ -7,6 +7,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - Admin SIKIB</title>
 
+    <!-- Favicon -->
+    @php $faviconUrl = $profileSekolah->logo ? asset('uploads/logo/' . basename($profileSekolah->logo)) : asset('logo.png'); @endphp
+    <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -817,7 +821,7 @@
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
         @php
             $logoPath = $profileSekolah->logo
-                ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                ? asset('uploads/logo/' . basename($profileSekolah->logo))
                 : asset('logo.png');
         @endphp
         <img src="{{ $logoPath }}" alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}" class="sidebar-brand-logo">

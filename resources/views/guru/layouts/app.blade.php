@@ -7,6 +7,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - Guru SIKIB</title>
 
+    <!-- Favicon -->
+    @php $faviconUrl = $profileSekolah->logo ? asset('uploads/logo/' . basename($profileSekolah->logo)) : asset('logo.jpeg'); @endphp
+    <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -380,13 +384,11 @@
            RESPONSIVE
         ============================================================ */
         @media (max-width: 991.98px) {
-            .sidebar {
-                transform: translateX(-100%); width: 240px;
-                transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-            }
-            .sidebar.mobile-open { transform: translateX(0); }
-            .sidebar-backdrop.show { display: block; }
-            .sidebar-toggle { display: none; }
+            /* Sidebar, toggle, backdrop, dan hamburger disembunyikan di mobile */
+            .sidebar           { display: none !important; }
+            .sidebar-toggle    { display: none !important; }
+            .sidebar-backdrop  { display: none !important; }
+            .topbar-menu-btn   { display: none !important; }
             .main-wrapper { margin-left: 0 !important; }
 
             /* Bottom bar tampil di mobile */
@@ -394,7 +396,6 @@
 
             /* Beri ruang agar konten tidak tertutup bottom bar */
             .main-content { padding: 1.25rem 1rem 5.5rem; }
-            .topbar-menu-btn { display: flex !important; }
 
             /* Sembunyikan avatar user desktop di topbar saat mobile */
             .topbar-user-desktop { display: none !important; }
@@ -432,7 +433,7 @@
     <a href="{{ route('guru.dashboard') }}" class="sidebar-brand">
         @php
             $logoPath = $profileSekolah->logo
-                ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                ? asset('uploads/logo/' . basename($profileSekolah->logo))
                 : asset('logo.jpeg');
         @endphp
         <img src="{{ $logoPath }}" alt="Logo {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}" class="sidebar-brand-logo">

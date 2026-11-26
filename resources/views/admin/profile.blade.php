@@ -787,7 +787,7 @@
     document.getElementById('btnProfilSekolah').addEventListener('click', function () {
         /* Pre-load logo yang sudah ada */
         @if($sekolah->logo)
-            var existingLogoUrl = '{{ route("admin.profile.logo", ["filename" => basename($sekolah->logo)]) }}';
+            var existingLogoUrl = '{{ asset('uploads/logo/' . basename($sekolah->logo)) }}';
             var previewImg = document.getElementById('logoPreviewImg');
             previewImg.src = existingLogoUrl;
             document.getElementById('logoUploadArea').style.display   = 'none';

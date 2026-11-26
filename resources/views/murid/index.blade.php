@@ -32,6 +32,18 @@
     .welcome-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0 0 .25rem; }
     .welcome-sub   { font-size: .82rem; color: rgba(226, 245, 234, .6); margin: 0; }
 
+    /* Tombol QR di welcome card */
+    .btn-qr-saya {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: rgba(56,189,248,.12); border: 1px solid rgba(56,189,248,.28);
+        border-radius: 10px; color: #38bdf8;
+        font-size: .8rem; font-weight: 600; padding: .48rem 1rem;
+        cursor: pointer; font-family: 'Inter', sans-serif;
+        transition: background .15s, transform .15s;
+        margin-top: .65rem;
+    }
+    .btn-qr-saya:hover { background: rgba(56,189,248,.22); transform: translateY(-1px); }
+
     /* Summary cards */
     .summary-grid {
         display: grid;
@@ -78,33 +90,6 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Shortcut */
-    .shortcut-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
-        gap: 1rem;
-    }
-
-    .shortcut-card {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(74, 222, 128, .14);
-        border-radius: 14px;
-        padding: 1.25rem 1rem;
-        display: flex; flex-direction: column; align-items: center; gap: .5rem;
-        text-decoration: none; color: rgba(226, 245, 234, .7);
-        font-size: .82rem; font-weight: 600;
-        transition: background .18s, border-color .18s, transform .15s;
-        text-align: center;
-    }
-
-    .shortcut-card:hover {
-        background: rgba(74, 222, 128, .12);
-        border-color: rgba(74, 222, 128, .35);
-        color: #4ade80; transform: translateY(-2px);
-    }
-
-    .shortcut-card i { font-size: 1.5rem; }
 
     /* ----------------------------------------------------------------
        MODAL QR SAYA
@@ -163,6 +148,9 @@
     <div>
         <p class="welcome-title">Halo, {{ Auth::user()->name ?? 'Murid' }}!</p>
         <p class="welcome-sub">Selamat datang di portal absensi. Pantau kehadiranmu di sini.</p>
+        <button type="button" class="btn-qr-saya" onclick="bukaModalQrSaya()">
+            <i class="bi bi-qr-code"></i> Tampilkan QR Absen Saya
+        </button>
     </div>
 </div>
 
@@ -175,26 +163,6 @@
     <div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:rgba(226, 245, 234, .3);">
         <span class="spinner-green"></span> Memuat...
     </div>
-</div>
-
-{{-- Shortcut --}}
-<p style="font-size:.75rem;font-weight:700;color:rgba(74, 222, 128, .65);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">
-    <i class="bi bi-lightning-fill me-1"></i>Menu Cepat
-</p>
-
-<div class="shortcut-grid">
-    <a href="{{ route('murid.absen') }}" class="shortcut-card">
-        <i class="bi bi-clipboard2-check-fill" style="color:#4ade80;"></i>
-        Absensi
-    </a>
-    <a href="{{ route('murid.riwayat_absen') }}" class="shortcut-card">
-        <i class="bi bi-clock-history" style="color:#fbbf24;"></i>
-        Riwayat
-    </a>
-    <button type="button" class="shortcut-card" id="btnQrSaya" style="cursor:pointer;">
-        <i class="bi bi-qr-code" style="color:#38bdf8;"></i>
-        QR Saya
-    </button>
 </div>
 
 {{-- Modal QR Saya --}}
@@ -279,7 +247,8 @@
     var btnDlSaya     = document.getElementById('btnDownloadQrSaya');
     var qrSayaBuilt   = false;
 
-    document.getElementById('btnQrSaya').addEventListener('click', function () {
+    /* Fungsi buka modal QR — bisa dipanggil dari mana saja */
+    window.bukaModalQrSaya = function () {
         if (!qrSayaBuilt) {
             qrSayaWrap.innerHTML = '';
             var qr = new QRCode(qrSayaWrap, {
@@ -312,7 +281,7 @@
             qrSayaBuilt = true;
         }
         modalQrSaya.show();
-    });
+    };
 }());
 </script>
 @endpush

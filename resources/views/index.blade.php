@@ -6,6 +6,10 @@
     <meta name="description" content="SIKIB - Sistem Informasi Kehadiran {{ $profileSekolah->nama_sekolah ?? 'Sekolah' }}">
     <title>{{ $profileSekolah->nama_sekolah ?? 'Sekolah' }} - SIKIB</title>
 
+    <!-- Favicon -->
+    @php $faviconUrl = $profileSekolah->logo ? asset('uploads/logo/' . basename($profileSekolah->logo)) : asset('logo.jpeg'); @endphp
+    <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -328,7 +332,7 @@
             <div class="school-brand">
                 @php
                     $logoPath = $profileSekolah->logo
-                        ? route('admin.profile.logo', ['filename' => basename($profileSekolah->logo)])
+                        ? asset('uploads/logo/' . basename($profileSekolah->logo))
                         : asset('logo.jpeg');
                 @endphp
                 <img
@@ -340,7 +344,7 @@
             </div>
             <div class="hero-divider" aria-hidden="true"></div>
              <h1 class="hero-subtitle">
-                <span>SIKIS</span>
+                <span>SIKIB</span>
             </h1>
             <p class="hero-title">Sistem Informasi Kehadiran Ibnu Sina</p>
             @auth

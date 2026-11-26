@@ -22,6 +22,68 @@ class AbsenGuruController extends Controller
     ];
 
     /* ----------------------------------------------------------------
+       DASHBOARD  –  Halaman beranda guru dengan summary + jadwal hari ini
+    ---------------------------------------------------------------- */
+    public function dashboard()
+    {
+        $guruId     = auth()->id();
+        $hariIni    = self::DOW_TO_HARI[date('N')] ?? null;
+        $tglHariIni = Carbon::today()->toDateString();
+        $awal       = Carbon::now()->startOfMonth()->toDateString();
+        $akhir      = Carbon::now()->endOfMonth()->toDateString();
+
+        /* Summary absensi guru bulan ini */
+        $absenBulan = AbsenGuru::where('user_id', $guruId)
+            ->whereBetween('tanggal_absen', [$awal, $akhir])
+            ->whereNotNull('jadwal_mengajar_id')
+            ->get();
+
+        $summary = [
+            'hadir' => $absenBulan->where('status', 'hadir')->count(),
+            'izin'  => $absenBulan->where('status', 'izin')->count(),
+            'tidak' => $absenBulan->where('status', 'tidak')->count(),
+            'total' => $absenBulan->count(),
+        ];
+
+        /* Jadwal hari ini beserta status absen */
+        $jadwalHariIni = collect();
+        if ($hariIni) {
+            $jadwals = JadwalMengajar::with(['mapel', 'kelas'])
+                ->where('user_id', $guruId)
+                ->where('hari', $hariIni)
+                ->orderBy('waktu_mulai')
+                ->get();
+
+            $absenHariIni = AbsenGuru::where('user_id', $guruId)
+                ->where('tanggal_absen', $tglHariIni)
+                ->whereNotNull('jadwal_mengajar_id')
+                ->get()
+                ->keyBy('jadwal_mengajar_id');
+
+            $nowHi = Carbon::now()->format('H:i');
+
+            $jadwalHariIni = $jadwals->map(function ($jadwal) use ($absenHariIni, $nowHi) {
+                $absen      = $absenHariIni->get($jadwal->id);
+                $jamMulai   = substr($jadwal->waktu_mulai, 0, 5);
+                $jamAkhir   = substr($jadwal->waktu_berakhir, 0, 5);
+                $sudahLewat = $nowHi > $jamAkhir;
+                $aktif      = $nowHi >= $jamMulai && !$sudahLewat;
+
+                return [
+                    'jadwal'   => $jadwal,
+                    'absen'    => $absen,
+                    'jam_mulai'  => $jamMulai,
+                    'jam_akhir'  => $jamAkhir,
+                    'aktif'      => $aktif,
+                    'sudah_lewat'=> $sudahLewat,
+                ];
+            });
+        }
+
+        return view('guru.index', compact('summary', 'jadwalHariIni', 'hariIni'));
+    }
+
+    /* ----------------------------------------------------------------
        INDEX  –  Halaman utama absensi guru
     ---------------------------------------------------------------- */
     public function index()
